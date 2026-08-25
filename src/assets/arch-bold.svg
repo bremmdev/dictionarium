@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Triumphal arch, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="24" y="18" width="72" height="16" rx="2" fill="#C05B38"></rect>
+  <rect x="34" y="22" width="52" height="8" fill="#F3EADA" stroke-width="2.5"></rect>
+  <path fill="#F3EADA" fill-rule="evenodd" d="M28,34 L92,34 L92,104 L28,104 Z M46,104 L46,66 A14 14 0 0 1 74,66 L74,104 Z"></path>
+  <path fill="#D9A441" stroke-width="2.5" d="M55,55 L65,55 L63,46 L57,46 Z"></path>
+  <circle cx="37" cy="49" r="4" fill="#D9A441" stroke-width="2.5"></circle>
+  <circle cx="83" cy="49" r="4" fill="#D9A441" stroke-width="2.5"></circle>
+  <path fill="none" stroke-width="2.5" d="M36,60 L36,98"></path>
+  <path fill="none" stroke-width="2.5" d="M84,60 L84,98"></path>
+  <rect x="24" y="104" width="72" height="8" rx="2" fill="#C05B38"></rect>
+</g>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Laurel wreath, bold">
+
+  <g stroke="#3A342C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs><path id="lf" d="M0,0 C3,-3.2 8.5,-3.2 11.5,0 C8.5,3.2 3,3.2 0,0 Z"></path></defs>
+  <path fill="none" d="M56.55,92.82 A 33 33 0 0 1 40.6,33.3" stroke-width="3.5"></path>
+  <path fill="none" d="M63.45,92.82 A 33 33 0 0 0 79.4,33.3" stroke-width="3.5"></path>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(52.02,92.02) rotate(-197) scale(1.05)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(52.02,92.02) rotate(-135) scale(1.05)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(43,88.29) rotate(-180) scale(1.02)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(43,88.29) rotate(-118) scale(1.02)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(35.48,82.08) rotate(-163) scale(0.99)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(35.48,82.08) rotate(-101) scale(0.99)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(30.09,73.95) rotate(-146) scale(0.95)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(30.09,73.95) rotate(-84) scale(0.95)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(27.32,64.59) rotate(-129) scale(0.92)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(27.32,64.59) rotate(-67) scale(0.92)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(27.41,54.84) rotate(-112) scale(0.89)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(27.41,54.84) rotate(-50) scale(0.89)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(30.34,45.53) rotate(-95) scale(0.86)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(30.34,45.53) rotate(-33) scale(0.86)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(35.87,37.49) rotate(-78) scale(0.83)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(35.87,37.49) rotate(-16) scale(0.83)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(40.6,33.3) rotate(-36) scale(0.79)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(67.98,92.02) rotate(-45) scale(1.05)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(67.98,92.02) rotate(17) scale(1.05)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(77,88.29) rotate(-62) scale(1.02)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(77,88.29) rotate(0) scale(1.02)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(84.52,82.08) rotate(-79) scale(0.99)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(84.52,82.08) rotate(-17) scale(0.99)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(89.91,73.95) rotate(-96) scale(0.95)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(89.91,73.95) rotate(-34) scale(0.95)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(92.68,64.59) rotate(-113) scale(0.92)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(92.68,64.59) rotate(-51) scale(0.92)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(92.59,54.84) rotate(-130) scale(0.89)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(92.59,54.84) rotate(-68) scale(0.89)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(89.66,45.53) rotate(-147) scale(0.86)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(89.66,45.53) rotate(-85) scale(0.86)"></use>
+  <use href="#lf" fill="#87905A" stroke-width="1.6" transform="translate(84.13,37.49) rotate(-164) scale(0.83)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(84.13,37.49) rotate(-102) scale(0.83)"></use>
+  <use href="#lf" fill="#5E6B39" stroke-width="1.6" transform="translate(79.4,33.3) rotate(-144) scale(0.79)"></use>
+  <circle cx="39.01" cy="85.46" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  <circle cx="28.36" cy="69.37" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  <circle cx="28.53" cy="50.08" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  <circle cx="80.99" cy="85.46" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  <circle cx="91.64" cy="69.37" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  <circle cx="91.47" cy="50.08" r="2.6" fill="#D9A441" stroke-width="1.8"></circle>
+  </g>
+</svg>

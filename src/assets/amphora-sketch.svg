@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Amphora, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M45,19 C52,16.5 68,16.5 75,19 C68,21.5 52,21.5 45,19"></path>
+  <path d="M52,22 L52,29 C43,33 39,43 40,53 C41,67 51,81 58,95 C59,97 61,97 62,95 C69,81 79,67 80,53 C81,43 77,33 68,29 L68,22"></path>
+  <path d="M52,27 C42,27 38,35 44,41"></path>
+  <path d="M68,27 C78,27 82,35 76,41"></path>
+  <path d="M46,54 C53,57 67,57 74,54"></path>
+  <path d="M49,63 C55,65.5 65,65.5 71,63"></path>
+</g>
+</svg>

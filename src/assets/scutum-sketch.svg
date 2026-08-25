@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Legionary shield, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M44,19 C54,18 66,18 76,19 C82,19.5 85,23 85,29 C86,50 86,70 85,91 C85,97 82,100.5 76,101 C66,102 54,102 44,101 C38,100.5 35,97 35,91 C34,70 34,50 35,29 C35,23 38,19.5 44,19"></path>
+  <circle cx="60" cy="60" r="9"></circle>
+  <circle cx="60" cy="60" r="3.5"></circle>
+  <path d="M60,24 L60,49"></path>
+  <path d="M60,71 L60,96"></path>
+  <path d="M46,34 L60,28.5 L74,34"></path>
+  <path d="M46,86 L60,91.5 L74,86"></path>
+</g>
+</svg>

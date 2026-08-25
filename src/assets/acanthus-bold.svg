@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Acanthus leaf, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#556036" d="M55,104 C43,101 30,93 24,80 C22,75.5 25.5,73 29,76 C38,85 48,97 55,104 Z"></path>
+  <path fill="#556036" d="M65,104 C77,101 90,93 96,80 C98,75.5 94.5,73 91,76 C82,85 72,97 65,104 Z"></path>
+  <path fill="#7C8450" d="M57,101 C46,92 36,76 34,58 C33.5,53 37,51 40,54 C50,64 56,82 57,101 Z"></path>
+  <path fill="#7C8450" d="M63,101 C74,92 84,76 86,58 C86.5,53 83,51 80,54 C70,64 64,82 63,101 Z"></path>
+  <path fill="#556036" d="M60,102 C53,84 52,56 57,32 C58,27 62,27 63,32 C68,56 67,84 60,102 Z"></path>
+  <path fill="#C05B38" d="M44,103 C44,112 76,112 76,103 C70,107.5 50,107.5 44,103 Z"></path>
+</g>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Roman coin, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="60" cy="60" r="40"></circle>
+  <circle cx="93.5" cy="60" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="89.01" cy="76.75" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="76.75" cy="89.01" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="60" cy="93.5" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="43.25" cy="89.01" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="30.99" cy="76.75" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="26.5" cy="60" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="30.99" cy="43.25" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="43.25" cy="30.99" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="60" cy="26.5" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="76.75" cy="30.99" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <circle cx="89.01" cy="43.25" r="1.5" fill="#5B5348" stroke="none"></circle>
+  <text x="59" y="66" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="16.5" letter-spacing="1.5" fill="#5B5348" stroke="none">SPQR</text>
+  <path d="M48,74 C54,77 66,77 72,74"></path>
+</g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Wax tablet and stylus, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M28,26 C46,24.5 64,24.5 80,26 C81.5,44 81.5,76 80,94 C64,95.5 46,95.5 28,94 C26.5,76 26.5,44 28,26"></path>
+  <path d="M36,34 C50,33 62,33 72,34 C73,50 73,70 72,86 C58,87 46,87 36,86 C35,70 35,50 36,34"></path>
+  <path d="M42,44 C50,43.6 60,43.6 66,44"></path>
+  <path d="M42,53 C48,52.6 57,52.6 62,53"></path>
+  <path d="M42,62 C50,61.6 61,61.6 67,62"></path>
+  <path d="M42,71 C47,70.6 55,70.6 59,71"></path>
+  <path d="M42,80 C49,79.6 59,79.6 64,80"></path>
+  <path d="M89,22 C86,46 83,72 81,94"></path>
+  <path d="M79.5,90 L81,95.5 L83.5,91"></path>
+</g>
+</svg>

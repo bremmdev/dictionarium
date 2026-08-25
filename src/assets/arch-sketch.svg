@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Triumphal arch, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M26,19 C50,17.5 72,17.5 94,19 C95,23.5 95,29.5 94,33 C70,34.5 50,34.5 26,33 C25,29.5 25,23.5 26,19"></path>
+  <path stroke-width="1.5" d="M36,26 C52,25.5 68,25.5 84,26"></path>
+  <path d="M28,34 C28,57 28,80 28,103"></path>
+  <path d="M92,34 C92,57 92,80 92,103"></path>
+  <path d="M46,103 L46,66 A14 14 0 0 1 74,66 L74,103"></path>
+  <path d="M55,55 L65,55 L63,46 L57,46 Z"></path>
+  <circle cx="37" cy="49" r="4"></circle>
+  <circle cx="83" cy="49" r="4"></circle>
+  <path stroke-width="1.5" d="M36,60 L36,98"></path>
+  <path stroke-width="1.5" d="M84,60 L84,98"></path>
+  <path d="M24,104 C48,102.5 72,102.5 96,104"></path>
+  <path d="M20,111 C48,109 72,109 100,111"></path>
+</g>
+</svg>

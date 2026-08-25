@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Lyre, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="none" stroke-width="5" d="M42,74 C33,62 33,46 40,36 C43,31 47,28 51,27"></path>
+  <path fill="none" stroke-width="5" d="M78,74 C87,62 87,46 80,36 C77,31 73,28 69,27"></path>
+  <path fill="none" stroke-width="2" d="M50,30 L52,74"></path>
+  <path fill="none" stroke-width="2" d="M56.7,30 L57.3,74"></path>
+  <path fill="none" stroke-width="2" d="M63.3,30 L62.7,74"></path>
+  <path fill="none" stroke-width="2" d="M70,30 L68,74"></path>
+  <path fill="#C05B38" d="M40,72 C40,90 80,90 80,72 C73,77 47,77 40,72 Z"></path>
+  <rect x="44" y="23" width="32" height="7" rx="3.5" fill="#D9A441"></rect>
+</g>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Gladius, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M55,74 L54,28 C53.5,21 56,17 60,12 C64,17 66.5,21 66,28 L65,74"></path>
+  <path stroke-width="1.5" d="M60,24 L60,71"></path>
+  <path d="M47,74.5 C56,73.5 64,73.5 73,74.5 C74.5,76 74.5,79 73,80.5 C64,81.5 56,81.5 47,80.5 C45.5,79 45.5,76 47,74.5"></path>
+  <path d="M55,81 C54.8,87 54.8,94 55,100"></path>
+  <path d="M65,81 C65.2,87 65.2,94 65,100"></path>
+  <path d="M55,87.5 L65,87.5"></path>
+  <path d="M55,93.5 L65,93.5"></path>
+  <circle cx="60" cy="105.5" r="5.5"></circle>
+</g>
+</svg>

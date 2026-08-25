@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Gladiator helmet, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#D9A441" d="M38,64 C38,36 82,36 82,64 L82,70 C82,74 78,76 74,76 L46,76 C42,76 38,74 38,70 Z"></path>
+  <rect x="56" y="28" width="8" height="18" fill="#C05B38" stroke="none"></rect>
+  <path fill="#C05B38" d="M32,42 C36,16 84,16 88,42 C81,32 39,32 32,42 Z"></path>
+  <path fill="none" stroke-width="2" d="M48,21.5 L46,30"></path>
+  <path fill="none" stroke-width="2" d="M60,18.5 L60,27"></path>
+  <path fill="none" stroke-width="2" d="M72,21.5 L74,30"></path>
+  <path fill="none" d="M40,62 C50,59 70,59 80,62"></path>
+  <path fill="#D9A441" d="M42,76 L41,90 C41,97 47,101 53,99 L55,76 Z"></path>
+  <path fill="#D9A441" d="M78,76 L79,90 C79,97 73,101 67,99 L65,76 Z"></path>
+</g>
+</svg>

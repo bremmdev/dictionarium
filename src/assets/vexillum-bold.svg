@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Military standard, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="none" stroke-width="4" d="M60,112 L60,16"></path>
+  <path fill="#D9A441" stroke-width="2.5" d="M60,5 C63.5,9 63.5,14 60,17 C56.5,14 56.5,9 60,5 Z"></path>
+  <path fill="none" stroke-width="4" d="M36,26 L84,26"></path>
+  <rect x="38" y="28" width="44" height="44" fill="#C05B38"></rect>
+  <text x="59.5" y="55" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="14" font-weight="bold" letter-spacing="1" fill="#D9A441" stroke="none">SPQR</text>
+  <g stroke="#D9A441" stroke-width="3">
+    <path d="M42,74 L42,80"></path>
+    <path d="M51,74 L51,81"></path>
+    <path d="M60,74 L60,81.5"></path>
+    <path d="M69,74 L69,81"></path>
+    <path d="M78,74 L78,80"></path>
+  </g>
+</g>
+</svg>

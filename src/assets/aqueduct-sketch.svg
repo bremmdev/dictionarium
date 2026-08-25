@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Aqueduct, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14,27 C40,25.5 80,25.5 106,27"></path>
+  <path d="M16,34 C42,33 78,33 104,34"></path>
+  <path d="M16,60 C42,59 78,59 104,60"></path>
+  <path d="M12,105 C40,103.5 80,103.5 108,105"></path>
+  <path d="M16,34 L16,103"></path>
+  <path d="M104,34 L104,103"></path>
+  <path d="M21,60 L21,48.5 A8 8 0 0 1 37,48.5 L37,60"></path>
+  <path d="M42,60 L42,48.5 A8 8 0 0 1 58,48.5 L58,60"></path>
+  <path d="M63,60 L63,48.5 A8 8 0 0 1 79,48.5 L79,60"></path>
+  <path d="M84,60 L84,48.5 A8 8 0 0 1 100,48.5 L100,60"></path>
+  <path d="M21.5,103 L21.5,78 A11 11 0 0 1 43.5,78 L43.5,103"></path>
+  <path d="M49,103 L49,78 A11 11 0 0 1 71,78 L71,103"></path>
+  <path d="M76.5,103 L76.5,78 A11 11 0 0 1 98.5,78 L98.5,103"></path>
+  <path d="M38.5,54 L41.5,54"></path>
+  <path d="M59.5,54 L62.5,54"></path>
+  <path d="M80.5,54 L83.5,54"></path>
+  <path d="M45,88 L48,88"></path>
+  <path d="M72.5,94 L75.5,94"></path>
+  <path d="M45,96 L48,96"></path>
+</g>
+</svg>

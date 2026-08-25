@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Wax tablet and stylus, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="26" y="24" width="56" height="72" rx="4" fill="#C05B38"></rect>
+  <rect x="33" y="31" width="42" height="58" rx="2" fill="#3A342C" stroke="none"></rect>
+  <g stroke="#F3EADA" stroke-width="2">
+    <path d="M39,42 L69,42"></path>
+    <path d="M39,51 L63,51"></path>
+    <path d="M39,60 L69,60"></path>
+    <path d="M39,69 L60,69"></path>
+    <path d="M39,78 L66,78"></path>
+  </g>
+  <path stroke-width="7" d="M90,20 L80,96"></path>
+  <path stroke="#D9A441" stroke-width="3.5" d="M89.6,22 L80.5,93.5"></path>
+</g>
+</svg>

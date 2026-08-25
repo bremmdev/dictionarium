@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Papyrus scroll, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#F3EADA" d="M42,28 C40.5,50 43.5,72 42,94 C54,92.8 66,92.8 78,94 C79.5,72 76.5,50 78,28 C66,29.2 54,29.2 42,28 Z"></path>
+  <path d="M50,45 L70,45"></path>
+  <path d="M50,54 L64,54"></path>
+  <path d="M50,63 L70,63"></path>
+  <path d="M50,72 L61,72"></path>
+  <rect x="32" y="22" width="56" height="12" rx="6" fill="#C05B38"></rect>
+  <rect x="32" y="88" width="56" height="12" rx="6" fill="#C05B38"></rect>
+  <circle cx="36" cy="28" r="2.6" fill="#D9A441" stroke-width="2"></circle>
+  <circle cx="84" cy="28" r="2.6" fill="#D9A441" stroke-width="2"></circle>
+  <circle cx="36" cy="94" r="2.6" fill="#D9A441" stroke-width="2"></circle>
+  <circle cx="84" cy="94" r="2.6" fill="#D9A441" stroke-width="2"></circle>
+</g>
+</svg>

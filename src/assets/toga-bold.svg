@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Toga, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#F3EADA" d="M44,30 C40,50 38,75 36,98 C36,100 37,101 39,101 L81,101 C83,101 84,100 84,98 C82,75 80,50 76,30 C66,26 54,26 44,30 Z"></path>
+  <path fill="none" d="M52,28 C54,32 66,32 68,28"></path>
+  <path fill="#C05B38" d="M44,30 C52,44 64,58 80,66 L80,80 C62,72 48,56 40,42 C41,37 42,33 44,30 Z"></path>
+  <path fill="none" stroke-width="2" d="M52,62 C51,76 50.5,88 50,98"></path>
+  <path fill="none" stroke-width="2" d="M60,68 C60,79 60,89 60,98"></path>
+  <path fill="none" stroke-width="2" d="M70,74 C70.5,83 71,90 71,98"></path>
+</g>
+</svg>

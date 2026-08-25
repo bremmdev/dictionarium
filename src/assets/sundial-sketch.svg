@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Sundial, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M22,80 A38 38 0 0 1 98,80"></path>
+  <path d="M22,80 C46,78.5 74,78.5 98,80"></path>
+  <path stroke-width="1.5" d="M60,80 L50.42,53.69"></path>
+  <path stroke-width="1.5" d="M60,80 L60,52"></path>
+  <path stroke-width="1.5" d="M60,80 L69.58,53.69"></path>
+  <path stroke-width="1.5" d="M37.06,63.94 L31.74,60.21"></path>
+  <path stroke-width="1.5" d="M43.94,57.06 L40.21,51.74"></path>
+  <path stroke-width="1.5" d="M76.06,57.06 L79.79,51.74"></path>
+  <path stroke-width="1.5" d="M82.94,63.94 L88.26,60.21"></path>
+  <path d="M60,80 L60,36 L80,80"></path>
+  <circle cx="60" cy="80" r="1.8" fill="#5B5348" stroke="none"></circle>
+  <path d="M55,84 C58,83.5 62,83.5 65,84 C65.3,86.7 65.3,89.3 65,92"></path>
+  <path d="M55,84 C54.7,86.7 54.7,89.3 55,92"></path>
+  <path d="M45,93 C55,92 65,92 75,93 C75.5,95.3 75.5,97.7 75,100 C65,101 55,101 45,100 C44.5,97.7 44.5,95.3 45,93"></path>
+</g>
+</svg>

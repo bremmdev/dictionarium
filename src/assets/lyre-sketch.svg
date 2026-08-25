@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Lyre, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M42,74 C33,62 33,46 40,36 C43,31 47,28 51,27"></path>
+  <path d="M78,74 C87,62 87,46 80,36 C77,31 73,28 69,27"></path>
+  <path stroke-width="1.5" d="M50,31 C50.7,45 51.4,60 52,73"></path>
+  <path stroke-width="1.5" d="M56.7,31 C56.9,45 57.1,60 57.3,73"></path>
+  <path stroke-width="1.5" d="M63.3,31 C63.1,45 62.9,60 62.7,73"></path>
+  <path stroke-width="1.5" d="M70,31 C69.3,45 68.6,60 68,73"></path>
+  <path d="M40,72 C40,90 80,90 80,72 C73,77 47,77 40,72"></path>
+  <path d="M44,25 L76,25"></path>
+  <path d="M44,30 L76,30"></path>
+</g>
+</svg>

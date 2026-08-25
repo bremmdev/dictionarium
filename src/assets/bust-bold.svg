@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Marble bust, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#F3EADA" d="M56,19 C67,19 73,27 73,37 C73,45 70,52 65,57 L64,65 C71,67 77,71 79,77 L81,89 L39,89 L41,77 C42.5,71 47,67.5 52,66 L53,59 C50.5,57.5 48.5,55.5 47.5,53 L44,52 C43,51.5 43,50 44,49.5 L42.5,47.5 C41.5,47 41.5,45.8 42.5,45.5 L39.5,44.5 C38.6,44 38.8,42.5 40,42 L44,34 C46,25 50,19 56,19 Z"></path>
+  <rect x="53" y="89" width="14" height="7" fill="#D9A441"></rect>
+  <rect x="44" y="96" width="32" height="9" rx="2" fill="#C05B38"></rect>
+</g>
+</svg>

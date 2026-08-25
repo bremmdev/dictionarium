@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Roman temple, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="#C05B38" d="M60,12 L98,38 L22,38 Z"></path>
+  <path fill="#F3EADA" d="M60,20 L83,34.5 L37,34.5 Z"></path>
+  <circle cx="60" cy="30" r="3.5" fill="#D9A441"></circle>
+  <rect x="27" y="38" width="66" height="9" fill="#D9A441"></rect>
+  <rect x="30.5" y="47" width="9" height="48" rx="3" fill="#F3EADA"></rect>
+  <rect x="47.2" y="47" width="9" height="48" rx="3" fill="#F3EADA"></rect>
+  <rect x="63.8" y="47" width="9" height="48" rx="3" fill="#F3EADA"></rect>
+  <rect x="80.5" y="47" width="9" height="48" rx="3" fill="#F3EADA"></rect>
+  <rect x="26" y="95" width="68" height="8" fill="#F3EADA"></rect>
+  <rect x="20" y="103" width="80" height="9" fill="#C05B38"></rect>
+</g>
+</svg>

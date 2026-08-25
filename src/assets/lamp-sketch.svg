@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Oil lamp, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M46,60 C54,52 76,52 84,60 C88,64 88,72 84,77 C76,86 52,86 45,78 C41,73.5 41,65 46,60 Z"></path>
+  <path d="M45,66 C36,63.5 28,64 26,68.5 C25,71.5 28.5,74.5 34,74.5 C38.5,74.5 42.5,73 44.5,71"></path>
+  <path d="M30,64 C25.5,58 27,50 30.5,46 C33.5,50.5 34.5,58.5 30.5,64 Z"></path>
+  <path d="M85,63 C91,59.5 95.5,63.5 94,69 C93,73 88.5,74.5 85,72.5"></path>
+  <circle cx="64" cy="69" r="7.5"></circle>
+  <circle cx="64" cy="69" r="4"></circle>
+  <path d="M52,88 C56,91 72,91 76,88"></path>
+</g>
+</svg>

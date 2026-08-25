@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Grapes, bold">
+
+<g stroke="#3A342C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path fill="none" stroke-width="4" d="M60,44 C60,36 62,30 66,24"></path>
+  <path fill="none" stroke-width="2.5" d="M64,34 C70,31 74,33 73,37 C72,40 68,40 68,37"></path>
+  <path fill="#7C8450" d="M60,40 C50,28 36,26 28,32 C34,44 48,48 58,44 Z"></path>
+  <path fill="none" stroke-width="2" d="M32,33 C40,37 50,41 56,42"></path>
+  <circle cx="39" cy="50" r="7" fill="#8F3E2A"></circle>
+  <circle cx="53" cy="50" r="7" fill="#8F3E2A"></circle>
+  <circle cx="67" cy="50" r="7" fill="#8F3E2A"></circle>
+  <circle cx="81" cy="50" r="7" fill="#8F3E2A"></circle>
+  <circle cx="46" cy="62" r="7" fill="#8F3E2A"></circle>
+  <circle cx="60" cy="62" r="7" fill="#8F3E2A"></circle>
+  <circle cx="74" cy="62" r="7" fill="#8F3E2A"></circle>
+  <circle cx="53" cy="74" r="7" fill="#8F3E2A"></circle>
+  <circle cx="67" cy="74" r="7" fill="#8F3E2A"></circle>
+  <circle cx="60" cy="86" r="7" fill="#8F3E2A"></circle>
+  <circle cx="57.5" cy="59.5" r="1.5" fill="#F3EADA" stroke="none"></circle>
+  <circle cx="50.5" cy="71.5" r="1.5" fill="#F3EADA" stroke="none"></circle>
+  <circle cx="57.5" cy="83.5" r="1.5" fill="#F3EADA" stroke="none"></circle>
+</g>
+</svg>
