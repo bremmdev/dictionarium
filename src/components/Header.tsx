@@ -22,13 +22,13 @@ export function Header() {
 			<div className="overflow-hidden border-parchment-200 border-b bg-linear-to-b from-parchment-50 to-parchment-100">
 				<div className="mx-auto grid max-w-page-width grid-cols-1 items-center gap-12 px-8 py-12 md:grid-cols-3 md:gap-10 md:py-16">
 					<div className="text-center md:col-span-2 md:text-left">
-						<p className="text-gold-600 text-sm uppercase tracking-[0.32em] md:text-base">
+						<p className="text-gold-600 text-sm font-medium uppercase tracking-[0.32em] md:text-base">
 							A dictionary for the Latin student
 						</p>
 						<h1 className="mt-6 text-ink-900 text-5xl leading-tight sm:text-6xl lg:text-7xl">
 							Verba sub manū.
 						</h1>
-						<p className="mx-auto mt-6 font-bold text-ink-700 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
+						<p className="mx-auto mt-6 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
 							Look up any Latin word and read its principal parts, its part of
 							speech, and its senses in order of use. Explore meaning, usage and more.
 						</p>
