@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import mosaic from "#/assets/mosaic-bold.svg";
 import scroll from "#/assets/scroll-sketch.svg";
 import templum from "#/assets/temple-sketch.svg";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@bremmdev/m7kit";
+import { Info } from "lucide-react";
 
 export function Header() {
 	return (
@@ -14,7 +16,7 @@ export function Header() {
 					>
 						<img src={mosaic} alt="" aria-hidden="true" className="h-8 w-8" />
 						<span className="text-ink-900">Dictionarium</span>{" "}
-						<span className="text-gold-600">Latinum</span>
+						<span className="text-gold-600">Latinum</span> 
 					</Link>
 				</div>
 			</nav>
@@ -25,9 +27,31 @@ export function Header() {
 						<p className="text-gold-600 text-sm font-medium uppercase tracking-[0.32em] md:text-base">
 							A dictionary for the Latin student
 						</p>
-						<h1 className="mt-6 text-ink-900 text-5xl leading-tight sm:text-6xl lg:text-7xl">
-							Verba sub manū.
-						</h1>
+						<div className="mt-6 flex items-center justify-center gap-4 md:justify-start">
+							<h1 className="text-ink-900 text-5xl leading-tight sm:text-6xl lg:text-7xl">
+								Verba sub manū.
+							</h1>
+							<Tooltip hoverDelay={200} touchBehavior="tap">
+								<TooltipTrigger
+									aria-label="What does Verba sub manū mean?"
+									className="my-0 rounded-full bg-parchment-50 p-2 text-gold-600 transition-colors hover:border-accent hover:bg-parchment-100 hover:text-accent"
+								>
+									<Info size={20} aria-hidden="true" />
+								</TooltipTrigger>
+								<TooltipContent
+									placement="bottom right"
+									className="w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
+								>
+									<p className="text-ink-700 leading-relaxed">
+										<span className="font-semibold text-ink-900">
+											&ldquo;Words at hand&rdquo; or &ldquo;words within reach.&rdquo;
+										</span>{" "}
+										The macron on <span className="text-accent">ū</span> marks a long
+										vowel — length alone can tell two words apart.
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</div>
 						<p className="mx-auto mt-6 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
 							Look up any Latin word and read its principal parts, its part of
 							speech, and its senses in order of use. Explore meaning, usage and more.

@@ -1,5 +1,6 @@
 
 @import "tailwindcss";
+@import "@bremmdev/m7kit/css";
 
 /* One variable file per subset covers weights 400–800.
    The latin-ext file is subset to macron/breve vowels only (6 KB), so it is
@@ -27,7 +28,17 @@
 
 /* Design tokens — the palette is lifted from the SVG icons in src/assets, so the
    illustrations and the chrome are the same set of colours. Parchment = surfaces,
-   gold = accents, ink = text, terracotta = the one loud accent. */
+   gold = accents, ink = text, terracotta = the one loud accent.
+
+   We use m7kit as the design system for the components, but we define our own design tokens for the palette by overriding the m7kit tokens.
+
+   Contrast against the surfaces each token actually sits on. AA wants 4.5:1 for text and 3:1 for borders and other non-text UI:
+     foreground on surface / subtle / muted / strong ... 11.5 / 10.3 / 9.0 / 7.7
+     accent as text on the same four ................... 6.8 / 6.1 / 5.3 / 4.5
+     foreground-inverse on button-accent ............... 6.8, 5.5 on hover (/90)
+     foreground-inverse on foreground .................. 11.5
+     accent on bg-accent/5 (secondary button) .......... 6.3
+     neutral as a border on surface / subtle ........... 3.7 / 3.3 */
 @theme {
   --color-parchment-50: #fbf7ef;
   --color-parchment-100: #f3eada;
@@ -46,6 +57,23 @@
 
   --color-terracotta-500: #c05b38;
   --color-terracotta-700: #8f3e2a;
+
+  /* Use terracotta-700 as the accent color because gold doesn't have enough contrast against the surfaces. */
+  --color-accent: var(--color-terracotta-700);
+  --color-button-accent: var(--color-terracotta-700);
+
+  --color-background: var(--color-parchment-50);
+  --color-surface: var(--color-parchment-50);
+  --color-surface-subtle: var(--color-parchment-100);
+  --color-surface-muted: var(--color-parchment-200);
+  --color-surface-strong: var(--color-parchment-300);
+
+  /* m7kit uses this for borders and rings, never text. */
+  --color-neutral: var(--color-ink-500);
+
+  /* m7kit uses this for text. */
+  --color-foreground: var(--color-ink-900);
+  --color-foreground-inverse: var(--color-parchment-50);
 
   --font-display: "EB Garamond", ui-serif, serif;
   --container-page-width: 90rem;
