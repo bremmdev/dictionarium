@@ -42,7 +42,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-parchment-50 text-ink-900">
         <Header />
-        {children}
+        <main className="mx-auto w-full max-w-page-width px-8 py-16 font-display text-ink-700">
+          {children}
+        </main>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
