@@ -12,6 +12,7 @@ export function Header() {
 				<div className="mx-auto flex h-14 w-full max-w-page-width items-center px-8">
 					<Link
 						to="/"
+						search={{}}
 						lang="la"
 						className="text-lg font-bold uppercase tracking-wide flex items-center gap-2"
 					>

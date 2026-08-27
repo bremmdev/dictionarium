@@ -96,3 +96,11 @@ body {
 button {
   cursor: pointer;
 }
+/* EB Garamond ships a localised-forms (locl) feature for the Latin language tag
+   that swaps u -> v, the classical epigraphic spelling: "Quaere" sets as
+   "QVAERE". We want lang="la" on Latin text so screen readers pronounce it as
+   Latin, but we don't want the V spellings, so switch off that one feature.
+   Everything else the font does by default (kerning, ligatures) is untouched. */
+[lang="la"] {
+  font-feature-settings: "locl" 0;
+}

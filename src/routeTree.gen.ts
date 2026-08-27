@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerbumLemmaRouteImport } from './routes/verbum.$lemma'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
+  id: '/verbum/$lemma',
+  path: '/verbum/$lemma',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/verbum/$lemma'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/verbum/$lemma'
+  id: '__root__' | '/' | '/verbum/$lemma'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  VerbumLemmaRoute: typeof VerbumLemmaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verbum/$lemma': {
+      id: '/verbum/$lemma'
+      path: '/verbum/$lemma'
+      fullPath: '/verbum/$lemma'
+      preLoaderRoute: typeof VerbumLemmaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  VerbumLemmaRoute: VerbumLemmaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

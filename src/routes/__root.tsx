@@ -40,9 +40,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<HeadContent />
 			</head>
-			<body className="bg-parchment-50 text-ink-900">
+			<body className="bg-parchment-50 text-ink-900 text-lg">
 				<Header />
-				<main className="mx-auto w-full max-w-page-width px-8 py-16 font-display text-ink-700">
+				<main className="mx-auto w-full max-w-page-width px-8 py-8 md:py-16 font-display text-ink-700">
 					{children}
 				</main>
 				<TanStackDevtools
