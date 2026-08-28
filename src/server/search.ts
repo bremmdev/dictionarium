@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, like, sql } from "drizzle-orm";
+import { count, eq, like, sql } from "drizzle-orm";
 import { db } from "#/db";
 import { entries } from "#/db/schema";
 
@@ -68,3 +68,14 @@ export const getEntryByLemma = createServerFn({ method: "GET" })
 
 		return entry ?? null;
 	});
+
+/**
+ * Total number of lemmas, for the "search N words" hint on the home page. Every
+ * row is one word, so a plain COUNT(*) is the whole story.
+ */
+export const getEntryCount = createServerFn({ method: "GET" }).handler(
+	async (): Promise<number> => {
+		const [row] = await db.select({ total: count() }).from(entries);
+		return row?.total ?? 0;
+	},
+);

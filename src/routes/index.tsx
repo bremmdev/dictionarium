@@ -6,7 +6,7 @@ import templum from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
 import { Search } from "#/components/search/Search";
-import { searchEntries } from "#/server/search";
+import { getEntryCount, searchEntries } from "#/server/search";
 
 export const Route = createFileRoute("/")({
 	// q is optional so that a bare "/" stays a bare "/". If this always returned
@@ -20,7 +20,14 @@ export const Route = createFileRoute("/")({
 			q: q ?? "",
 		};
 	},
-	loader: ({ deps: { q } }) => searchEntries({ data: q }),
+	loader: async ({ deps: { q } }) => {
+		const [results, total] = await Promise.all([
+			searchEntries({ data: q }),
+			getEntryCount(),
+		]);
+
+		return { results, total };
+	},
 	// Cache helps when users click back/forward in their browser or refresh the page.
 	staleTime: 60_000,
 	component: Home,

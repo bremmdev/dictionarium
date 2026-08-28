@@ -3,11 +3,13 @@ import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
 	results: Array<Entry>;
+	/** Every lemma in the dictionary is one word, so this is the word count. */
+	total: number;
 	isFetching: boolean;
 	query: string;
 };
 
-export function Results({ results, isFetching, query }: ResultsProps) {
+export function Results({ results, total, isFetching, query }: ResultsProps) {
 	const trimmed = query.trim();
 	const isTooShort = trimmed.length > 0 && trimmed.length < MIN_QUERY_LENGTH;
 
@@ -34,8 +36,12 @@ export function Results({ results, isFetching, query }: ResultsProps) {
 
 			{trimmed === "" && (
 				<p className="text-center text-ink-500 text-lg">
-					Type a Latin word above to look it up. Macrons are optional —{" "}
-					<span lang="la">villa</span> finds <span lang="la">vīlla</span>.
+					Search{" "}
+					<span className="font-semibold text-ink-900">
+						{total.toLocaleString()} {total === 1 ? "word" : "words"}
+					</span>
+					. Macrons are optional — <span lang="la">villa</span> finds{" "}
+					<span lang="la">vīlla</span>.
 				</p>
 			)}
 

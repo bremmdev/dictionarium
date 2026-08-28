@@ -10,7 +10,7 @@ const route = getRouteApi("/");
 export function Search() {
 	const q = route.useSearch({ select: (search) => search.q ?? "" });
 	const navigate = useNavigate({ from: "/" });
-	const results = route.useLoaderData();
+	const { results, total } = route.useLoaderData();
 	const isFetching = route.useMatch({ select: (m) => Boolean(m.isFetching) });
 
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +103,12 @@ export function Search() {
 				<Heading variant="h2" id="results-heading" className="sr-only">
 					Search results
 				</Heading>
-				<Results results={results} isFetching={isFetching} query={q} />
+				<Results
+					results={results}
+					total={total}
+					isFetching={isFetching}
+					query={q}
+				/>
 			</section>
 		</>
 	);
