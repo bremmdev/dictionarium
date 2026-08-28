@@ -2,6 +2,7 @@ import { Button } from "@bremmdev/m7kit";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Search as SearchIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { Heading } from "#/components/Heading";
 import { Results } from "./Results";
 
 const route = getRouteApi("/");
@@ -99,9 +100,9 @@ export function Search() {
 			</search>
 
 			<section aria-labelledby="results-heading" aria-busy={isFetching}>
-				<h2 id="results-heading" className="sr-only">
+				<Heading variant="h2" id="results-heading" className="sr-only">
 					Search results
-				</h2>
+				</Heading>
 				<Results results={results} isFetching={isFetching} query={q} />
 			</section>
 		</>

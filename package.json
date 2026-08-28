@@ -10,7 +10,7 @@
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "biome format",
+    "format": "biome format --write",
     "lint": "biome lint",
     "check": "npm run check:macrons && biome check",
     "start": "node .output/server/index.mjs",

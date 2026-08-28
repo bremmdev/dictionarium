@@ -18,8 +18,9 @@ export function Results({ results, isFetching, query }: ResultsProps) {
 		if (isTooShort) {
 			announcement = `Type at least ${MIN_QUERY_LENGTH} letters to search.`;
 		} else {
-			announcement = `${results.length} ${results.length === 1 ? "result" : "results"
-				} for ${trimmed}.`;
+			announcement = `${results.length} ${
+				results.length === 1 ? "result" : "results"
+			} for ${trimmed}.`;
 		}
 	}
 

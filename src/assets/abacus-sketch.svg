@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Abacus, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M22,22 C48,20.5 72,20.5 98,22 C99.5,47 99.5,75 98,100 C72,101.5 48,101.5 22,100 C20.5,75 20.5,47 22,22"></path>
+  <path d="M26,48 C48,47.2 72,47.2 94,48"></path>
+  <path stroke-width="1.5" d="M32,31 C32.5,35 31.6,40 32,44"></path>
+  <path stroke-width="1.5" d="M32,52 C32.7,65 31.3,79 32,92"></path>
+  <circle cx="32" cy="34" r="3.4"></circle>
+  <circle cx="32" cy="88" r="3.4"></circle>
+  <circle cx="32" cy="81" r="3.4"></circle>
+  <circle cx="32" cy="74" r="3.4"></circle>
+  <path stroke-width="1.5" d="M46,31 C46.5,35 45.6,40 46,44"></path>
+  <path stroke-width="1.5" d="M46,52 C46.7,65 45.3,79 46,92"></path>
+  <circle cx="46" cy="41" r="3.4"></circle>
+  <circle cx="46" cy="88" r="3.4"></circle>
+  <path stroke-width="1.5" d="M60,31 C60.5,35 59.6,40 60,44"></path>
+  <path stroke-width="1.5" d="M60,52 C60.7,65 59.3,79 60,92"></path>
+  <circle cx="60" cy="34" r="3.4"></circle>
+  <circle cx="60" cy="88" r="3.4"></circle>
+  <circle cx="60" cy="81" r="3.4"></circle>
+  <circle cx="60" cy="74" r="3.4"></circle>
+  <circle cx="60" cy="67" r="3.4"></circle>
+  <path stroke-width="1.5" d="M74,31 C74.5,35 73.6,40 74,44"></path>
+  <path stroke-width="1.5" d="M74,52 C74.7,65 73.3,79 74,92"></path>
+  <circle cx="74" cy="41" r="3.4"></circle>
+  <circle cx="74" cy="88" r="3.4"></circle>
+  <circle cx="74" cy="81" r="3.4"></circle>
+  <path stroke-width="1.5" d="M88,31 C88.5,35 87.6,40 88,44"></path>
+  <path stroke-width="1.5" d="M88,52 C88.7,65 87.3,79 88,92"></path>
+  <circle cx="88" cy="34" r="3.4"></circle>
+</g>
+</svg>

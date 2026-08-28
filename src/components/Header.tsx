@@ -18,9 +18,12 @@ export function Header() {
 					</Link>
 				</div>
 				<div>
-					<Link to="/numbers" lang="la" className="nav-link focus-ring">numerī <span className="sr-only" lang="en">
-						{" (numbers)"}
-					</span></Link>
+					<Link to="/numbers" lang="la" className="nav-link focus-ring">
+						numerī{" "}
+						<span className="sr-only" lang="en">
+							{" (numbers)"}
+						</span>
+					</Link>
 				</div>
 			</nav>
 		</header>

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { Heading } from "#/components/Heading";
 import type { Entry } from "#/server/search";
 
 const ORDINALS: Record<string, string> = {
@@ -52,7 +53,7 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 		// stretches its hit area over the row, keeping the big click target.
 		<div className="relative py-3 pr-12 pl-4 transition-colors focus-within:bg-parchment-100 hover:bg-parchment-100">
 			<div className="flex items-baseline gap-3">
-				<h3 className="font-bold text-ink-900 text-xl" lang="la">
+				<Heading variant="h4" as="h3" lang="la">
 					<Link
 						to="/verbum/$lemma"
 						params={{ lemma: entry.lemma }}
@@ -61,7 +62,7 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 					>
 						{entry.lemma}
 					</Link>
-				</h3>
+				</Heading>
 				<p className="text-gold-600 uppercase text-sm font-semibold tracking-[0.18em]">
 					{grammarLabel(entry)}
 				</p>

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { Heading } from "#/components/Heading";
 import { grammarLabel } from "#/components/search/EntryCard";
 import { getEntryByLemma } from "#/server/search";
 
@@ -46,9 +47,11 @@ function WordDetail() {
 			<BackLink />
 
 			<header className="border-parchment-200 border-b pb-4">
-				<h1 className="font-bold text-4xl text-ink-900" lang="la">
+				{/* The lemma is the page's h1, but it sits on a text page rather than
+				    in a banner, so it takes the section step of the scale. */}
+				<Heading variant="h2" as="h1" className="font-bold" lang="la">
 					{entry.lemma}
-				</h1>
+				</Heading>
 				<p className="mt-2 text-ink-500 text-sm uppercase tracking-[0.2em]">
 					{grammarLabel(entry)}
 				</p>
@@ -56,7 +59,9 @@ function WordDetail() {
 
 			{entry.principalParts && (
 				<section>
-					<h2 className="font-bold text-ink-900 text-lg">Principal parts</h2>
+					<Heading variant="h4" as="h2">
+						Principal parts
+					</Heading>
 					<p className="mt-1 text-ink-700 text-xl italic" lang="la">
 						{entry.principalParts}
 					</p>
@@ -64,13 +69,17 @@ function WordDetail() {
 			)}
 
 			<section>
-				<h2 className="font-bold text-ink-900 text-lg">Meaning</h2>
+				<Heading variant="h4" as="h2">
+					Meaning
+				</Heading>
 				<p className="mt-1 text-ink-900 text-xl">{entry.meaningEn}</p>
 			</section>
 
 			{entry.notes && (
 				<section>
-					<h2 className="font-bold text-ink-900 text-lg">Notes</h2>
+					<Heading variant="h4" as="h2">
+						Notes
+					</Heading>
 					<p className="mt-1 border-accent border-l-2 pl-3 text-ink-700">
 						{entry.notes}
 					</p>

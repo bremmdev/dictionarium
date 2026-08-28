@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 import scroll from "#/assets/scroll-sketch.svg";
 import templum from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
+import { Heading } from "#/components/Heading";
 import { Search } from "#/components/search/Search";
 import { searchEntries } from "#/server/search";
 
@@ -35,12 +36,9 @@ function HomeBanner() {
 						A dictionary for the Latin student
 					</p>
 					<div className="mt-6 flex items-center justify-center gap-4 md:justify-start">
-						<h1
-							className="text-ink-900 text-5xl leading-tight sm:text-6xl lg:text-7xl"
-							lang="la"
-						>
+						<Heading variant="h1" lang="la">
 							Verba sub manū.
-						</h1>
+						</Heading>
 						<Tooltip hoverDelay={200} touchBehavior="tap">
 							<TooltipTrigger className="my-0 rounded-full bg-parchment-50 p-2 text-gold-600 transition-colors hover:border-accent hover:bg-parchment-100 hover:text-accent">
 								<Info size={20} aria-hidden="true" />
@@ -80,12 +78,13 @@ function Home() {
 			<HomeBanner />
 
 			<section className="mx-auto max-w-5xl px-8 py-16 md:py-24 space-y-8">
-				<h2
-					className="text-3xl md:text-4xl uppercase tracking-wide mx-auto text-center"
+				<Heading
+					variant="h2"
+					className="mx-auto text-center uppercase tracking-wide"
 					lang="la"
 				>
 					Quaere verba latīna
-				</h2>
+				</Heading>
 				<Search />
 			</section>
 		</>
