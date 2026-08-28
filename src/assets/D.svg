@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Roman numeral D, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M41.5,32.5 C43.75,32 48.25,32 50.5,32.5"></path>
+  <path d="M46,33 C46.9,51 45.1,69 46,87"></path>
+  <path d="M41.5,87.5 C43.75,88 48.25,88 50.5,87.5"></path>
+  <path d="M46,33 C58,33 74,35 78,48 C81,57 81,63 78,72 C74,85 58,87 46,87"></path>
+</g>
+</svg>

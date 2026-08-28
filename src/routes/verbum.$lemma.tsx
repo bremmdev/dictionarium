@@ -42,13 +42,13 @@ function WordDetail() {
 	const entry = Route.useLoaderData();
 
 	return (
-		<article className="mx-auto max-w-3xl py-8 space-y-6">
+		<article className="mx-auto max-w-page-width px-8 py-16 md:py-24 space-y-6">
 			<BackLink />
 
 			<header className="border-parchment-200 border-b pb-4">
-				<h2 className="font-bold text-4xl text-ink-900" lang="la">
+				<h1 className="font-bold text-4xl text-ink-900" lang="la">
 					{entry.lemma}
-				</h2>
+				</h1>
 				<p className="mt-2 text-ink-500 text-sm uppercase tracking-[0.2em]">
 					{grammarLabel(entry)}
 				</p>
@@ -56,7 +56,7 @@ function WordDetail() {
 
 			{entry.principalParts && (
 				<section>
-					<h3 className="font-bold text-ink-900 text-lg">Principal parts</h3>
+					<h2 className="font-bold text-ink-900 text-lg">Principal parts</h2>
 					<p className="mt-1 text-ink-700 text-xl italic" lang="la">
 						{entry.principalParts}
 					</p>
@@ -64,13 +64,13 @@ function WordDetail() {
 			)}
 
 			<section>
-				<h3 className="font-bold text-ink-900 text-lg">Meaning</h3>
+				<h2 className="font-bold text-ink-900 text-lg">Meaning</h2>
 				<p className="mt-1 text-ink-900 text-xl">{entry.meaningEn}</p>
 			</section>
 
 			{entry.notes && (
 				<section>
-					<h3 className="font-bold text-ink-900 text-lg">Notes</h3>
+					<h2 className="font-bold text-ink-900 text-lg">Notes</h2>
 					<p className="mt-1 border-accent border-l-2 pl-3 text-ink-700">
 						{entry.notes}
 					</p>
@@ -84,7 +84,7 @@ function NotFound() {
 	const { lemma } = Route.useParams();
 
 	return (
-		<div className="mx-auto max-w-3xl py-8 space-y-4 text-center">
+		<div className="mx-auto max-w-3xl px-8 py-16 md:py-24 space-y-4 text-center">
 			<p className="font-bold text-2xl text-accent" lang="la">
 				Nihil inventum.
 			</p>

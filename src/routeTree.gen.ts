@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as VerbumLemmaRouteImport } from './routes/verbum.$lemma'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NumbersRoute = NumbersRouteImport.update({
+  id: '/numbers',
+  path: '/numbers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
@@ -25,27 +31,31 @@ const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/verbum/$lemma'
+  fullPaths: '/' | '/numbers' | '/verbum/$lemma'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/verbum/$lemma'
-  id: '__root__' | '/' | '/verbum/$lemma'
+  to: '/' | '/numbers' | '/verbum/$lemma'
+  id: '__root__' | '/' | '/numbers' | '/verbum/$lemma'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NumbersRoute: typeof NumbersRoute
   VerbumLemmaRoute: typeof VerbumLemmaRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/numbers': {
+      id: '/numbers'
+      path: '/numbers'
+      fullPath: '/numbers'
+      preLoaderRoute: typeof NumbersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verbum/$lemma': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NumbersRoute: NumbersRoute,
   VerbumLemmaRoute: VerbumLemmaRoute,
 }
 export const routeTree = rootRouteImport

@@ -42,9 +42,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body className="bg-parchment-50 text-ink-900 text-lg">
 				<Header />
-				<main className="mx-auto w-full max-w-page-width px-8 py-8 md:py-16 font-display text-ink-700">
-					{children}
-				</main>
+				{/* Routes bring their own container so a page can open with a
+				    full-bleed <Banner /> before its content narrows. */}
+				<main className="font-display text-ink-700">{children}</main>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" aria-label="Roman numeral M, hand-drawn">
+
+<g fill="none" stroke="#5B5348" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M30,32.5 C32,32 36,32 38,32.5"></path>
+  <path d="M30,87.5 C32,88 36,88 38,87.5"></path>
+  <path d="M82,32.5 C84,32 88,32 90,32.5"></path>
+  <path d="M82,87.5 C84,88 88,88 90,87.5"></path>
+  <path d="M34,87 C34.5,69 34,51 34.5,33"></path>
+  <path d="M34.5,33 C43,49 51.5,66 60,80"></path>
+  <path d="M85.5,33 C77,49 68.5,66 60,80"></path>
+  <path d="M85.5,33 C86,51 85.5,69 86,87"></path>
+</g>
+</svg>
