@@ -207,7 +207,7 @@ await db
       lemma: "fluvius",
       lemmaPlain: "fluvius",
       partOfSpeech: "noun",
-      principalParts: " fluviī",
+      principalParts: "fluviī",
       gender: "m",
       declension: "2",
       meaningEn: "river",

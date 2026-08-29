@@ -48,6 +48,44 @@ case when lemma_plain like 'am%' then 0 else 1 end, lemma_plain
 
 Capped at `MAX_RESULTS`.
 
+### Why the full table scan is fine
+
+`LIKE '%key%'` cannot use an index — a leading wildcard leaves a b-tree nothing to seek on — so every search reads every row. `EXPLAIN QUERY PLAN` is blunt about it:
+
+```
+SCAN entries | USE TEMP B-TREE FOR ORDER BY
+```
+
+`LIMIT 10` does not rescue it, either. The `CASE` in the `ORDER BY` is not index-satisfiable, so every match is materialised and sorted before the limit can apply. This was measured on the real stack — better-sqlite3, this exact query, four senses per entry with an index on `entry_id`, warm cache:
+
+| entries   | lemma-only | + senses join | if search also covered glosses |
+| --------- | ---------- | ------------- | ------------------------------ |
+| 5,000     | 0.42 ms    | 0.42 ms       | 3.7 ms                         |
+| 20,000    | 1.6 ms     | 1.7 ms        | 15 ms                          |
+| 50,000    | 5.7 ms     | 7.7 ms        | 102 ms                         |
+| 200,000   | 78 ms      | 79 ms         | 432 ms                         |
+| 1,000,000 | 393 ms     | 394 ms        | 2,172 ms                       |
+
+The scan is the entire cost. A query matching _zero_ rows costs about 90% of one matching four thousand; row count and row width are the only inputs that move the number. Adding an index on `lemma_plain` is not the fix people expect it to be — the query plan comes back byte-identical.
+
+**The realistic ceiling sits well below where this hurts.** This dictionary is not expected to pass 10–20k lemmas, where a search costs under 2 ms and vanishes next to the RPC round trip wrapped around it. For scale: a student dictionary runs 10–15k headwords, Lewis & Short on the order of 50k.
+
+The number to actually watch is not latency but the fact that **better-sqlite3 is synchronous** — the query blocks the Node event loop for its full duration, so 78 ms at 200k entries is 78 ms the server spends serving nobody. That is the real ceiling, and it sits near 100k rows, not at the point where one user notices a delay.
+
+Two things would move the picture, in opposite directions:
+
+- **Widening search to cover glosses** would make the scan target the senses table — several times the rows, much wider ones. That is the 18× jump in the last column, and it arrives at a size where lemma-only search is still trivial. It is the one change that turns this from a non-issue into a problem.
+- **Normalising prose out of `entries`** works the other way. A full scan is page-bound, so a narrower table scans faster: 26 ms versus 49 ms at 200k for the same query. Moving senses and meanings into their own tables makes this query _cheaper_, not more expensive.
+
+If it ever does need fixing, the answer is FTS5 with the trigram tokenizer, not an index:
+
+```sql
+CREATE VIRTUAL TABLE entries_fts USING fts5(
+  lemma_plain, content='entries', content_rowid='id', tokenize='trigram');
+```
+
+Measured at 0.004 ms for 50k and 0.010 ms for 1M — effectively flat. Trigram matches substrings, so the results are identical to `%key%` rather than being narrowed to prefixes; the cost is a mirror table plus triggers to keep it in sync. **The trigger to revisit is search covering meanings, not an entry count.**
+
 ### `getEntryByLemma(lemma)`
 
 Powers the detail page. It looks up by **`lemma`**, the macronned form, not `lemma_plain` — `lemma` carries the UNIQUE constraint, and `lemma_plain` cannot identify a row on its own once _mālum_ and _malum_ are both in the table.
@@ -178,4 +216,6 @@ Instead the `<Link>` wraps the lemma alone and stretches its hit area over the r
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.
 - **Macron normalisation is load-bearing in two places** — `stripMacrons` for search, `normalize("NFC")` for detail lookup — and failures are silent misses, not errors.
 - **The debounce, if added, must use `replace: true`.** Otherwise the back button becomes unusable.
+- **The senses join, when it lands, must limit _before_ it joins.** `JOIN senses … LIMIT 10` limits sense rows, not entries — ten rows is three words. Limit `entries` in a subquery, then join. It benchmarks fine either way, so performance will not warn you about the bug.
+- **Do not add an index on `lemma_plain` hoping to speed up search.** A leading `%` cannot use it; the plan does not change. See [above](#why-the-full-table-scan-is-fine).
 - **Do not reach for `useMatch().isFetching` here.** `loaderDeps` makes every query a distinct match, and the flag is only ever written to the match already on screen — so it reads `false` for the entire load. Use router status.
