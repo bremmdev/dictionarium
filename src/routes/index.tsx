@@ -8,6 +8,24 @@ import { Heading } from "#/components/Heading";
 import { Search } from "#/components/search/Search";
 import { getEntryCount, searchEntries } from "#/server/search";
 
+// The total does not change often, so give it its own TTL instead of
+// refetching per query. The router can't do this itself — staleTime covers the
+// whole loader result keyed on q, so a new query always re-runs everything.
+const TOTAL_TTL = 1 * 60_000;
+let cachedTotal: { promise: Promise<number>; at: number } | undefined;
+
+function getTotal() {
+	if (!cachedTotal || Date.now() - cachedTotal.at > TOTAL_TTL) {
+		const promise = getEntryCount().catch((error) => {
+			// Don't let a failed fetch occupy the cache for the whole TTL.
+			cachedTotal = undefined;
+			throw error;
+		});
+		cachedTotal = { promise, at: Date.now() };
+	}
+	return cachedTotal.promise;
+}
+
 export const Route = createFileRoute("/")({
 	// q is optional so that a bare "/" stays a bare "/". If this always returned
 	// a q, the router would 307 every visitor to "/?q=" to normalise the URL.
@@ -23,9 +41,8 @@ export const Route = createFileRoute("/")({
 	loader: async ({ deps: { q } }) => {
 		const [results, total] = await Promise.all([
 			searchEntries({ data: q }),
-			getEntryCount(),
+			getTotal(),
 		]);
-
 		return { results, total };
 	},
 	// Cache helps when users click back/forward in their browser or refresh the page.
