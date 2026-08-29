@@ -8,7 +8,7 @@ export type Entry = typeof entries.$inferSelect;
 /** Below this we don't bother the database — a single letter matches half the dictionary. */
 export const MIN_QUERY_LENGTH = 2;
 
-const MAX_RESULTS = 25;
+const MAX_RESULTS = 10;
 
 /**
  * "vīlla" -> "villa". Decomposing to NFD turns a macron into its own combining

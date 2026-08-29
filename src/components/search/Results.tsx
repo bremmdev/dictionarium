@@ -27,9 +27,7 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 	}
 
 	return (
-		<div
-			className={`transition-opacity ${isFetching ? "opacity-60" : "opacity-100"}`}
-		>
+		<div className={`${isFetching ? "animate-pulse" : ""}`}>
 			<p aria-live="polite" className="sr-only">
 				{announcement}
 			</p>

@@ -1,5 +1,9 @@
 import { Button } from "@bremmdev/m7kit";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import {
+	getRouteApi,
+	useNavigate,
+	useRouterState,
+} from "@tanstack/react-router";
 import { Search as SearchIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { Heading } from "#/components/Heading";
@@ -11,7 +15,10 @@ export function Search() {
 	const q = route.useSearch({ select: (search) => search.q ?? "" });
 	const navigate = useNavigate({ from: "/" });
 	const { results, total } = route.useLoaderData();
-	const isFetching = route.useMatch({ select: (m) => Boolean(m.isFetching) });
+	// Not `useMatch().isFetching`: loaderDeps puts q in the match id, so each
+	// query is a *new* match rather than a refetch of the presented one, and the
+	// router only ever writes isFetching onto the match already on screen.
+	const isFetching = useRouterState({ select: (s) => s.isLoading });
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
