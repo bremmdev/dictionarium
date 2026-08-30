@@ -1,4 +1,5 @@
-import { type Entry, MIN_QUERY_LENGTH } from "#/server/search";
+import type { Entry } from "#/db/schema";
+import { MIN_QUERY_LENGTH } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {

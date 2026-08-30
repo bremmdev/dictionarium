@@ -18,7 +18,32 @@ Every entry point is the same path. Typing and pressing Enter, landing on a shar
 
 ## Server side
 
-`src/server/search.ts` holds both server functions. They are `method: "GET"` because they read: semantically correct, and cacheable at the HTTP layer.
+`src/server/search.ts` holds the server functions. They are `method: "GET"` because they read: semantically correct, and cacheable at the HTTP layer.
+
+What it no longer holds is the rules. How a query becomes a search key, how short is too short, how many rows come back — those moved one level down, to `src/utils/search/rules.ts`, because the request handler was never their only caller.
+
+### `rules.ts`: one definition of a search key
+
+| Caller                    | What it needs the rule for                                 |
+| ------------------------- | ---------------------------------------------------------- |
+| `searchEntries`           | turning the typed query into the key it matches on          |
+| `scripts/seed.ts`         | deriving `lemma_plain` from `lemma` at insert time          |
+| `scripts/check-lemmas.ts` | asserting every stored `lemma_plain` still equals the rule  |
+| `Results.tsx`             | telling the user how many letters are needed                |
+
+The middle two are the reason it moved. `lemma_plain` is written down one path and read down another; when the two disagree nothing breaks loudly — the query returns nothing and a word has quietly stopped existing. That failure has been flagged here since the column was introduced, and until now it was being prevented by two copies of a four-line function agreeing with each other by hand.
+
+So the seed no longer carries `lemmaPlain` at all. It lists lemmas and derives the key on the way in:
+
+```ts
+.values(words.map((w) => ({ ...w, lemmaPlain: normalizeLemma(w.lemma) })))
+```
+
+and `npm run check:lemmas` re-derives every row in the table and names the ones that no longer match. That is cheap insurance now, when seeding is the only writer, and the actual point later: the admin panel will write rows no script has seen.
+
+Note what the check proves — that the stored key agrees with the current rule, not that the rule is right. Change `normalizeLemma` and it will report every row as stale, which is the correct answer. The fix then is to rewrite the column, not to soften the check.
+
+`Entry` moved too, from the server module to `#/db/schema`, beside the table it is inferred from. A card that renders a row takes its type from the schema now instead of reaching through the module that queries it.
 
 ### `searchEntries(q)`
 
@@ -28,17 +53,35 @@ export const searchEntries = createServerFn({ method: "GET" })
   .handler(async ({ data: q }) => { … });
 ```
 
-Three things it does, in order:
+Three things it does, in order — and the order is the change:
 
-**Guards on length.** Below `MIN_QUERY_LENGTH` (2) it returns `[]` without touching the database. A single letter matches a large fraction of the dictionary, and the guard lives _in the handler_ rather than in the caller so no code path can route around it.
-
-**Strips macrons off the query.** Users type `villa`; the display form is `vīlla`. `stripMacrons` decomposes to NFD, drops every combining mark, and recomposes:
+**Normalises the query into a search key.** Users type `villa`; the display form is `vīlla`. `normalizeLemma` decomposes to NFD, drops every combining mark, recomposes, case-folds, and then keeps only what a lemma is allowed to contain:
 
 ```ts
-value.normalize("NFD").replace(/\p{M}/gu, "").normalize("NFC").toLowerCase();
+value
+  .normalize("NFD")
+  .replace(/\p{M}/gu, "")
+  .normalize("NFC")
+  .toLowerCase()
+  .replace(/[^a-z ]/g, "");
 ```
 
-This has to agree with how `lemma_plain` was written by the seed script — see [schema.md](./schema.md) for why that column exists and why it is deliberately not unique. If the two ever disagree, lookups fail silently rather than erroring, which is the bad kind of bug.
+That last filter is not tidiness. The key is interpolated straight into a `LIKE` pattern — `` `%${key}%` `` — where `%` and `_` are wildcards: `%` alone would match the whole table, and `a_o` would match `amo` and `ago` alike. Stripping them at the door means the pattern only ever holds literal characters, and no second place has to remember to escape. The space survives the class on purpose — _alma māter_ is one lemma.
+
+The order inside the function is load-bearing too, in the unobvious direction: `toLowerCase()` has to run **before** `[^a-z ]`, or the character class deletes capitals rather than folding them and `Roma` searches as `oma`.
+
+This is the same function that wrote `lemma_plain` — see [above](#rulests-one-definition-of-a-search-key), and [schema.md](./schema.md) for why that column exists and why it is deliberately not unique. If the two ever disagree, lookups fail silently rather than erroring, which is the bad kind of bug.
+
+**Guards on length — on the key, not on the input.**
+
+```ts
+const key = normalizeLemma(q);
+if (key.length < MIN_QUERY_LENGTH) return [];
+```
+
+Below `MIN_QUERY_LENGTH` (2) it returns `[]` without touching the database, because a single letter matches a large fraction of the dictionary. Measuring the raw query measures how much arrived, never what is in it: `a%` is two characters and one letter, and guarding it first let it through to run a full scan for `a`. Normalising first makes the guard measure the thing that actually reaches SQL.
+
+The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
 
 **Ranks prefix matches first.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`. But a word _starting_ with the query is nearly always what the user meant, so the ordering sorts those to the top before falling back to alphabetical:
 
@@ -214,7 +257,10 @@ Instead the `<Link>` wraps the lemma alone and stretches its hit area over the r
 ## Gotchas
 
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.
-- **Macron normalisation is load-bearing in two places** — `stripMacrons` for search, `normalize("NFC")` for detail lookup — and failures are silent misses, not errors.
+- **There is one `normalizeLemma`, in `#/utils/search/rules.ts`.** Search, the seed and `check:lemmas` all call it; a second inlined copy is how `lemma_plain` starts lying. `scripts/enrich-entries.ts` keeps a deliberate copy so it can run standalone — change the rule and you have to change that too, and `npm run check:lemmas` is what catches you if you forget.
+- **In `normalizeLemma`, case-fold before filtering.** `[^a-z ]` deletes an uppercase letter rather than lowering it, so putting `.toLowerCase()` last turns `Roma` into `oma` — a query that silently finds nothing, and a `lemma_plain` that is silently wrong.
+- **The query is filtered, never escaped.** `%` and `_` cannot reach the `LIKE` pattern because the character class removes them. Widen that class and you have handed every user a wildcard.
+- **Macron normalisation is load-bearing in two places** — `normalizeLemma` for search, `normalize("NFC")` for detail lookup — and failures are silent misses, not errors.
 - **The debounce, if added, must use `replace: true`.** Otherwise the back button becomes unusable.
 - **The senses join, when it lands, must limit _before_ it joins.** `JOIN senses … LIMIT 10` limits sense rows, not entries — ten rows is three words. Limit `entries` in a subquery, then join. It benchmarks fine either way, so performance will not warn you about the bug.
 - **Do not add an index on `lemma_plain` hoping to speed up search.** A leading `%` cannot use it; the plan does not change. See [above](#why-the-full-table-scan-is-fine).

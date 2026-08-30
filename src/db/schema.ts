@@ -16,3 +16,5 @@ export const entries = sqliteTable("entries", {
 	meaningEn: text("meaning_en").notNull(),
 	notes: text("notes"),
 });
+
+export type Entry = typeof entries.$inferSelect;

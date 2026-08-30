@@ -19,7 +19,8 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio",
-    "check:macrons": "tsx scripts/check-macrons.ts"
+    "check:macrons": "tsx scripts/check-macrons.ts",
+    "check:lemmas": "tsx scripts/check-lemmas.ts"
   },
   "dependencies": {
     "@bremmdev/m7kit": "^0.57.0",

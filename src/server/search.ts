@@ -1,37 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { count, eq, like, sql } from "drizzle-orm";
+
 import { db } from "#/db";
-import { entries } from "#/db/schema";
-
-export type Entry = typeof entries.$inferSelect;
-
-/** Below this we don't bother the database — a single letter matches half the dictionary. */
-export const MIN_QUERY_LENGTH = 2;
-
-const MAX_RESULTS = 10;
-
-/**
- * "vīlla" -> "villa". Decomposing to NFD turns a macron into its own combining
- * mark, so dropping every mark strips it without touching the base letter. This
- * has to match how lemma_plain was written by the seed script, or lookups
- * silently miss.
- */
-function stripMacrons(value: string) {
-	return value
-		.normalize("NFD")
-		.replace(/\p{M}/gu, "")
-		.normalize("NFC")
-		.toLowerCase();
-}
+import { type Entry, entries } from "#/db/schema";
+import {
+	MAX_RESULTS,
+	MIN_QUERY_LENGTH,
+	normalizeLemma,
+} from "#/utils/search/rules";
 
 export const searchEntries = createServerFn({ method: "GET" })
 	.validator((q: unknown) => (typeof q === "string" ? q.trim() : ""))
 	.handler(async ({ data: q }): Promise<Array<Entry>> => {
-		if (q.length < MIN_QUERY_LENGTH) {
+		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
+		const key = normalizeLemma(q);
+		if (key.length < MIN_QUERY_LENGTH) {
 			return [];
 		}
-
-		const key = stripMacrons(q);
 
 		return (
 			db

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Heading } from "#/components/Heading";
-import type { Entry } from "#/server/search";
+import type { Entry } from "#/db/schema";
 
 const ORDINALS: Record<string, string> = {
 	"1": "1st",
