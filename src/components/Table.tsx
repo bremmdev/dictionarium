@@ -74,7 +74,7 @@ export function Table({
 									<th
 										key={column.key}
 										scope="row"
-										className={`${CELL} font-bold text-ink-900 text-xl`}
+										className={`${CELL} font-bold text-ink-900`}
 									>
 										{row.cells[column.key]}
 									</th>

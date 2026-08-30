@@ -11,6 +11,7 @@ import numeralX from "#/assets/X.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
 import { Abacus } from "#/components/numbers/Abacus";
+import { Counting } from "#/components/numbers/Counting";
 import { NumberTheory } from "#/components/numbers/NumberTheory";
 
 // Three to a row at a third of the column each, so the seven letters keep their
@@ -91,6 +92,7 @@ function RouteComponent() {
 			<NumbersBanner />
 			<div className="mx-auto max-w-page-width space-y-8 md:space-y-16 py-16 md:py-24">
 				<NumberTheory />
+				<Counting />
 				<Abacus />
 			</div>
 		</>
