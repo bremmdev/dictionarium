@@ -181,11 +181,9 @@ function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 
 	return (
 		<section>
-			<Heading variant="h4" as="h2">
-				Principal parts
-			</Heading>
+			<Heading variant="h2">Principal parts</Heading>
 
-			<ol className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+			<ol className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-6">
 				{parts.map((part, i) => (
 					<li
 						key={part}
@@ -224,11 +222,9 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 
 	return (
 		<section>
-			<Heading variant="h4" as="h2">
-				Meanings
-			</Heading>
+			<Heading variant="h2">Meanings</Heading>
 
-			<ol className="mt-3 space-y-3">
+			<ol className="mt-3 space-y-3 mt-6">
 				{senses.map((sense) => (
 					<li
 						key={sense.id}
@@ -300,9 +296,14 @@ function NotFound() {
 
 	return (
 		<div className="mx-auto max-w-3xl px-8 py-16 md:py-24 space-y-4 text-center">
-			<p className="font-bold text-2xl text-accent" lang="la">
+			<Heading
+				variant="h3"
+				as="h1"
+				className="font-bold text-accent!"
+				lang="la"
+			>
 				Nihil inventum.
-			</p>
+			</Heading>
 			<p className="text-ink-500 text-lg">
 				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo;.
 			</p>

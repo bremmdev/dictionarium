@@ -2,7 +2,8 @@
  * Turns bare lemmas into full `entries` rows, using English Wiktionary as the
  * source. Give it what you can read off a page — `puella`, `ambulo` — and it
  * works out the rest of the filing described in vault/schema.md: the macronned
- * lemma, the principal parts, gender, declension, conjugation, a gloss.
+ * lemma, the principal parts, gender, declension, conjugation, and every sense
+ * Wiktionary lists, in its order — its first sense becomes rank 1.
  *
  *   npx tsx scripts/enrich-entries.ts puella ambulo mater
  *   npx tsx scripts/enrich-entries.ts --file lemmas.txt --write
@@ -13,8 +14,9 @@
  * says so.
  *
  * The output is a paste-ready block of seed.ts rows. Treat it as a research
- * assistant, not an oracle — Wiktionary's first sense is rarely the gloss you
- * would write yourself, so read the rows before they become dictionary entries.
+ * assistant, not an oracle — Wiktionary's senses are rarely the ones you would
+ * write yourself, and it lists far more of them than a learner's dictionary
+ * wants, so read and cut the rows before they become dictionary entries.
  */
 import { readFileSync } from "node:fs";
 
@@ -24,6 +26,12 @@ const USER_AGENT = "dictionarium-enrich/0.1 (+https://github.com/bremmdev/dictio
 /** Wikimedia throttles bursts hard — a second between requests keeps us welcome. */
 const THROTTLE_MS = 1000;
 
+type SeedSense = {
+    meaningEn: string;
+    /** 'medical', 'military', 'poetic' — a label on this sense only. */
+    usage?: string;
+};
+
 type Row = {
     lemma: string;
     lemmaPlain: string;
@@ -32,9 +40,17 @@ type Row = {
     gender?: string;
     declension?: string;
     conjugation?: string;
-    meaningEn: string;
     notes?: string;
+    /** Position is the rank, so Wiktionary's own order is the dictionary order. */
+    senses: Array<SeedSense>;
 };
+
+/**
+ * Wiktionary will happily list twenty senses for a common verb. Past the first
+ * handful they are dialect, Medieval and New Latin — noise for a reader here,
+ * and a wall of text to cut down by hand.
+ */
+const MAX_SENSES = 8;
 
 /* ------------------------------------------------------------------- text */
 
@@ -192,7 +208,9 @@ type Candidate = {
     gender?: string;
     /** The whole headword line as text: where "third conjugation, deponent" lives. */
     grammar: string;
-    gloss: string;
+    senses: Array<SeedSense>;
+    /** How many definitions Wiktionary listed, before MAX_SENSES cut them down. */
+    senseCount: number;
     /** True for sections that only point at another lemma ("ablative singular of quisque"). */
     isInflectedForm: boolean;
 };
@@ -237,19 +255,59 @@ function findForm(forms: Map<string, string>, label: RegExp) {
     return undefined;
 }
 
-function readGloss(block: string) {
+/**
+ * The definitions are an <ol>, one <li> per sense, printed in the order a
+ * dictionary would give them — which is what senses.rank means, so the list
+ * order carries straight across. Nested lists under an <li> are quotations and
+ * sub-senses, not senses of their own, so depth counting keeps them out.
+ */
+function readSenses(block: string, partOfSpeech: string) {
     const list = extractTag(block, "ol");
-    const item = list && extractTag(list.inner, "li");
-    if (!item) return { gloss: "", isInflectedForm: false };
+    if (!list) return { senses: [], isInflectedForm: false, senseCount: 0 };
 
-    const isInflectedForm = /class="[^"]*form-of-definition/.test(item.inner);
+    const items: Array<string> = [];
+    for (let cut = extractTag(list.inner, "li"); cut; cut = extractTag(list.inner, "li", cut.end)) {
+        items.push(cut.inner);
+    }
 
-    // Quotations, synonyms and sub-senses hang off the definition in nested lists.
-    let sense = ["dl", "ul", "ol"].reduce(removeTag, item.inner);
-    // "(female parent)" style clarifiers are marked up, so they can go cleanly.
-    sense = sense.replace(/<span class="mention-gloss[^"]*"[^>]*>[\s\S]*?<\/span>/g, "");
+    // Only the first definition says whether this is a headword section at all:
+    // "ablative singular of quisque" is a signpost, and has no second sense.
+    const isInflectedForm = items.length > 0 && /class="[^"]*form-of-definition/.test(items[0]);
 
-    return { gloss: toText(sense), isInflectedForm };
+    const senses: Array<SeedSense> = [];
+    const seen = new Set<string>();
+
+    for (const item of items) {
+        // Quotations, synonyms and sub-senses hang off the definition in nested lists.
+        let definition = ["dl", "ul", "ol"].reduce(removeTag, item);
+
+        // "(female parent)" style clarifiers are marked up, so they come off
+        // cleanly — but held on to, because two senses of one word can tidy down
+        // to the same gloss (māter is "mother (female parent)" and "mother
+        // (source, origin)"), and then the clarifier is all that separates them.
+        const clarifier = toText(definition.match(/<span class="mention-gloss">([\s\S]*?)<\/span>/)?.[1] ?? "");
+        definition = definition.replace(/<span class="mention-gloss[^"]*"[^>]*>[\s\S]*?<\/span>/g, "");
+
+        const text = toText(definition);
+        const meaningEn = tidyGloss(text, partOfSpeech);
+        // A sense that tidies away to nothing was a bare label or an empty <li>.
+        if (!meaningEn) continue;
+
+        const distinct =
+            seen.has(meaningEn.toLowerCase()) && clarifier ? `${meaningEn} (${clarifier})` : meaningEn;
+
+        // Nothing tells this one apart from a sense already taken, so it is a
+        // repeat rather than a meaning: printing it twice only makes work.
+        if (seen.has(distinct.toLowerCase())) continue;
+
+        seen.add(meaningEn.toLowerCase());
+        seen.add(distinct.toLowerCase());
+
+        senses.push({ meaningEn: distinct, usage: readUsage(text) });
+        if (senses.length === MAX_SENSES) break;
+    }
+
+    return { senses, isInflectedForm, senseCount: items.length };
 }
 
 function parseCandidates(sectionHtml: string) {
@@ -280,7 +338,7 @@ function parseCandidates(sectionHtml: string) {
             forms: readForms(line.inner),
             gender: gender ? toText(gender[1]) : undefined,
             grammar: toText(paragraph.inner),
-            ...readGloss(block.html),
+            ...readSenses(block.html, partOfSpeech),
         });
     }
     return candidates;
@@ -403,6 +461,59 @@ function tidyGloss(gloss: string, partOfSpeech: string) {
     return tidied;
 }
 
+/**
+ * Labels that say how a word is construed rather than where it is used. The
+ * columns and the notes already carry these, and senses.usage is for the other
+ * kind of label — the register or field one meaning belongs to.
+ */
+const GRAMMAR_LABELS = new Set([
+    "absolute",
+    "absolute use",
+    "absolutely",
+    "active",
+    "ambitransitive",
+    "auxiliary",
+    "comparable",
+    "copulative",
+    "countable",
+    "defective",
+    "deponent",
+    "ditransitive",
+    "impersonal",
+    "in absolute use",
+    "in the plural",
+    "in the singular",
+    "indeclinable",
+    "intransitive",
+    "not comparable",
+    "passive",
+    "personal",
+    "plural",
+    "reflexive",
+    "semi-deponent",
+    "singular",
+    "transitive",
+    "uncountable",
+]);
+
+/**
+ * A definition can open with a label: "(transitive, poetic) to love". What is
+ * left once the grammar is dropped is this sense's usage — and for most senses
+ * that is nothing at all, which is the normal answer.
+ */
+function readUsage(gloss: string) {
+    const label = gloss.match(/^\(([^()]*)\)/);
+    if (!label) return undefined;
+
+    const kept = label[1]
+        .split(/\s*(?:,|;|\bor\b|\band\b)\s*/)
+        .map((part) => part.trim().toLowerCase())
+        // "with the accusative" is the same grammar note in a longer coat.
+        .filter((part) => part && !GRAMMAR_LABELS.has(part) && !/^(?:with|takes|\+)\b/.test(part));
+
+    return kept.length > 0 ? kept.join(", ") : undefined;
+}
+
 function toRow(candidate: Candidate): Row {
     const isNoun = candidate.partOfSpeech === "noun" || candidate.partOfSpeech === "proper noun";
     const isNominal = isNoun || candidate.partOfSpeech === "adjective";
@@ -415,8 +526,8 @@ function toRow(candidate: Candidate): Row {
         gender: isNoun ? readGender(candidate) : undefined,
         declension: isNominal ? readDeclension(candidate.grammar) : undefined,
         conjugation: candidate.partOfSpeech === "verb" ? readConjugation(candidate.grammar) : undefined,
-        meaningEn: tidyGloss(candidate.gloss, candidate.partOfSpeech),
         notes: readNotes(candidate),
+        senses: candidate.senses,
     };
 }
 
@@ -462,24 +573,33 @@ function chooseCandidate(
 
 /* ------------------------------------------------------------------ output */
 
-const COLUMN_ORDER: Array<keyof Row> = [
+/**
+ * lemma_plain is left out on purpose: seed.ts derives it from the lemma, so a
+ * pasted row carrying its own could drift from the key the search reads.
+ */
+const COLUMN_ORDER: Array<Exclude<keyof Row, "lemmaPlain" | "senses">> = [
     "lemma",
-    "lemmaPlain",
     "partOfSpeech",
     "principalParts",
     "gender",
     "declension",
     "conjugation",
-    "meaningEn",
     "notes",
 ];
 
 /** Prints a row in the shape seed.ts uses, ready to paste into its array. */
 function formatRow(row: Row) {
-    const lines = COLUMN_ORDER.filter((key) => row[key] !== undefined && row[key] !== "").map(
-        (key) => `      ${key}: ${JSON.stringify(row[key])},`,
+    const columns = COLUMN_ORDER.filter((key) => row[key] !== undefined && row[key] !== "").map(
+        (key) => `  ${key}: ${JSON.stringify(row[key])},`,
     );
-    return `    {\n${lines.join("\n")}\n    },`;
+
+    const senses = row.senses.map((sense) => {
+        const fields = [`meaningEn: ${JSON.stringify(sense.meaningEn)}`];
+        if (sense.usage) fields.push(`usage: ${JSON.stringify(sense.usage)}`);
+        return `    { ${fields.join(", ")} },`;
+    });
+
+    return `{\n${columns.join("\n")}\n  senses: [\n${senses.join("\n")}\n  ],\n},`;
 }
 
 /* -------------------------------------------------------------------- main */
@@ -527,9 +647,15 @@ const failures: Array<string> = [];
 for (const spec of specs) {
     try {
         const candidates = parseCandidates(await fetchLatinSection(spec.lemma));
-        const row = toRow(chooseCandidate(candidates, spec, (message) => warnings.push(message)));
+        const candidate = chooseCandidate(candidates, spec, (message) => warnings.push(message));
+        const row = toRow(candidate);
 
-        if (!row.meaningEn) warnings.push(`${spec.lemma}: no gloss found, meaningEn needs writing by hand`);
+        if (row.senses.length === 0) warnings.push(`${spec.lemma}: no definitions found, its senses need writing by hand`);
+        if (candidate.senseCount > row.senses.length) {
+            warnings.push(
+                `${spec.lemma}: Wiktionary lists ${candidate.senseCount} definitions, kept ${row.senses.length}`,
+            );
+        }
         if (normalizeLemma(row.lemma) !== normalizeLemma(spec.lemma)) {
             warnings.push(`${spec.lemma}: Wiktionary files this under "${row.lemma}"`);
         }
@@ -552,14 +678,29 @@ console.error(`\n${rows.length} enriched, ${failures.length} failed. Read the gl
 if (write && rows.length > 0) {
     // Imported late so a dry run never opens the database file.
     const { db } = await import("../src/db");
-    const { entries } = await import("../src/db/schema");
+    const { entries, senses } = await import("../src/db/schema");
 
+    // Nothing here overwrites: a lemma already on file keeps its row and the
+    // senses someone has curated for it, and is reported as already present.
     const inserted = await db
         .insert(entries)
-        .values(rows)
+        .values(rows.map(({ senses: _senses, ...columns }) => columns))
         .onConflictDoNothing({ target: [entries.lemma] })
-        .returning();
-    console.error(`${inserted.length} inserted, ${rows.length - inserted.length} already present.`);
+        .returning({ id: entries.id, lemma: entries.lemma });
+
+    const sensesByLemma = new Map(rows.map((row) => [row.lemma, row.senses]));
+
+    // Senses ride along with the entry that was just created, in the order
+    // Wiktionary printed them: position is the rank, exactly as in seed.ts.
+    const newSenses = inserted.flatMap(({ id, lemma }) =>
+        (sensesByLemma.get(lemma) ?? []).map((sense, i) => ({ ...sense, entryId: id, rank: i + 1 })),
+    );
+
+    if (newSenses.length > 0) await db.insert(senses).values(newSenses);
+
+    console.error(
+        `${inserted.length} inserted with ${newSenses.length} senses, ${rows.length - inserted.length} already present.`,
+    );
 }
 
 if (failures.length > 0) process.exit(1);

@@ -18,6 +18,7 @@ type SeedWord = {
   gender?: string;
   declension?: string;
   conjugation?: string;
+  notes?: string;
   /**
    * Position is the rank: the first sense is the core meaning. Typed non-empty
    * because an entry without a meaning is not an entry.
@@ -425,9 +426,8 @@ await db
     })),
   )
   // The seed is what a word IS, so a re-run has to overwrite the row it finds.
-  // excluded.* is the row this statement tried to insert, which keeps a column
-  // the seed cleared out from surviving as its old value. notes is left alone:
-  // the seed does not carry it, so it is the database's to keep.
+  // excluded.* is the row this statement tried to insert, which stops a column
+  // the seed has cleared from surviving as its old value.
   .onConflictDoUpdate({
     target: [entries.lemma],
     set: {
@@ -437,6 +437,7 @@ await db
       gender: sql`excluded.gender`,
       declension: sql`excluded.declension`,
       conjugation: sql`excluded.conjugation`,
+      notes: sql`excluded.notes`,
     },
   });
 
@@ -506,5 +507,5 @@ const pruned = await db
 
 console.log(
   `Seeded ${words.length} lemmas, ${words.reduce((n, w) => n + w.senses.length, 0)} senses` +
-    (pruned.changes > 0 ? `, pruned ${pruned.changes} stale.` : "."),
+  (pruned.changes > 0 ? `, pruned ${pruned.changes} stale.` : "."),
 );
