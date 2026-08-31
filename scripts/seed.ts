@@ -1,4 +1,4 @@
-import { inArray } from "drizzle-orm";
+import { and, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { normalizeLemma } from "#/utils/search/rules";
 import { db } from "../src/db";
 import { entries, senses } from "../src/db/schema";
@@ -30,7 +30,7 @@ const words: Array<SeedWord> = [{
   partOfSpeech: "verb",
   principalParts: "ambulō, ambulāre, ambulāvī, ambulātum",
   conjugation: "1",
-  senses: [{ meaningEn: "to walk" }],
+  senses: [{ meaningEn: "traverse, travel" }, { meaningEn: "to walk" }],
 },
 {
   lemma: "amō",
@@ -424,10 +424,24 @@ await db
       lemmaPlain: normalizeLemma(columns.lemma),
     })),
   )
-  .onConflictDoNothing({ target: [entries.lemma] });
+  // The seed is what a word IS, so a re-run has to overwrite the row it finds.
+  // excluded.* is the row this statement tried to insert, which keeps a column
+  // the seed cleared out from surviving as its old value. notes is left alone:
+  // the seed does not carry it, so it is the database's to keep.
+  .onConflictDoUpdate({
+    target: [entries.lemma],
+    set: {
+      lemmaPlain: sql`excluded.lemma_plain`,
+      partOfSpeech: sql`excluded.part_of_speech`,
+      principalParts: sql`excluded.principal_parts`,
+      gender: sql`excluded.gender`,
+      declension: sql`excluded.declension`,
+      conjugation: sql`excluded.conjugation`,
+    },
+  });
 
-// Read the ids back rather than using returning(): a lemma that was already
-// present got skipped above, so the insert cannot report its id.
+// Read the ids back rather than using returning(): returning() reports only the
+// rows this statement touched, and reading by lemma covers every seeded word.
 const rows = await db
   .select({ id: entries.id, lemma: entries.lemma })
   .from(entries)
@@ -440,21 +454,57 @@ const rows = await db
 
 const idByLemma = new Map(rows.map((r) => [r.lemma, r.id]));
 
+function entryIdFor(lemma: string) {
+  const id = idByLemma.get(lemma);
+
+  if (id === undefined) {
+    throw new Error(`seed: no entries row for "${lemma}" after insert`);
+  }
+
+  return id;
+}
+
 await db
   .insert(senses)
   .values(
-    words.flatMap((w) => {
-      const entryId = idByLemma.get(w.lemma);
-
-      if (entryId === undefined) {
-        throw new Error(`seed: no entries row for "${w.lemma}" after insert`);
-      }
-
-      return w.senses.map((sense, i) => ({ ...sense, entryId, rank: i + 1 }));
-    }),
+    words.flatMap((w) =>
+      w.senses.map((sense, i) => ({
+        ...sense,
+        entryId: entryIdFor(w.lemma),
+        rank: i + 1,
+      })),
+    ),
   )
-  .onConflictDoNothing({ target: [senses.entryId, senses.rank] });
+  // Same as above, and it matters more here: (entry_id, rank) is unique, so
+  // every re-seed collides on rank 1 of every word. Skipping the collision
+  // would freeze each entry's core meaning at whatever text it was first
+  // written with, and quietly ignore every edit made to it afterwards.
+  .onConflictDoUpdate({
+    target: [senses.entryId, senses.rank],
+    set: {
+      meaningEn: sql`excluded.meaning_en`,
+      usage: sql`excluded."usage"`,
+      exampleLa: sql`excluded.example_la`,
+      exampleEn: sql`excluded.example_en`,
+    },
+  });
+
+// Upserting only ever writes the ranks the seed still lists. A word that loses
+// a sense keeps the dropped meaning at its old rank unless it is deleted here.
+const pruned = await db
+  .delete(senses)
+  .where(
+    or(
+      ...words.map((w) =>
+        and(
+          eq(senses.entryId, entryIdFor(w.lemma)),
+          gt(senses.rank, w.senses.length),
+        ),
+      ),
+    ),
+  );
 
 console.log(
-  `Seeded ${words.length} lemmas, ${words.reduce((n, w) => n + w.senses.length, 0)} senses.`,
+  `Seeded ${words.length} lemmas, ${words.reduce((n, w) => n + w.senses.length, 0)} senses` +
+    (pruned.changes > 0 ? `, pruned ${pruned.changes} stale.` : "."),
 );

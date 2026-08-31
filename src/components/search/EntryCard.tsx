@@ -17,8 +17,11 @@ const GENDERS: Record<string, string> = {
 	n: "neut.",
 };
 
-/** "verb · 1st conj.", "noun · 2nd decl. · masc." */
-export function grammarLabel(entry: Entry) {
+/**
+ * The grammar of an entry as separate facts — ["noun", "2nd decl.", "masc."].
+ * The detail page sets each one as its own chip; the card runs them together.
+ */
+export function grammarFacts(entry: Entry) {
 	const parts = [entry.partOfSpeech];
 
 	if (entry.declension) {
@@ -37,7 +40,12 @@ export function grammarLabel(entry: Entry) {
 		parts.push(GENDERS[entry.gender] ?? entry.gender);
 	}
 
-	return parts.join(" · ");
+	return parts;
+}
+
+/** "verb · 1st conj.", "noun · 2nd decl. · masc." */
+export function grammarLabel(entry: Entry) {
+	return grammarFacts(entry).join(" · ");
 }
 
 type EntryCardProps = {
