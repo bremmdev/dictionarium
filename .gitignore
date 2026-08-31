@@ -13,4 +13,8 @@ __unconfig*
 todos.json
 
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
+
 TODO.md
