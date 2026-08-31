@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { Heading } from "#/components/Heading";
 import { grammarLabel } from "#/components/search/EntryCard";
+import type { EntryWithSenses } from "#/db/schema";
 import { getEntryByLemma } from "#/server/search";
 
 export const Route = createFileRoute("/verbum/$lemma")({
@@ -68,12 +69,7 @@ function WordDetail() {
 				</section>
 			)}
 
-			<section>
-				<Heading variant="h4" as="h2">
-					Meaning
-				</Heading>
-				<p className="mt-1 text-ink-900 text-xl">{entry.meaningEn}</p>
-			</section>
+			<Meanings entry={entry} />
 
 			{entry.notes && (
 				<section>
@@ -86,6 +82,60 @@ function WordDetail() {
 				</section>
 			)}
 		</article>
+	);
+}
+
+/**
+ * The senses in rank order — a dictionary's numbered meanings. The rank is
+ * printed rather than left to a list marker, so a gap in the ranks shows up as
+ * a gap here instead of being silently renumbered.
+ */
+function Meanings({ entry }: { entry: EntryWithSenses }) {
+	const senses = entry.senses;
+
+	return (
+		<section>
+			<Heading variant="h4" as="h2">
+				{senses.length > 1 ? "Meanings" : "Meaning"}
+			</Heading>
+
+			{/* entries.meaning_en is the one-line gloss every entry still carries;
+			    it stands in for an entry whose senses have not been written yet. */}
+			{senses.length === 0 ? (
+				<p className="mt-1 text-ink-900 text-xl">{entry.meaningEn}</p>
+			) : (
+				<ol className="mt-2 space-y-4">
+					{senses.map((sense) => (
+						<li key={sense.id} className="flex gap-3">
+							<span className="mt-1.5 font-semibold text-accent text-sm tabular-nums">
+								{sense.rank}.
+							</span>
+							<div>
+								<p className="text-ink-900 text-xl">
+									{sense.usage && (
+										<span className="mr-2 align-middle text-ink-500 text-xs uppercase tracking-[0.18em]">
+											{sense.usage}
+										</span>
+									)}
+									{sense.meaningEn}
+								</p>
+
+								{sense.exampleLa && (
+									<p className="mt-1 text-ink-700 italic" lang="la">
+										{sense.exampleLa}
+									</p>
+								)}
+								{sense.exampleEn && (
+									<p className="text-ink-500">
+										&ldquo;{sense.exampleEn}&rdquo;
+									</p>
+								)}
+							</div>
+						</li>
+					))}
+				</ol>
+			)}
+		</section>
 	);
 }
 

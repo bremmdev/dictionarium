@@ -16,5 +16,6 @@ todos.json
 *.db-journal
 *.db-shm
 *.db-wal
+*.bak
 
 TODO.md

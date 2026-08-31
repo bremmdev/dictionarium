@@ -1,4 +1,10 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
+import {
+	integer,
+	sqliteTable,
+	text,
+	uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 export const entries = sqliteTable("entries", {
 	id: integer("id").primaryKey({ autoIncrement: true }),
@@ -18,3 +24,35 @@ export const entries = sqliteTable("entries", {
 });
 
 export type Entry = typeof entries.$inferSelect;
+
+export const senses = sqliteTable(
+	"senses",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		entryId: integer("entry_id")
+			.notNull()
+			.references(() => entries.id, { onDelete: "cascade" }),
+		/** 1 is the core meaning; the rest follow in dictionary order. */
+		rank: integer("rank").notNull(),
+		meaningEn: text("meaning_en").notNull(),
+		/** 'military', 'poetic', 'vulgar' — a label on this sense only. */
+		usage: text("usage"),
+		exampleLa: text("example_la"),
+		exampleEn: text("example_en"),
+	},
+	// One word cannot have two sense number 2s. Also what lets the seed be re-run idempotently.
+	(t) => [uniqueIndex("senses_entry_rank_unique").on(t.entryId, t.rank)],
+);
+
+export const entriesRelations = relations(entries, ({ many }) => ({
+	senses: many(senses),
+}));
+
+export const sensesRelations = relations(senses, ({ one }) => ({
+	entry: one(entries, { fields: [senses.entryId], references: [entries.id] }),
+}));
+
+export type Sense = typeof senses.$inferSelect;
+
+/** An entry with its senses attached, in rank order — what the detail page reads. */
+export type EntryWithSenses = Entry & { senses: Array<Sense> };

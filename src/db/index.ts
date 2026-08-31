@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
+import * as schema from "./schema";
 
 const dbFilePath = path.resolve(
     process.env.DB_FILE_NAME ?? "src/db/dictionarium.db",
@@ -55,4 +56,4 @@ const g = globalThis as typeof globalThis & {
 
 g.__dictionariumDb ??= createClient();
 
-export const db = drizzle(g.__dictionariumDb);
+export const db = drizzle(g.__dictionariumDb, { schema });
