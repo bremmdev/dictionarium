@@ -183,7 +183,7 @@ function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 		<section>
 			<Heading variant="h2">Principal parts</Heading>
 
-			<ol className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+			<ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-6">
 				{parts.map((part, i) => (
 					<li
 						key={part}
@@ -224,7 +224,7 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 		<section>
 			<Heading variant="h2">Meanings</Heading>
 
-			<ol className="mt-3 space-y-3 mt-6">
+			<ol className="space-y-3 mt-6">
 				{senses.map((sense) => (
 					<li
 						key={sense.id}
