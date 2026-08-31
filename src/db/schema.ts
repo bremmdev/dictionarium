@@ -19,7 +19,6 @@ export const entries = sqliteTable("entries", {
 	gender: text("gender"), // nouns: 'm' | 'f' | 'n'
 	declension: text("declension"), // nouns/adjectives: '1'..'5'
 	conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
-	meaningEn: text("meaning_en").notNull(),
 	notes: text("notes"),
 });
 

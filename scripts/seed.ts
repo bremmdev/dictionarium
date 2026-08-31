@@ -1,83 +1,106 @@
+import { inArray } from "drizzle-orm";
 import { normalizeLemma } from "#/utils/search/rules";
 import { db } from "../src/db";
-import { entries } from "../src/db/schema";
+import { entries, senses } from "../src/db/schema";
 
-const words = [{
+type SeedSense = {
+  meaningEn: string;
+  /** 'medical', 'military', 'poetic' — a label on this sense only. */
+  usage?: string;
+  exampleLa?: string;
+  exampleEn?: string;
+};
+
+type SeedWord = {
+  lemma: string;
+  partOfSpeech: string;
+  principalParts?: string;
+  gender?: string;
+  declension?: string;
+  conjugation?: string;
+  /**
+   * Position is the rank: the first sense is the core meaning. Typed non-empty
+   * because an entry without a meaning is not an entry.
+   */
+  senses: [SeedSense, ...Array<SeedSense>];
+};
+
+const words: Array<SeedWord> = [{
   lemma: "ambulō",
   partOfSpeech: "verb",
   principalParts: "ambulō, ambulāre, ambulāvī, ambulātum",
   conjugation: "1",
-  meaningEn: "to walk",
+  senses: [{ meaningEn: "to walk" }],
 },
 {
   lemma: "amō",
   partOfSpeech: "verb",
   principalParts: "amō, amāre, amāvī, amātum",
   conjugation: "1",
-  meaningEn: "to love",
+  senses: [{ meaningEn: "to love" }],
 },
 {
   lemma: "audiō",
   partOfSpeech: "verb",
   principalParts: "audiō, audīre, audīvī, audītum",
   conjugation: "4",
-  meaningEn: "to hear, listen to",
+  senses: [{ meaningEn: "to hear, listen to" }],
 },
 {
   lemma: "cantō",
   partOfSpeech: "verb",
   principalParts: "cantō, cantāre, cantāvī, cantātum",
   conjugation: "1",
-  meaningEn: "to sing",
+  senses: [{ meaningEn: "to sing" }],
 },
 {
   lemma: "currō",
   partOfSpeech: "verb",
   principalParts: "currō, currere, cucurrī, cursum",
   conjugation: "3",
-  meaningEn: "to run",
+  senses: [{ meaningEn: "to run" }],
 },
 {
   lemma: "labōrō",
   partOfSpeech: "verb",
   principalParts: "labōrō, labōrāre, labōrāvī, labōrātum",
   conjugation: "1",
-  meaningEn: "to work",
+  senses: [{ meaningEn: "to work" }],
 },
 {
   lemma: "rīdeō",
   partOfSpeech: "verb",
   principalParts: "rīdeō, rīdēre, rīsī, rīsum",
   conjugation: "2",
-  meaningEn: "to laugh, smile",
+  senses: [{ meaningEn: "to laugh, smile" }],
 },
 {
   lemma: "sedeō",
   partOfSpeech: "verb",
   principalParts: "sedeō, sedēre, sēdī, sessum",
   conjugation: "2",
-  meaningEn: "to sit",
+  senses: [{ meaningEn: "to sit" }],
 },
 {
   lemma: "spectō",
   partOfSpeech: "verb",
   principalParts: "spectō, spectāre, spectāvī, spectātum",
   conjugation: "1",
-  meaningEn: "to watch, look at",
+  senses: [{ meaningEn: "to watch, look at" }],
 },
 {
   lemma: "videō",
   partOfSpeech: "verb",
   principalParts: "videō, vidēre, vīdī, vīsum",
   conjugation: "2",
-  meaningEn: "to see",
+  senses: [{ meaningEn: "to see" }],
 },
 {
   lemma: "vocō",
   partOfSpeech: "verb",
   principalParts: "vocō, vocāre, vocāvī, vocātum",
   conjugation: "1",
-  meaningEn: "to call",
+  senses: [{ meaningEn: "to call" }],
 },
 {
   lemma: "fīlia",
@@ -85,7 +108,7 @@ const words = [{
   principalParts: "fīliae",
   gender: "f",
   declension: "1",
-  meaningEn: "daughter",
+  senses: [{ meaningEn: "daughter" }],
 },
 {
   lemma: "fīlius",
@@ -93,7 +116,7 @@ const words = [{
   principalParts: "fīliī",
   gender: "m",
   declension: "2",
-  meaningEn: "son",
+  senses: [{ meaningEn: "son" }],
 },
 {
   lemma: "hortus",
@@ -101,7 +124,7 @@ const words = [{
   principalParts: "hortī",
   gender: "m",
   declension: "2",
-  meaningEn: "garden",
+  senses: [{ meaningEn: "garden" }],
 },
 {
   lemma: "māter",
@@ -109,7 +132,7 @@ const words = [{
   principalParts: "mātris",
   gender: "f",
   declension: "3",
-  meaningEn: "mother",
+  senses: [{ meaningEn: "mother" }],
 },
 {
   lemma: "pater",
@@ -117,7 +140,7 @@ const words = [{
   principalParts: "patris",
   gender: "m",
   declension: "3",
-  meaningEn: "father",
+  senses: [{ meaningEn: "father" }],
 },
 {
   lemma: "puella",
@@ -125,7 +148,7 @@ const words = [{
   principalParts: "puellae",
   gender: "f",
   declension: "1",
-  meaningEn: "girl",
+  senses: [{ meaningEn: "girl" }],
 },
 {
   lemma: "rosa",
@@ -133,7 +156,7 @@ const words = [{
   principalParts: "rosae",
   gender: "f",
   declension: "1",
-  meaningEn: "rose",
+  senses: [{ meaningEn: "rose" }],
 },
 {
   lemma: "servus",
@@ -141,32 +164,32 @@ const words = [{
   principalParts: "servī",
   gender: "m",
   declension: "2",
-  meaningEn: "slave",
+  senses: [{ meaningEn: "slave" }],
 },
 {
   lemma: "et",
   partOfSpeech: "conjunction",
-  meaningEn: "and",
+  senses: [{ meaningEn: "and" }],
 },
 {
   lemma: "nōn",
   partOfSpeech: "adverb",
-  meaningEn: "not",
+  senses: [{ meaningEn: "not" }],
 },
 {
   lemma: "quoque",
   partOfSpeech: "adverb",
-  meaningEn: "also",
+  senses: [{ meaningEn: "also" }],
 },
 {
   lemma: "sed",
   partOfSpeech: "conjunction",
-  meaningEn: "but",
+  senses: [{ meaningEn: "but" }],
 },
 {
   lemma: "tum",
   partOfSpeech: "adverb",
-  meaningEn: "then",
+  senses: [{ meaningEn: "then" }],
 },
 {
   lemma: "oppidum",
@@ -174,7 +197,7 @@ const words = [{
   principalParts: "oppidī",
   gender: "n",
   declension: "2",
-  meaningEn: "town",
+  senses: [{ meaningEn: "town" }],
 },
 {
   lemma: "fluvius",
@@ -182,7 +205,7 @@ const words = [{
   principalParts: "fluviī",
   gender: "m",
   declension: "2",
-  meaningEn: "river",
+  senses: [{ meaningEn: "river" }],
 },
 {
   lemma: "īnsula",
@@ -190,7 +213,7 @@ const words = [{
   principalParts: "īnsulae",
   gender: "f",
   declension: "1",
-  meaningEn: "island",
+  senses: [{ meaningEn: "island" }],
 },
 {
   lemma: "imperium",
@@ -198,7 +221,7 @@ const words = [{
   principalParts: "imperiī",
   gender: "n",
   declension: "2",
-  meaningEn: "empire",
+  senses: [{ meaningEn: "empire" }],
 },
 {
   lemma: "vīlla",
@@ -206,7 +229,7 @@ const words = [{
   principalParts: "vīllae",
   gender: "f",
   declension: "1",
-  meaningEn: "villa, country house",
+  senses: [{ meaningEn: "villa, country house" }],
 },
 {
   lemma: "via",
@@ -214,7 +237,7 @@ const words = [{
   principalParts: "viae",
   gender: "f",
   declension: "1",
-  meaningEn: "road, street, path",
+  senses: [{ meaningEn: "road, street, path" }],
 },
 {
   lemma: "aqua",
@@ -222,7 +245,7 @@ const words = [{
   principalParts: "aquae",
   gender: "f",
   declension: "1",
-  meaningEn: "water",
+  senses: [{ meaningEn: "water" }],
 },
 {
   lemma: "cēna",
@@ -230,7 +253,7 @@ const words = [{
   principalParts: "cēnae",
   gender: "f",
   declension: "1",
-  meaningEn: "dinner, supper",
+  senses: [{ meaningEn: "dinner, supper" }],
 },
 {
   lemma: "equus",
@@ -238,7 +261,7 @@ const words = [{
   principalParts: "equī",
   gender: "m",
   declension: "2",
-  meaningEn: "horse",
+  senses: [{ meaningEn: "horse" }],
 },
 {
   lemma: "amīcus",
@@ -246,28 +269,28 @@ const words = [{
   principalParts: "amīcī",
   gender: "m",
   declension: "2",
-  meaningEn: "male friend",
+  senses: [{ meaningEn: "male friend" }],
 },
 {
   lemma: "portō",
   partOfSpeech: "verb",
   principalParts: "portō, portāre, portāvī, portātum",
   conjugation: "1",
-  meaningEn: "to carry",
+  senses: [{ meaningEn: "to carry" }],
 },
 {
   lemma: "parō",
   partOfSpeech: "verb",
   principalParts: "parō, parāre, parāvī, parātum",
   conjugation: "1",
-  meaningEn: "to prepare",
+  senses: [{ meaningEn: "to prepare" }],
 },
 {
   lemma: "habitō",
   partOfSpeech: "verb",
   principalParts: "habitō, habitāre, habitāvī, habitātum",
   conjugation: "1",
-  meaningEn: "to live in",
+  senses: [{ meaningEn: "to live in" }],
 },
 {
   lemma: "abacus",
@@ -275,7 +298,7 @@ const words = [{
   principalParts: "abacī",
   gender: "m",
   declension: "2",
-  meaningEn: "abacus, counting board, square board",
+  senses: [{ meaningEn: "abacus, counting board, square board" }],
 },
 {
   lemma: "littera",
@@ -283,7 +306,7 @@ const words = [{
   principalParts: "litterae",
   gender: "f",
   declension: "1",
-  meaningEn: "letter (of the alphabet), letter, literature",
+  senses: [{ meaningEn: "letter (of the alphabet), letter, literature" }],
 },
 {
   lemma: "numerus",
@@ -291,7 +314,7 @@ const words = [{
   principalParts: "numerī",
   gender: "m",
   declension: "2",
-  meaningEn: "number",
+  senses: [{ meaningEn: "number" }],
 },
 {
   lemma: "verbum",
@@ -299,7 +322,7 @@ const words = [{
   principalParts: "verbi",
   gender: "n",
   declension: "2",
-  meaningEn: "word, verb (grammar)",
+  senses: [{ meaningEn: "word, verb (grammar)" }],
 },
 {
   lemma: "calculus",
@@ -307,19 +330,19 @@ const words = [{
   principalParts: "calculī",
   gender: "m",
   declension: "2",
-  meaningEn: "pebble, stone, calculation",
+  senses: [{ meaningEn: "pebble, stone, calculation" }],
 },
 {
   lemma: "ostendō",
   partOfSpeech: "verb",
   principalParts: "ostendō, ostendere, ostendī, ostentum",
   conjugation: "3",
-  meaningEn: "to expose, exhibit, show",
+  senses: [{ meaningEn: "to expose, exhibit, show" }],
 },
 {
   lemma: "fēlīciter",
   partOfSpeech: "adverb",
-  meaningEn: "happily, favorably, fortunately",
+  senses: [{ meaningEn: "happily, favorably, fortunately" }],
 },
 {
   lemma: "fax",
@@ -327,42 +350,43 @@ const words = [{
   principalParts: "facis",
   gender: "f",
   declension: "3",
-  meaningEn: "torch",
+  senses: [{ meaningEn: "torch" }],
 },
 {
   lemma: "spērō",
   partOfSpeech: "verb",
   principalParts: "spērō, spērāre, spērāvī, spērātum",
   conjugation: "1",
-  meaningEn: "to hope, expect, anticipate, assume",
+  senses: [{ meaningEn: "to hope, expect, anticipate, assume" }],
 },
 {
   lemma: "dubitō",
   partOfSpeech: "verb",
   principalParts: "dubitō, dubitāre, dubitāvī, dubitātum",
   conjugation: "1",
-  meaningEn: "to waver (in opinion), be uncertain, doubt, hesitate, ponder",
+  senses: [{ meaningEn: "to waver (in opinion), be uncertain, doubt, hesitate, ponder" }],
 },
 {
   lemma: "rogō",
   partOfSpeech: "verb",
   principalParts: "rogō, rogāre, rogāvī, rogātum",
   conjugation: "1",
-  meaningEn: "to ask, enquire, request, beg",
+  senses: [{ meaningEn: "to ask, enquire, request, beg" }],
 },
 {
   lemma: "superō",
   partOfSpeech: "verb",
   principalParts: "superō, superāre, superāvī, superātum",
   conjugation: "1",
-  meaningEn: "to surmount, rise above, surpass, exceed, be superior, overcome",
-}, {
+  senses: [{ meaningEn: "to surmount, rise above, surpass, exceed, be superior, overcome" }],
+},
+{
   lemma: "tēlum",
   partOfSpeech: "noun",
   principalParts: "tēlī",
   gender: "n",
   declension: "2",
-  meaningEn: "a spear, projectile weapon (javelin, arrow, etc.)",
+  senses: [{ meaningEn: "a spear, projectile weapon (javelin, arrow, etc.)" }],
 },
 {
   lemma: "auxilium",
@@ -370,7 +394,10 @@ const words = [{
   principalParts: "auxiliī",
   gender: "n",
   declension: "2",
-  meaningEn: "help, aid, assistance, relief, antidote, remedy",
+  senses: [
+    { meaningEn: "help, aid, assistance" },
+    { meaningEn: "remedy, antidote", usage: "medical" },
+  ],
 },
 {
   lemma: "mūrus",
@@ -378,7 +405,7 @@ const words = [{
   principalParts: "mūrī",
   gender: "m",
   declension: "2",
-  meaningEn: "wall, city wall(s)",
+  senses: [{ meaningEn: "wall, city wall(s)" }],
 },
 {
   lemma: "fabula",
@@ -386,10 +413,48 @@ const words = [{
   principalParts: "fabulae",
   gender: "f",
   declension: "1",
-  meaningEn: "story, tale, discourse, narrative",
+  senses: [{ meaningEn: "story, tale, discourse, narrative" }],
 }]
 
 await db
   .insert(entries)
-  .values(words.map((w) => ({ ...w, lemmaPlain: normalizeLemma(w.lemma) })))
+  .values(
+    words.map(({ senses: _senses, ...columns }) => ({
+      ...columns,
+      lemmaPlain: normalizeLemma(columns.lemma),
+    })),
+  )
   .onConflictDoNothing({ target: [entries.lemma] });
+
+// Read the ids back rather than using returning(): a lemma that was already
+// present got skipped above, so the insert cannot report its id.
+const rows = await db
+  .select({ id: entries.id, lemma: entries.lemma })
+  .from(entries)
+  .where(
+    inArray(
+      entries.lemma,
+      words.map((w) => w.lemma),
+    ),
+  );
+
+const idByLemma = new Map(rows.map((r) => [r.lemma, r.id]));
+
+await db
+  .insert(senses)
+  .values(
+    words.flatMap((w) => {
+      const entryId = idByLemma.get(w.lemma);
+
+      if (entryId === undefined) {
+        throw new Error(`seed: no entries row for "${w.lemma}" after insert`);
+      }
+
+      return w.senses.map((sense, i) => ({ ...sense, entryId, rank: i + 1 }));
+    }),
+  )
+  .onConflictDoNothing({ target: [senses.entryId, senses.rank] });
+
+console.log(
+  `Seeded ${words.length} lemmas, ${words.reduce((n, w) => n + w.senses.length, 0)} senses.`,
+);
