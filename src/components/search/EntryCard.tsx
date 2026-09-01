@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Heading } from "#/components/Heading";
-import type { Entry } from "#/db/schema";
+import type { Entry, EntryWithSenses } from "#/db/schema";
 
 const ORDINALS: Record<string, string> = {
 	"1": "1st",
@@ -25,7 +25,11 @@ export function grammarFacts(entry: Entry) {
 	const parts = [entry.partOfSpeech];
 
 	if (entry.declension) {
-		parts.push(`${ORDINALS[entry.declension] ?? entry.declension} decl.`);
+		if (entry.declension === "indeclinable") {
+			parts.push("indeclinable");
+		} else {
+			parts.push(`${ORDINALS[entry.declension] ?? entry.declension} decl.`);
+		}
 	}
 
 	if (entry.conjugation) {
@@ -49,12 +53,17 @@ export function grammarLabel(entry: Entry) {
 }
 
 type EntryCardProps = {
-	entry: Entry;
+	/** Needs the senses, not just the entry: the card shows the core meaning. */
+	entry: EntryWithSenses;
 	/** Carried into the detail page so its back link can restore this search. */
 	query: string;
 };
 
 export function EntryCard({ entry, query }: EntryCardProps) {
+	// rank 1 is the headline meaning, and the query orders senses by rank — so
+	// the first one is what a printed dictionary sets after the principal parts.
+	const [core] = entry.senses;
+
 	return (
 		// Only the lemma is the link, so its accessible name stays "ambulō" rather
 		// than the whole row run together. The after:inset-0 pseudo-element then
@@ -88,6 +97,8 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 					{entry.principalParts}
 				</p>
 			)}
+
+			{core && <p className="text-ink-900">{core.meaningEn}</p>}
 		</div>
 	);
 }

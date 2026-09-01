@@ -1,9 +1,9 @@
-import type { Entry } from "#/db/schema";
+import type { EntryWithSenses } from "#/db/schema";
 import { MIN_QUERY_LENGTH } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
-	results: Array<Entry>;
+	results: Array<EntryWithSenses>;
 	/** Every lemma in the dictionary is one word, so this is the word count. */
 	total: number;
 	isFetching: boolean;

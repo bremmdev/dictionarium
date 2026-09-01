@@ -415,6 +415,12 @@ const words: Array<SeedWord> = [{
   gender: "f",
   declension: "1",
   senses: [{ meaningEn: "story, tale, discourse, narrative" }],
+},
+{
+  lemma: 'septem',
+  partOfSpeech: 'numeral',
+  declension: 'indeclinable',
+  senses: [{ meaningEn: 'seven' }],
 }]
 
 await db

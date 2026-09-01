@@ -28,7 +28,7 @@ path.resolve(process.env.DB_FILE_NAME ?? "src/db/dictionarium.db");
 
 **Pin, don't inherit.** `foreign_keys = ON` and `synchronous = NORMAL` are both no-ops against today's better-sqlite3, which compiles with `SQLITE_DEFAULT_FOREIGN_KEYS=1` and `SQLITE_DEFAULT_WAL_SYNCHRONOUS=1` (the latter applies only in WAL mode). Those are properties of a vendored build, not of SQLite. Stating them means a swapped binding cannot quietly turn off constraint enforcement or change durability.
 
-**`synchronous = NORMAL` is a durability trade, not a free win.** Under WAL it cannot corrupt the database; what it risks is losing the last committed transactions on a power cut or OS crash. Acceptable here because every write comes from a seed script that is idempotent (`onConflictDoNothing` on `lemma`) and can simply be rerun. It would not be acceptable for user-submitted data.
+**`synchronous = NORMAL` is a durability trade, not a free win.** Under WAL it cannot corrupt the database; what it risks is losing the last committed transactions on a power cut or OS crash. Acceptable here because every write comes from a seed script that is idempotent (upsert on `lemma`, and on `(entry_id, rank)` for senses) and can simply be rerun. It would not be acceptable for user-submitted data.
 
 **WAL is checked, not assumed.** Setting `journal_mode` does not throw on failure; it returns the mode SQLite actually settled on, and a network filesystem will quietly leave you on `delete`. So the result is read back and a mismatch is logged loudly — otherwise you would believe you had concurrent reads and not have them.
 
@@ -40,12 +40,18 @@ path.resolve(process.env.DB_FILE_NAME ?? "src/db/dictionarium.db");
 
 ```ts
 g.__dictionariumDb ??= createClient();
-export const db = drizzle(g.__dictionariumDb);
+export const db = drizzle(g.__dictionariumDb, { schema });
 ```
 
 Vite's dev server re-evaluates modules on change. Module-scope state is discarded, but an open SQLite handle is not — it leaks, and the leaked connections keep their locks. `globalThis` survives module-cache invalidation, so the same handle is reused for the life of the process. The cost: pragma or path changes need a server restart, since `createClient()` no longer runs on reload.
 
 Drizzle is re-wrapped on each evaluation, which is fine — it is a stateless wrapper over the handle.
+
+## Why `drizzle()` gets the handle *and* the schema
+
+`drizzle()` is overloaded: it takes either a file path or a live `better-sqlite3` handle. Passing the path here would be the quiet disaster — Drizzle would open a **second** connection with none of the pragmas above on it, and `createClient()` would sit unused while the app ran on defaults. Nothing would throw; the app would simply stop having the guarantees this file argues for. The handle is the entire point of the wrapper.
+
+The `{ schema }` second argument is separate and does nothing to the connection. It is what populates `db.query` — the relational query builder used for `with: { senses: ... }`. Without it `db.query` is typed as an empty object: no error, no hint, just nothing there. `import * as schema` matters too, because the `relations()` objects have to be in the namespace alongside the tables.
 
 ## Operations
 
