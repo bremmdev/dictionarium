@@ -132,7 +132,7 @@ One row per genuinely distinct meaning, one-to-many from `entries`. Shipped in m
 
 Unique on **(`entry_id`, `rank`)**: one word cannot have two sense number 2s. That single index is both the curation guard and what makes sense-seeding re-runnable.
 
-**Commas within a sense, rows between senses.** _rīdeō_ "to laugh, smile" is one meaning with two English words for it — a gloss, and it stays one string. _auxilium_ "help, aid, assistance" and "remedy, antidote" are two jobs the same word does, and the second one wants the label `medical` hung off it. A comma has nowhere to put that label. The dividing question is not "how many English words?" but "would I ever want to say something about one of these and not the other?"
+**Commas within a sense, rows between senses.** _rīdeō_ "to laugh, smile" is one meaning with two English words for it — a gloss, and it stays one string. _auxilium_ "help, aid, assistance" and "remedy, antidote" are two jobs the same word does, and the second one wants the label `medical` hung off it. A comma has nowhere to put that label. The dividing question is not "how many English words?" but "would I ever want to say something about one of these and not the other?" A sense is a unit of meaning. A gloss is a short label that points at one.
 
 Two invariants the schema cannot express, and neither is guarded yet:
 

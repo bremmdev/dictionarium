@@ -27,6 +27,187 @@ type SeedWord = {
 };
 
 const words: Array<SeedWord> = [{
+  lemma: "soror",
+  partOfSpeech: "noun",
+  principalParts: "sorōris",
+  gender: "f",
+  declension: "3",
+  senses: [
+    { meaningEn: "sister" },
+    { meaningEn: "cousin, daughter of either a father's brother or of a mother's sister" },
+    { meaningEn: "female friend" },
+    { meaningEn: "sister, nun", usage: "christianity" },
+  ],
+},
+{
+  lemma: "deus",
+  partOfSpeech: "noun",
+  principalParts: "deī",
+  gender: "m",
+  declension: "2",
+  senses: [
+    { meaningEn: "god, deity" },
+  ],
+},
+{
+  lemma: "sed",
+  partOfSpeech: "conjunction",
+  senses: [
+    { meaningEn: "but" },
+  ],
+},
+{
+  lemma: "māter",
+  partOfSpeech: "noun",
+  principalParts: "mātris",
+  gender: "f",
+  declension: "3",
+  senses: [
+    { meaningEn: "mother" },
+    { meaningEn: "matron of a house" },
+    { meaningEn: "woman" },
+    { meaningEn: "nurse" },
+    { meaningEn: "motherland" },
+    { meaningEn: "maternity, motherhood" },
+  ],
+},
+{
+  lemma: "uxor",
+  partOfSpeech: "noun",
+  principalParts: "uxōris",
+  gender: "f",
+  declension: "3",
+  senses: [
+    { meaningEn: "a wife, a spouse, a consort" },
+  ],
+},
+{
+  lemma: "dea",
+  partOfSpeech: "noun",
+  principalParts: "deae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "goddess" },
+  ],
+},
+{
+  lemma: "rēgīna",
+  partOfSpeech: "noun",
+  principalParts: "rēgīnae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "queen" },
+    { meaningEn: "princess" },
+  ],
+},
+{
+  lemma: "fīlius",
+  partOfSpeech: "noun",
+  principalParts: "fīliī",
+  gender: "m",
+  declension: "2",
+  senses: [
+    { meaningEn: "a son" },
+    { meaningEn: "any male descendant" },
+    { meaningEn: "children" },
+  ],
+},
+{
+  lemma: "fīlia",
+  partOfSpeech: "noun",
+  principalParts: "fīliae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "daughter" },
+    { meaningEn: "any female offspring" },
+  ],
+},
+{
+  lemma: "nōn",
+  partOfSpeech: "particle",
+  senses: [
+    { meaningEn: "not" },
+  ],
+},
+{
+  lemma: "quoque",
+  partOfSpeech: "adverb",
+  senses: [{ meaningEn: "also, likewise, besides, too" }, { meaningEn: "not only" }, { meaningEn: "even, actually" }],
+},
+{
+  lemma: "pater",
+  partOfSpeech: "noun",
+  principalParts: "patris",
+  gender: "m",
+  declension: "3",
+  senses: [{ meaningEn: "father" }, { meaningEn: "head of household" }, { meaningEn: "parent" }, { meaningEn: "forefather" }, { meaningEn: "priest" }],
+},
+{
+  lemma: "et",
+  partOfSpeech: "conjunction",
+  senses: [{ meaningEn: "and" }, { meaningEn: "both" }, { meaningEn: "plus", usage: "mathematics", exampleLa: "Duo et duo sunt quattuor", exampleEn: "Two plus two equals four" }],
+},
+{
+  lemma: "sedeō",
+  partOfSpeech: "verb",
+  principalParts: "sedeō, sedēre, sēdī, sessum",
+  conjugation: "2",
+  notes: "impersonal in the passive",
+  senses: [
+    { meaningEn: "to sit, to be seated" },
+    { meaningEn: "to sit in an official seat; sit in council or court, hold court, preside" },
+    { meaningEn: "to keep the field, remain encamped" },
+    { meaningEn: "to settle or sink down, subside" },
+    { meaningEn: "to sit still; remain, linger, loiter; sit around" },
+  ],
+},
+{
+  lemma: "rēgnō",
+  partOfSpeech: "verb",
+  principalParts: "rēgnō, rēgnāre, rēgnāvī, rēgnātum",
+  conjugation: "1",
+  senses: [
+    { meaningEn: "to reign, rule" },
+    { meaningEn: "to be lord, govern" },
+    { meaningEn: "to tyrannize" },
+  ],
+},
+{
+  lemma: "templum",
+  partOfSpeech: "noun",
+  principalParts: "templī",
+  gender: "n",
+  declension: "2",
+  senses: [
+    { meaningEn: "temple, sanctuary, shrine" },
+  ],
+},
+{
+  lemma: "bellum",
+  partOfSpeech: "noun",
+  principalParts: "bellī",
+  gender: "n",
+  declension: "2",
+  senses: [
+    { meaningEn: "war", exampleLa: "Dulce bellum inexpertīs.", exampleEn: "War is sweet to those who have never experienced it." },
+  ],
+},
+{
+  lemma: "habeō",
+  partOfSpeech: "verb",
+  principalParts: "habeō, habēre, habuī, habitum",
+  conjugation: "2",
+  senses: [
+    { meaningEn: "to have, hold" },
+    { meaningEn: "to own" },
+    { meaningEn: "to retain, maintain" },
+    { meaningEn: "to regard, consider or account a person or thing as something" },
+  ],
+},
+{
   lemma: "ambulō",
   partOfSpeech: "verb",
   principalParts: "ambulō, ambulāre, ambulāvī, ambulātum",
@@ -38,7 +219,88 @@ const words: Array<SeedWord> = [{
   partOfSpeech: "verb",
   principalParts: "amō, amāre, amāvī, amātum",
   conjugation: "1",
-  senses: [{ meaningEn: "to love" }],
+  senses: [
+    { meaningEn: "to love" },
+    { meaningEn: "to be fond of, like, admire" },
+    { meaningEn: "to be pleased by or with (someone or something) for (a particular reason)" },
+    { meaningEn: "to be thankful, grateful to, feel obliged for a service" },
+    { meaningEn: "to make love" },
+  ],
+},
+{
+  lemma: "populus",
+  partOfSpeech: "noun",
+  principalParts: "populī",
+  gender: "m",
+  declension: "2",
+  senses: [
+    { meaningEn: "a people, nation" },
+    { meaningEn: "a parish, part of a city", usage: "medieval latin" },
+  ],
+},
+{
+  lemma: "saepe",
+  partOfSpeech: "adverb",
+  senses: [
+    { meaningEn: "often, frequently" },
+  ],
+},
+{
+  lemma: "servō",
+  partOfSpeech: "verb",
+  principalParts: "servō, servāre, servāvī, servātum",
+  conjugation: "1",
+  senses: [
+    { meaningEn: "to maintain, keep" },
+    { meaningEn: "to protect, save, keep, guard, safeguard, watch over" },
+    { meaningEn: "to pay attention to" },
+    { meaningEn: "to save, rescue" },
+  ],
+},
+{
+  lemma: "timeō",
+  partOfSpeech: "verb",
+  principalParts: "timeō, timēre, timuī",
+  conjugation: "2",
+  notes: "no supine",
+  senses: [
+    { meaningEn: "to fear, be afraid of" }
+  ],
+},
+{
+  lemma: "mittō",
+  partOfSpeech: "verb",
+  principalParts: "mittō, mittere, mīsī, missum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to send, dispatch, let go, release, discharge" },
+    { meaningEn: "to put out, extend, reach out" },
+    { meaningEn: "to announce, tell, report, send word, advise" },
+    { meaningEn: "to let or bring out, put or send forth, emit, speak, say" },
+    { meaningEn: "to throw, cast, launch" },
+    { meaningEn: "to attend, guide, escort" },
+  ],
+},
+{
+  lemma: "nam",
+  partOfSpeech: "conjunction",
+  senses: [
+    { meaningEn: "for" },
+    { meaningEn: "since" },
+    { meaningEn: "thus" },
+    { meaningEn: "because" },
+    { meaningEn: "actually" },
+  ],
+},
+{
+  lemma: "dēfendō",
+  partOfSpeech: "verb",
+  principalParts: "dēfendō, dēfendere, dēfendī, dēfēnsum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to defend, guard or protect" },
+    { meaningEn: "to drive away" },
+  ],
 },
 {
   lemma: "audiō",
@@ -74,13 +336,6 @@ const words: Array<SeedWord> = [{
   principalParts: "rīdeō, rīdēre, rīsī, rīsum",
   conjugation: "2",
   senses: [{ meaningEn: "to laugh, smile" }],
-},
-{
-  lemma: "sedeō",
-  partOfSpeech: "verb",
-  principalParts: "sedeō, sedēre, sēdī, sessum",
-  conjugation: "2",
-  senses: [{ meaningEn: "to sit" }],
 },
 {
   lemma: "spectō",
@@ -128,22 +383,6 @@ const words: Array<SeedWord> = [{
   senses: [{ meaningEn: "garden" }],
 },
 {
-  lemma: "māter",
-  partOfSpeech: "noun",
-  principalParts: "mātris",
-  gender: "f",
-  declension: "3",
-  senses: [{ meaningEn: "mother" }],
-},
-{
-  lemma: "pater",
-  partOfSpeech: "noun",
-  principalParts: "patris",
-  gender: "m",
-  declension: "3",
-  senses: [{ meaningEn: "father" }],
-},
-{
   lemma: "puella",
   partOfSpeech: "noun",
   principalParts: "puellae",
@@ -167,21 +406,8 @@ const words: Array<SeedWord> = [{
   declension: "2",
   senses: [{ meaningEn: "slave" }],
 },
-{
-  lemma: "et",
-  partOfSpeech: "conjunction",
-  senses: [{ meaningEn: "and" }],
-},
-{
-  lemma: "nōn",
-  partOfSpeech: "adverb",
-  senses: [{ meaningEn: "not" }],
-},
-{
-  lemma: "quoque",
-  partOfSpeech: "adverb",
-  senses: [{ meaningEn: "also" }],
-},
+
+
 {
   lemma: "sed",
   partOfSpeech: "conjunction",
