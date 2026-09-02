@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "format": "biome format --write",
     "lint": "biome lint",
-    "check": "npm run check:macrons && biome check",
+    "check": "npm run check:macrons && npm run check:lemmas && npm run check:senses && npm run check:inflection && biome check",
     "start": "node .output/server/index.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -20,7 +20,9 @@
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio",
     "check:macrons": "tsx scripts/check-macrons.ts",
-    "check:lemmas": "tsx scripts/check-lemmas.ts"
+    "check:lemmas": "tsx scripts/check-lemmas.ts",
+    "check:senses": "tsx scripts/check-senses.ts",
+    "check:inflection": "tsx scripts/check-inflection.ts"
   },
   "dependencies": {
     "@bremmdev/m7kit": "^0.57.0",

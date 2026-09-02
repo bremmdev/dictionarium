@@ -39,7 +39,7 @@ So the seed no longer carries `lemmaPlain` at all. It lists lemmas and derives t
 .values(words.map((w) => ({ ...w, lemmaPlain: normalizeLemma(w.lemma) })))
 ```
 
-and `npm run check:lemmas` re-derives every row in the table and names the ones that no longer match. That is cheap insurance now, when seeding is the only writer, and the actual point later: the admin panel will write rows no script has seen.
+and `scripts/check-lemmas.ts` — wired into `npm run check`, or run alone as `npm run check:lemmas` — re-derives every row in the table and names the ones that no longer match. That is cheap insurance now, when seeding is the only writer, and the actual point later: the admin panel will write rows no script has seen.
 
 Note what the check proves — that the stored key agrees with the current rule, not that the rule is right. Change `normalizeLemma` and it will report every row as stale, which is the correct answer. The fix then is to rewrite the column, not to soften the check.
 

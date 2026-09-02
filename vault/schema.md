@@ -114,7 +114,27 @@ Which is why one lesson's worth of numbers produces four different rows:
 
 ### The invariant this creates
 
-NULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one. That is a job for a `scripts/check-inflection.ts` in the `npm run check` chain, alongside `check-lemmas.ts`. **Not written yet.**
+NULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.
+
+`scripts/check-inflection.ts` is what enforces it, and the fact it needs is not in the database: _which_ of the two questions applies is a property of the part of speech, not of the row. So the script writes that down.
+
+```ts
+pconst INFLECTS: Record<string, "declension" | "conjugation" | "neither"> = {
+	noun: "declension",
+	numeral: "declension",
+	verb: "conjugation",
+	adverb: "neither",
+	// …
+};
+```
+
+Three rules fall out of that map:
+
+1. the question that applies must be answered, and answered in the vocabulary above — a noun with `declension` NULL is a finding;
+2. the question that does not apply must stay NULL — a noun carrying a `conjugation` is a finding too, or NULL goes straight back to meaning two things;
+3. **a part of speech the map has never heard of is itself a finding.** Nobody has decided whether it inflects, so neither of its columns can be read either way.
+
+The third rule is the one that earns the script. `adjective` and `pronoun` sit in the map already and have never been seeded; the day one arrives, either its declension is there or the check names the word. What cannot happen is a new word class slipping past on the reading "both columns are NULL, so presumably it does not inflect" — the script holds no opinion it was not given, and says so rather than guessing.
 
 ## `senses`
 
@@ -134,12 +154,14 @@ Unique on **(`entry_id`, `rank`)**: one word cannot have two sense number 2s. Th
 
 **Commas within a sense, rows between senses.** _rīdeō_ "to laugh, smile" is one meaning with two English words for it — a gloss, and it stays one string. _auxilium_ "help, aid, assistance" and "remedy, antidote" are two jobs the same word does, and the second one wants the label `medical` hung off it. A comma has nowhere to put that label. The dividing question is not "how many English words?" but "would I ever want to say something about one of these and not the other?" A sense is a unit of meaning. A gloss is a short label that points at one.
 
-Two invariants the schema cannot express, and neither is guarded yet:
+Two invariants the schema cannot express:
 
 - every entry has at least one sense — a word with no meaning is not an entry;
 - ranks run 1..n with no gaps, because rank 1 _is_ the headline meaning and the UI reads `senses[0]` on the strength of that promise.
 
-UNIQUE `(entry_id, rank)` stops duplicates and says nothing about either. Planned: `scripts/check-senses.ts`. **Not written yet.**
+UNIQUE `(entry_id, rank)` stops duplicates and says nothing about either. `scripts/check-senses.ts` does, reading entries and senses together in the [one query](#reading-it-back-is-one-query-not-eleven) the app already uses, then sorting each entry's ranks and comparing them with `1..n`.
+
+It guards a third thing the column type lets through: `meaning_en` is `NOT NULL`, and `NOT NULL` accepts the empty string. A blank gloss is the same absent meaning wearing a different hat, so it is reported alongside the entries that have no senses at all.
 
 ### Relations vs. foreign keys
 
@@ -155,17 +177,36 @@ The cascade only fires when `PRAGMA foreign_keys` is on, which is per-connection
 
 Inflected forms are not rows. When they arrive, they hang off a lemma — they do not replace it.
 
-The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). Next up, roughly in order:
+The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
-1. **The two guard scripts** — `check-senses.ts` and `check-inflection.ts`, and widening `npm run check` to actually run them (and `check:lemmas`, which exists but was never wired into the chain — a guard outside the gate is a guard that is off).
-2. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool. With senses in place, adding a second meaning means editing a seed file and re-running it, which is friction that will quietly stop words getting added at all.
-3. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand.
+1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool. With senses in place, adding a second meaning means editing a seed file and re-running it, which is friction that will quietly stop words getting added at all.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: three of the four read the database, so anything running `npm run check` has to migrate and seed before it can open the gate.
 
 Parked: the `homonym` column (above), synonym cross-references between entries, proper treatment of prepositions and the case they govern (_in_ + abl, _ad_ + acc — currently not seeded), spaced-repetition quiz mode as a separate private layer.
 
 ## Operations
 
 The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FILE_NAME`); connection details in [db.md](./db.md). Schema: `src/db/schema.ts`. Seed: `npx tsx scripts/seed.ts`. Browse: `npm run db:studio`.
+
+### The check chain
+
+`npm run check` is the gate. It runs the four guards, then Biome:
+
+| Guard                 | Alone                      | What it holds                                                                                    |
+| --------------------- | -------------------------- | ------------------------------------------------------------------------------------------------ |
+| `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md)   |
+| `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)             |
+| `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                             |
+| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` means one thing — [above](#the-invariant-this-creates)     |
+
+Each names the rows it objects to, and exits non-zero:
+
+```sh
+soror (noun): declension is NULL — this word inflects, so say how (1 | 2 | 3 | 4 | 5 | 1-2 | indeclinable)
+uxor (noun): conjugation is "2" — this part of speech does not conjugate, so it must be NULL
+māter: ranks are [1, 3, 4, 5, 6] — must run 1..5 with no gaps
+deus: no senses — a word with no meaning is not an entry
+```
 
 ### Migrations, not push
 

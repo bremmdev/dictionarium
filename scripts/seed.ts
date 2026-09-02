@@ -293,6 +293,26 @@ const words: Array<SeedWord> = [{
   ],
 },
 {
+  lemma: "relinquō",
+  partOfSpeech: "verb",
+  principalParts: "relinquō, relinquere, relīquī, relictum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to abandon, forsake, desert" },
+    { meaningEn: "to relinquish, leave" },
+    { meaningEn: "to depart" },
+    { meaningEn: "to give up" },
+  ],
+},
+{
+  lemma: "semper",
+  partOfSpeech: "adverb",
+  notes: "not comparable",
+  senses: [
+    { meaningEn: "always, ever, forever, at all times", exampleLa: "Spero ut pacem semper habeant.", exampleEn: "I hope that they always have peace." },
+  ],
+},
+{
   lemma: "dēfendō",
   partOfSpeech: "verb",
   principalParts: "dēfendō, dēfendere, dēfendī, dēfēnsum",
@@ -300,6 +320,84 @@ const words: Array<SeedWord> = [{
   senses: [
     { meaningEn: "to defend, guard or protect" },
     { meaningEn: "to drive away" },
+  ],
+},
+{
+  lemma: "perveniō",
+  partOfSpeech: "verb",
+  principalParts: "perveniō, pervenīre, pervēnī, perventum",
+  conjugation: "4",
+  notes: "impersonal in the passive",
+  senses: [
+    { meaningEn: "to come, arrive" },
+    { meaningEn: "to reach, attain, come to" },
+  ],
+},
+{
+  lemma: "cūrō",
+  partOfSpeech: "verb",
+  principalParts: "cūrō, cūrāre, cūrāvī, cūrātum",
+  conjugation: "1",
+  senses: [
+    { meaningEn: "to arrange, see to, attend to, take care of, look after" },
+    { meaningEn: "to heal, cure" },
+    { meaningEn: "to govern, command, preside over" },
+    { meaningEn: "to undertake, procure" },
+  ],
+},
+{
+  lemma: "ignis",
+  partOfSpeech: "noun",
+  principalParts: "ignis",
+  gender: "m",
+  declension: "3",
+  senses: [
+    { meaningEn: "fire" },
+  ],
+},
+{
+  lemma: "amor",
+  partOfSpeech: "noun",
+  principalParts: "amōris",
+  gender: "m",
+  declension: "3",
+  senses: [
+    { meaningEn: "love, affection, devotion" },
+    { meaningEn: "strong and passionate longing for something, desire, lust" },
+    { meaningEn: "beloved, loved person" },
+    { meaningEn: "sex" },
+    { meaningEn: "love affair", usage: "plural only" },
+  ],
+},
+{
+  lemma: "habitō",
+  partOfSpeech: "verb",
+  principalParts: "habitō, habitāre, habitāvī, habitātum",
+  conjugation: "1",
+  senses: [
+    { meaningEn: "to reside, inhabit, remain, dwell, live" },
+    { meaningEn: "to linger", usage: "figuratively" },
+  ],
+},
+{
+  lemma: "urbs",
+  partOfSpeech: "noun",
+  principalParts: "urbis",
+  gender: "f",
+  declension: "3",
+  senses: [
+    { meaningEn: "a city, walled town" },
+    { meaningEn: "the City, Rome" },
+  ],
+},
+{
+  lemma: "vincō",
+  partOfSpeech: "verb",
+  principalParts: "vincō, vincere, vīcī, victum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to win" },
+    { meaningEn: "to conquer, to defeat, to vanquish" },
   ],
 },
 {
@@ -406,8 +504,6 @@ const words: Array<SeedWord> = [{
   declension: "2",
   senses: [{ meaningEn: "slave" }],
 },
-
-
 {
   lemma: "sed",
   partOfSpeech: "conjunction",
@@ -511,13 +607,6 @@ const words: Array<SeedWord> = [{
   principalParts: "parō, parāre, parāvī, parātum",
   conjugation: "1",
   senses: [{ meaningEn: "to prepare" }],
-},
-{
-  lemma: "habitō",
-  partOfSpeech: "verb",
-  principalParts: "habitō, habitāre, habitāvī, habitātum",
-  conjugation: "1",
-  senses: [{ meaningEn: "to live in" }],
 },
 {
   lemma: "abacus",
