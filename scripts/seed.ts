@@ -401,6 +401,69 @@ const words: Array<SeedWord> = [{
   ],
 },
 {
+  lemma: "scrībō",
+  partOfSpeech: "verb",
+  principalParts: "scrībō, scrībere, scrīpsī, scrīptum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to write" },
+  ],
+},
+{
+  lemma: "stilus",
+  partOfSpeech: "noun",
+  principalParts: "stilī",
+  gender: "m",
+  declension: "2",
+  senses: [
+    { meaningEn: "a stake, pale, spike", usage: "in general" },
+    { meaningEn: "a stylus or pencil used for writing on waxen tablets", usage: "in particular" },
+  ],
+},
+{
+  lemma: "cum",
+  partOfSpeech: "preposition",
+  notes: "takes the ablative",
+  senses: [
+    { meaningEn: "with, along with", exampleLa: "magnā cum laude", exampleEn: "With great praise" },
+    { meaningEn: "at (denoting a point in time)", exampleLa: "cum prīmā lūce vēnērunt", exampleEn: "they arrived at the first light" },
+  ],
+},
+{
+  lemma: "silva",
+  partOfSpeech: "noun",
+  principalParts: "silvae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "wood; forest" },
+    { meaningEn: "orchard; grove" },
+  ],
+},
+{
+  lemma: "tabula",
+  partOfSpeech: "noun",
+  principalParts: "tabulae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "tablet, sometimes a tablet covered with wax for writing" },
+    { meaningEn: "board or plank" },
+  ],
+},
+{
+  lemma: "ex",
+  partOfSpeech: "preposition",
+  notes: "takes the ablative. Alternative form: ē. ē and ex are chosen for sound alone: ē silvā but ex hortō.",
+  senses: [
+    { meaningEn: "out of, from", usage: "expressing elativity" },
+    { meaningEn: "out of, out from, of, among", usage: "indicates part of a multitude", exampleLa: "Ex omnibus rēbus, ācerrimī bellō Rōmānī sunt.", exampleEn: "Out of all peoples, Romans are the fiercest warriors." },
+    { meaningEn: "from", usage: "expressing distance" },
+    { meaningEn: "since, from", usage: "temporal uses" },
+    { meaningEn: "by, through, with the help of", exampleLa: "Ex īnsidiīs", exampleEn: "Through trickery" },
+  ],
+},
+{
   lemma: "audiō",
   partOfSpeech: "verb",
   principalParts: "audiō, audīre, audīvī, audītum",
