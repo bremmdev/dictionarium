@@ -10,19 +10,19 @@ type AdminSession = { isAdmin: true };
 const password = process.env.ADMIN_SESSION_SECRET;
 
 export function useAppSession() {
-    if (!password || password.length < 32) {
-        throw new Error(
-            "ADMIN_SESSION_SECRET must be set and at least 32 characters — it is the key the session cookie is sealed with.",
-        );
-    }
-    return useSession<AdminSession>({
-        // Session configuration
-        name: 'dictionarium-session',
-        password: password, // At least 32 characters, used to seal the session cookie
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            httpOnly: true,
-        },
-    })
+	if (!password || password.length < 32) {
+		throw new Error(
+			"ADMIN_SESSION_SECRET must be set and at least 32 characters — it is the key the session cookie is sealed with.",
+		);
+	}
+	return useSession<AdminSession>({
+		// Session configuration
+		name: "dictionarium-session",
+		password: password, // At least 32 characters, used to seal the session cookie
+		cookie: {
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "lax",
+			httpOnly: true,
+		},
+	});
 }

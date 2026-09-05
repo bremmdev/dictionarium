@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as VerbumLemmaRouteImport } from './routes/verbum.$lemma'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NumbersRoute = NumbersRouteImport.update({
@@ -31,30 +43,38 @@ const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/numbers' | '/verbum/$lemma'
+  fullPaths: '/' | '/admin' | '/login' | '/numbers' | '/verbum/$lemma'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/numbers' | '/verbum/$lemma'
-  id: '__root__' | '/' | '/numbers' | '/verbum/$lemma'
+  to: '/' | '/admin' | '/login' | '/numbers' | '/verbum/$lemma'
+  id: '__root__' | '/' | '/admin' | '/login' | '/numbers' | '/verbum/$lemma'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
   VerbumLemmaRoute: typeof VerbumLemmaRoute
 }
@@ -66,6 +86,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/numbers': {
@@ -87,6 +121,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
   VerbumLemmaRoute: VerbumLemmaRoute,
 }

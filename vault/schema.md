@@ -114,7 +114,7 @@ Which is why one lesson's worth of numbers produces four different rows:
 
 ### The invariant this creates
 
-NULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.
+rNULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.
 
 `scripts/check-inflection.ts` is what enforces it, and the fact it needs is not in the database: _which_ of the two questions applies is a property of the part of speech, not of the row. So the script writes that down.
 
@@ -192,12 +192,12 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 
 `npm run check` is the gate. It runs the four guards, then Biome:
 
-| Guard                 | Alone                      | What it holds                                                                                    |
-| --------------------- | -------------------------- | ------------------------------------------------------------------------------------------------ |
-| `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md)   |
-| `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)             |
-| `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                             |
-| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` means one thing — [above](#the-invariant-this-creates)     |
+| Guard                 | Alone                      | What it holds                                                                                 |
+| --------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md) |
+| `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)           |
+| `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                           |
+| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` means one thing — [above](#the-invariant-this-creates)   |
 
 Each names the rows it objects to, and exits non-zero:
 

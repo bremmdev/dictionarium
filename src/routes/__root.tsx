@@ -4,8 +4,16 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import { Header } from "#/components/Header";
 import appCss from "../styles.css?url";
+import { getIsAdmin } from "#/server/auth";
 
 export const Route = createRootRoute({
+	// A loader rather than beforeLoad: beforeLoad ignores staleTime, so it would
+	// spend an RPC on the session before every navigation. The session only
+	// changes at login and logout, and both of those invalidate the router.
+	loader: async () => {
+		return { isAdmin: await getIsAdmin() };
+	},
+	staleTime: Number.POSITIVE_INFINITY,
 	head: () => ({
 		meta: [
 			{
@@ -35,13 +43,15 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const data = Route.useLoaderData();
+
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body className="bg-parchment-50 text-ink-900 text-lg">
-				<Header />
+				<Header isAdmin={data?.isAdmin ?? false} />
 				{/* Routes bring their own container so a page can open with a
 				    full-bleed <Banner /> before its content narrows. */}
 				<main className="font-display text-ink-700">{children}</main>
