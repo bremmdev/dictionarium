@@ -799,7 +799,64 @@ const words: Array<SeedWord> = [{
   partOfSpeech: 'numeral',
   declension: 'indeclinable',
   senses: [{ meaningEn: 'seven' }],
-}]
+},
+{
+  lemma: "valeō",
+  partOfSpeech: "verb",
+  principalParts: "valeō, valēre, valuī, valitum",
+  conjugation: "2",
+  senses: [
+    { meaningEn: "to have strength, influence, power" },
+    { meaningEn: "to be well, healthy, sound" },
+    { meaningEn: "be worthy" },
+  ],
+},
+{
+  lemma: "salveō",
+  partOfSpeech: "verb",
+  principalParts: "salveō, salvēre",
+  conjugation: "2",
+  notes: "no passive",
+  senses: [
+    { meaningEn: "to be well, healthy" },
+    { meaningEn: "hail! hello! cheers! farewell!", usage: "imperative" },
+  ],
+},
+{
+  lemma: "taceō",
+  partOfSpeech: "verb",
+  principalParts: "taceō, tacēre, tacuī, tacitum",
+  conjugation: "2",
+  senses: [
+    { meaningEn: "to be silent, say nothing" },
+    { meaningEn: "to be still or at rest" },
+  ],
+},
+{
+  lemma: "sententia",
+  partOfSpeech: "noun",
+  principalParts: "sententiae",
+  gender: "f",
+  declension: "1",
+  senses: [
+    { meaningEn: "a way of thinking, view, opinion, judgement or sentence" },
+    { meaningEn: "a purpose, intention, will" },
+    { meaningEn: "a vote of opinion", usage: "politics" },
+    { meaningEn: "an authoritative decision, pronouncement, judgement, decree", usage: "politics" },
+    { meaningEn: "a feeling, sense, idea, notion" },
+  ],
+},
+{
+  lemma: "veniō",
+  partOfSpeech: "verb",
+  principalParts: "veniō, venīre, vēnī, ventum",
+  conjugation: "4",
+  notes: "impersonal in the passive",
+  senses: [
+    { meaningEn: "to come (to a place), come in, arrive, reach" },
+    { meaningEn: "to approach" },
+  ],
+},]
 
 await db
   .insert(entries)
