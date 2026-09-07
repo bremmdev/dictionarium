@@ -856,6 +856,57 @@ const words: Array<SeedWord> = [{
     { meaningEn: "to come (to a place), come in, arrive, reach" },
     { meaningEn: "to approach" },
   ],
+},
+{
+  lemma: "dīcō",
+  partOfSpeech: "verb",
+  principalParts: "dīcō, dīcere, dīxī, dictum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to say, talk, speak" },
+    { meaningEn: "to declare, state" },
+    { meaningEn: "to appoint, name, nominate" },
+    { meaningEn: "to call, name" },
+  ],
+},
+{
+  lemma: "dūcō",
+  partOfSpeech: "verb",
+  principalParts: "dūcō, dūcere, dūxī, ductum",
+  conjugation: "3",
+  senses: [
+    { meaningEn: "to lead, guide" },
+    { meaningEn: "to draw, pull" },
+    { meaningEn: "to think, consider, regard" },
+    { meaningEn: "to march, command, lead", usage: "military" },
+  ],
+},
+{
+  lemma: "ferō",
+  partOfSpeech: "verb",
+  principalParts: "ferō, ferre, tulī, lātum",
+  conjugation: "3",
+  notes: "suppletive",
+  senses: [
+    { meaningEn: "to bear, carry" },
+    { meaningEn: "to support, hold up" },
+    { meaningEn: "to suffer, tolerate, endure, bear" },
+    { meaningEn: "to consider" },
+    { meaningEn: "to cast (a vote)" },
+  ],
+},
+{
+  lemma: "faciō",
+  partOfSpeech: "verb",
+  principalParts: "faciō, facere, fēcī, factum",
+  conjugation: "3io",
+  notes: "suppletive",
+  senses: [
+    { meaningEn: "to do" },
+    { meaningEn: "to make, construct, build, erect" },
+    { meaningEn: "to make, produce, compose" },
+    { meaningEn: "to appoint" },
+  ],
 },]
 
 await db
