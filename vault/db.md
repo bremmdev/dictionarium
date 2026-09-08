@@ -53,6 +53,57 @@ Drizzle is re-wrapped on each evaluation, which is fine — it is a stateless wr
 
 The `{ schema }` second argument is separate and does nothing to the connection. It is what populates `db.query` — the relational query builder used for `with: { senses: ... }`. Without it `db.query` is typed as an empty object: no error, no hint, just nothing there. `import * as schema` matters too, because the `relations()` objects have to be in the namespace alongside the tables.
 
+## No `await` inside a transaction
+
+better-sqlite3 is synchronous, and its transaction wrapper commits on the same tick the callback returns. It refuses a promise outright — `lib/methods/transaction.js`:
+
+```js
+before.run();                                   // BEGIN, or SAVEPOINT if nested
+try {
+	const result = apply.call(fn, this, arguments);
+	if (result && typeof result.then === 'function') {
+		throw new TypeError('Transaction function cannot return a promise');
+	}
+	after.run();                                  // COMMIT
+	return result;
+} catch (ex) {
+	if (db.inTransaction) {
+		undo.run();                                 // ROLLBACK, or ROLLBACK TO
+		if (undo !== rollback) after.run();         // ...and RELEASE the savepoint
+	}
+	throw ex;
+}
+```
+
+An `await` anywhere in the callback makes it return a promise at the first suspension point. Without that guard `after.run()` would fire immediately — **COMMIT before the awaited work happened**, with everything after the await landing outside the transaction. And `BEGIN` / `COMMIT` are state on the one shared connection this file exports, so anything else running during the await would be swept into the transaction and committed or rolled back with it.
+
+The `throw` is inside the `try`, so the mistake costs a rollback and a loud `TypeError`, not a half-written row.
+
+Drizzle's driver types this honestly — `drizzle-orm/better-sqlite3/session.d.ts`. Note the return: `T`, not `Promise<T>`.
+
+```ts
+transaction<T>(transaction: (tx: BetterSQLiteTransaction<...>) => T): T;
+```
+
+So inside the callback, statements end in a synchronous terminal:
+
+```ts
+return db.transaction((tx) => {
+	const existing = tx.select({ ... }).from(entries).where(...).get();
+	const [created] = tx.insert(entries).values(columns).returning({ ... }).all();
+	tx.insert(senses).values(rows).run();
+});
+```
+
+**The trap is that `await` compiles.** Drizzle's query builders are thenables, so `await tx.insert(...)` type-checks and reads like every other ORM — and turns the callback async. `.get()` / `.all()` / `.run()` execute on the spot instead. `createEntry` is the worked example, in [editor.md](./editor.md#a-session-at-the-desk).
+
+The rule is scoped to the callback body. `await db.insert(...)` at the top level of a script is fine; there is no transaction open around it.
+
+Two consequences of the same synchronicity:
+
+- **A transaction blocks this process for its whole duration.** Nothing interleaves, which is what makes the guarantee cheap — and why `busy_timeout` above is about *other* processes, not this one. Keep transactions small anyway; the event loop is stopped while one runs.
+- **Nesting produces a `SAVEPOINT`, not a second `BEGIN`.** `db.transaction` inside `db.transaction` is safe: the inner one rolls back to its savepoint, releases it, and rethrows — so the outer transaction can catch and carry on, or let it propagate and roll everything back.
+
 ## Operations
 
 WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitignored. They are part of the database: copying `dictionarium.db` alone, while the server is running, does not give you a consistent backup. Use `VACUUM INTO 'backup.db'` or stop the process first.

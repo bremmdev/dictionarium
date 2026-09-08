@@ -35,6 +35,26 @@ export type SubmitStatus =
 	| { kind: "created"; lemma: string }
 	| { kind: "failed"; message: string };
 
+/**
+ * A draft someone else wrote: what suggestFromWiktionary makes of a lemma, in
+ * the shape this form holds a half-filled entry in. It is a suggestion and
+ * nothing more — it fills the fields and stops, because the reason to look a
+ * word up is to read what came back, not to trust it.
+ */
+export type EntrySuggestion = {
+	draft: DraftFields;
+	senses: Array<Omit<SenseRow, "id">>;
+	/** What a person has to know about the fill: choices made, values dropped. */
+	warnings: Array<string>;
+};
+
+/** Where the last lookup got to. Separate from the submit: they can overlap. */
+export type LookupStatus =
+	| { kind: "idle" }
+	| { kind: "pending" }
+	| { kind: "filled"; warnings: Array<string> }
+	| { kind: "failed"; message: string };
+
 export type FormState = {
 	draft: DraftFields;
 	senses: Array<SenseRow>;
@@ -45,6 +65,7 @@ export type FormState = {
 	/** Keyed the way parseEntryDraft keys them: by field, and by position within senses. */
 	errors: Record<string, string>;
 	status: SubmitStatus;
+	lookup: LookupStatus;
 };
 
 export type FormAction =
@@ -56,7 +77,10 @@ export type FormAction =
 	| { type: "submit-started" }
 	| { type: "submit-invalid"; fields: Record<string, string> }
 	| { type: "submit-succeeded"; lemma: string }
-	| { type: "submit-failed"; message: string };
+	| { type: "submit-failed"; message: string }
+	| { type: "lookup-started" }
+	| { type: "lookup-filled"; suggestion: EntrySuggestion }
+	| { type: "lookup-failed"; message: string };
 
 const EMPTY_SENSE = { meaningEn: "", usage: "" };
 
@@ -77,29 +101,27 @@ export const initialFormState: FormState = {
 	focusSense: null,
 	errors: {},
 	status: { kind: "idle" },
+	lookup: { kind: "idle" },
 };
 
 /**
- * A gender typed while "noun" was selected would otherwise ride along into an
- * adverb and be rejected by a rule the editor can no longer see on screen.
+ * The question that does not apply has to stay NULL, so this empties the
+ * answers the current part of speech does not ask for. A gender typed while
+ * "noun" was selected would otherwise ride along into an adverb and be rejected
+ * by a rule the editor can no longer see on screen.
  */
-function changeField(
-	draft: DraftFields,
-	name: keyof DraftFields,
-	value: string,
-): DraftFields {
-	const next = { ...draft, [name]: value };
-
-	if (name !== "partOfSpeech") return next;
-
-	const asks = isPartOfSpeech(value) ? INFLECTS[value] : undefined;
+function clearInapplicable(draft: DraftFields): DraftFields {
+	const { partOfSpeech } = draft;
+	const asks = isPartOfSpeech(partOfSpeech)
+		? INFLECTS[partOfSpeech]
+		: undefined;
 
 	return {
-		...next,
-		declension: asks === "declension" ? next.declension : "",
-		conjugation: asks === "conjugation" ? next.conjugation : "",
-		gender: value === "noun" ? next.gender : "",
-		principalParts: hasPrincipalParts(value) ? next.principalParts : "",
+		...draft,
+		declension: asks === "declension" ? draft.declension : "",
+		conjugation: asks === "conjugation" ? draft.conjugation : "",
+		gender: partOfSpeech === "noun" ? draft.gender : "",
+		principalParts: hasPrincipalParts(partOfSpeech) ? draft.principalParts : "",
 	};
 }
 
@@ -121,11 +143,16 @@ function cleared(state: FormState): FormState {
 
 export function formReducer(state: FormState, action: FormAction): FormState {
 	switch (action.type) {
-		case "field":
+		case "field": {
+			const draft = { ...state.draft, [action.name]: action.value };
+
 			return {
 				...state,
-				draft: changeField(state.draft, action.name, action.value),
+				// Only a new part of speech can strand an answer; a lemma cannot.
+				draft:
+					action.name === "partOfSpeech" ? clearInapplicable(draft) : draft,
 			};
+		}
 
 		case "sense-changed":
 			return {
@@ -172,5 +199,33 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 
 		case "submit-failed":
 			return { ...state, status: { kind: "failed", message: action.message } };
+
+		case "lookup-started":
+			return { ...state, lookup: { kind: "pending" } };
+
+		case "lookup-filled": {
+			const { draft, senses, warnings } = action.suggestion;
+			// A word Wiktionary had no definitions for is still a word to file, and
+			// the form needs a row to type the meaning into either way.
+			const rows = senses.length > 0 ? senses : [EMPTY_SENSE];
+
+			return {
+				...state,
+				draft: clearInapplicable(draft),
+				senses: rows.map((sense, i) => ({
+					...sense,
+					id: state.nextSenseId + i,
+				})),
+				nextSenseId: state.nextSenseId + rows.length,
+				focusSense: null,
+				// They were written about the draft that has just been replaced.
+				errors: {},
+				status: { kind: "idle" },
+				lookup: { kind: "filled", warnings },
+			};
+		}
+
+		case "lookup-failed":
+			return { ...state, lookup: { kind: "failed", message: action.message } };
 	}
 }

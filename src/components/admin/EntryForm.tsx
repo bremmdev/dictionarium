@@ -2,7 +2,7 @@ import { Button } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 import { useEffect, useId, useReducer, useRef } from "react";
-import { createEntry } from "#/server/entries";
+import { createEntry, suggestEntry } from "#/server/entries";
 import {
 	type DraftFields,
 	formReducer,
@@ -108,7 +108,7 @@ export function EntryForm() {
 	const fieldId = useId();
 
 	const [state, dispatch] = useReducer(formReducer, initialFormState);
-	const { draft, senses, errors, status } = state;
+	const { draft, senses, errors, status, lookup } = state;
 
 	const meaningRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
@@ -132,6 +132,34 @@ export function EntryForm() {
 		// This row is about to unmount with focus inside it, so hand focus on
 		// rather than letting it fall to <body>.
 		addSenseRef.current?.focus();
+	};
+
+	/**
+	 * Fills the form from Wiktionary and stops there. Everything it writes is a
+	 * suggestion to be read: it replaces the draft rather than merging into it,
+	 * so what is on screen afterwards is one word's filing and not two halves of
+	 * different ones.
+	 */
+	const handleLookup = async () => {
+		if (lookup.kind === "pending" || draft.lemma.trim() === "") return;
+
+		dispatch({ type: "lookup-started" });
+
+		try {
+			const suggestion = await suggestEntry({
+				data: { lemma: draft.lemma, partOfSpeech: draft.partOfSpeech },
+			});
+			dispatch({ type: "lookup-filled", suggestion });
+		} catch (err) {
+			dispatch({
+				type: "lookup-failed",
+				message:
+					err instanceof Error ? err.message : "Wiktionary could not be read.",
+			});
+		}
+		// Focus stays in the lemma field either way: a lookup that found nothing
+		// is usually a spelling to fix, and one that worked has filled the fields
+		// the editor is about to read. Both banners announce themselves.
 	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -179,9 +207,9 @@ export function EntryForm() {
 
 	return (
 		<form className="space-y-10" onSubmit={handleSubmit} noValidate>
-			{/* One live region for both outcomes, so a screen reader hears the
-			    result of a submit whichever way it went. */}
-			<div ref={summaryRef} tabIndex={-1} className="focus-ring">
+			{/* One live region for every outcome, so a screen reader hears the
+			    result of a submit or a lookup whichever way it went. */}
+			<div ref={summaryRef} tabIndex={-1} className="focus-ring space-y-4">
 				{status.kind === "created" && (
 					// <output> rather than a <p role="status">: it is the element that
 					// carries that role natively, and this is a result of a submit.
@@ -218,6 +246,39 @@ export function EntryForm() {
 						</ul>
 					</div>
 				)}
+
+				{lookup.kind === "filled" && (
+					// With nothing to warn about there is nothing to show, and the
+					// element has to leave the flow rather than sit in it at zero
+					// height: an empty summary region self-collapses, and one holding
+					// an invisible block does not, which is a 40px hole under the
+					// heading that nobody can see the reason for.
+					<output className={lookup.warnings.length > 0 ? "block" : "sr-only"}>
+						{/* The filled fields are the confirmation, and they are right
+						    there — but only to someone looking at them. */}
+						<span className="sr-only">Wiktionary filled the form.</span>
+
+						{lookup.warnings.length > 0 && (
+							<ul className="list-disc space-y-1 rounded-lg border border-parchment-300 bg-parchment-100 py-3 pr-4 pl-9 text-ink-700 text-sm">
+								{lookup.warnings.map((warning) => (
+									<li key={warning}>{warning}</li>
+								))}
+							</ul>
+						)}
+					</output>
+				)}
+
+				{lookup.kind === "failed" && (
+					<div
+						role="alert"
+						className="rounded-lg border border-accent bg-parchment-100 px-4 py-3"
+					>
+						<p className="font-bold text-accent" lang="la">
+							Nihil inventum.
+						</p>
+						<p className="mt-2 text-ink-700 text-sm">{lookup.message}</p>
+					</div>
+				)}
 			</div>
 
 			<div className="space-y-2">
@@ -226,25 +287,52 @@ export function EntryForm() {
 				</label>
 				<p className="text-ink-500 text-sm">
 					The headword with its macrons: the first principal part of a verb, the
-					nominative of a noun, the word itself otherwise.
+					nominative of a noun, the word itself otherwise. Quaere fills the rest
+					of the form from Wiktionary, replacing whatever is in it.
 				</p>
-				<input
-					id={`${fieldId}-lemma`}
-					type="text"
-					lang="la"
-					autoComplete="off"
-					spellCheck={false}
-					placeholder="labōrō"
-					className={`${INPUT} font-bold text-xl tracking-wide`}
-					aria-invalid={errors.lemma !== undefined}
-					aria-describedby={
-						errors.lemma === undefined
-							? `${fieldId}-lemma-key`
-							: `${fieldId}-lemma-error`
-					}
-					value={draft.lemma}
-					onChange={(e) => setField("lemma")(e.target.value)}
-				/>
+				<div className="flex flex-wrap items-start gap-3">
+					<input
+						id={`${fieldId}-lemma`}
+						type="text"
+						lang="la"
+						autoComplete="off"
+						spellCheck={false}
+						placeholder="labōrō"
+						className={`${INPUT} min-w-48 flex-1 font-bold text-xl tracking-wide`}
+						aria-invalid={errors.lemma !== undefined}
+						aria-describedby={
+							errors.lemma === undefined
+								? `${fieldId}-lemma-key`
+								: `${fieldId}-lemma-error`
+						}
+						value={draft.lemma}
+						onChange={(e) => setField("lemma")(e.target.value)}
+					/>
+
+					{/* Three corrections to the secondary button, all of them about
+					    what disabled looks like. Its hover tint applies to a disabled
+					    button too, which offers a press that cannot happen; its spinner
+					    is painted in the inverse foreground, which on this surface is
+					    parchment on parchment; and a button disabled because it is
+					    working would otherwise wear the fade that says unavailable over
+					    the spinner that says wait. */}
+					<Button
+						type="button"
+						variant="secondary"
+						className={`uppercase disabled:hover:bg-accent/5 [&_svg]:text-accent ${
+							lookup.kind === "pending" ? "disabled:opacity-100" : ""
+						}`}
+						lang="la"
+						isLoading={lookup.kind === "pending"}
+						disabled={draft.lemma.trim() === "" || lookup.kind === "pending"}
+						onClick={handleLookup}
+					>
+						Quaere
+						<span className="sr-only" lang="en">
+							{" (look this word up on Wiktionary and fill the form)"}
+						</span>
+					</Button>
+				</div>
 				{/* lemma_plain is derived, never typed — showing it is the cheapest way
 				    to say so, and it is the key every search actually matches on. */}
 				{searchKey !== "" && errors.lemma === undefined && (
