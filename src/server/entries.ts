@@ -122,8 +122,8 @@ export const updateEntry = createServerFn({ method: "POST" })
 			// a meaning outright. Deleting first also means the ranks that come back
 			// run 1..n by construction, the way they do for a create.
 			//
-			// The cost is that example_la and example_en go with them. The form does
-			// not collect examples, so it has nothing to write back.
+			// Every column of a sense rides along in the draft, examples included,
+			// so a replacement loses nothing the editor did not delete on screen.
 			tx.delete(senses).where(eq(senses.entryId, id)).run();
 
 			tx.insert(senses)

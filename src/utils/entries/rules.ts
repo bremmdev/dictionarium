@@ -77,6 +77,9 @@ export type SenseDraft = {
 	meaningEn: string;
 	/** 'medical', 'military', 'poetic' — a label on this sense only. */
 	usage: string | null;
+	/** A line of Latin showing this sense in use, and its translation. */
+	exampleLa: string | null;
+	exampleEn: string | null;
 };
 
 /** A validated row plus its senses */
@@ -300,6 +303,10 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		return {
 			meaningEn: text(row.meaningEn),
 			usage: text(row.usage) || null,
+			// The example is Latin, and the detail page renders it under lang="la"
+			// — so it answers to the same script rule the lemma does.
+			exampleLa: latin(row.exampleLa) || null,
+			exampleEn: text(row.exampleEn) || null,
 		};
 	});
 
@@ -310,6 +317,21 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 	senses.forEach((sense, i) => {
 		if (sense.meaningEn === "") {
 			fields[`senses.${i}.meaningEn`] = `Sense ${i + 1} has no meaning.`;
+		}
+
+		const suspectExample =
+			sense.exampleLa === null ? null : suspectCharacter(sense.exampleLa);
+
+		if (suspectExample) {
+			fields[`senses.${i}.exampleLa`] = suspectExample;
+		}
+
+		// One-way: a Latin line on its own is an example a reader can work at,
+		// but a translation with nothing above it renders as a quotation of
+		// nothing. See the detail page, which sets them in that order.
+		if (sense.exampleEn !== null && sense.exampleLa === null) {
+			fields[`senses.${i}.exampleEn`] =
+				`Sense ${i + 1} has a translation but no Latin example to translate.`;
 		}
 	});
 

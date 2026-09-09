@@ -71,6 +71,25 @@ The edit link on the detail page is shown to an admin and to nobody else, which 
 
 That replacement is the design, not an optimisation. Position *is* the rank, so a merge would have to decide which filed row each edited row *is* — and it cannot, because the editor may have reordered them, cut one from the middle, or rewritten a meaning outright. Deleting first is also what makes the new ranks run 1..n by construction, exactly as they do for a create.
 
+### Examples: off unless there is one
+
+`senses.example_la` and `example_en` are a pair of inputs per sense, and they start hidden — most senses carry no example, and two empty boxes on every row is a wall between the editor and the meanings. **Add example** reveals them for one sense and leaves the caret in the Latin box.
+
+Where they start:
+
+| Opening                | The example fields                                              |
+| ---------------------- | ---------------------------------------------------------------- |
+| A new word             | closed and empty                                                  |
+| A fill from Wiktionary | closed and empty — a lookup suggests meanings, never examples     |
+| A filed word, editing  | **open where that sense has one**, closed where it does not       |
+
+One invariant holds the whole thing up: **hidden always means empty.** Nothing hides a value — `sense-examples-hidden` clears both boxes as it closes them. So an example that is off screen is never also on its way to the database, and "Remove example" is the way to unfile one.
+
+Two rules in `parseEntryDraft`:
+
+- The Latin example is Latin, rendered under `lang="la"` on the detail page, so it answers to the same script check the lemma does — a Greek `α` hiding in it is refused there, not discovered later by `check:macrons`.
+- **A translation needs something to translate.** `example_en` without `example_la` is an error keyed to that sense; the reverse is fine, because a Latin line on its own is an example a reader can work at, while a translation on its own renders as a quotation of nothing.
+
 ## The form is a reducer
 
 One user action is one named transition, in `formReducer`. Two rules live there rather than in the event handlers that used to hold them, because a handler is a place every future caller has to remember:
@@ -112,6 +131,7 @@ What the parser makes of a page:
 | deponency, `+ ablative`, `m or f`   | `notes`, where a sentence is allowed                                   |
 | the definition list, in order       | senses — its first becomes rank 1, capped at eight                     |
 | a definition's leading `(poetic)`   | that sense's `usage`, once grammar labels like `(transitive)` are dropped |
+| quotations under a definition       | **nothing** — examples are written by a person, never filled              |
 
 **A value this dictionary has no vocabulary for is dropped and said out loud**, never passed through. An unrecognised declension would only be rejected by `parseEntryDraft` a moment later, with the editor wondering where it came from.
 
@@ -163,15 +183,13 @@ Adding a sense leaves the caret in the new row's meaning. Removing one hands foc
 
 ## Later
 
-Examples are still write-only from here. `senses.example_la` and `example_en` have no field on the form, so an edit cannot add one — and, because an edit replaces the senses wholesale, it *drops* the ones a word already had. The form says so before the press when the entry has any, but the honest fix is fields for them.
-
-Deleting an entry is not built either, and neither is reordering senses by anything other than retyping them.
+Deleting an entry is not built, and neither is reordering senses by anything other than retyping them.
 
 ## Gotchas
 
 - **A new admin server function needs `.middleware([authMiddleware])` explicitly.** `suggestEntry` reaches the network on the caller's behalf; unguarded, it is an open Wikimedia proxy with this app's user agent on it.
 - **Quaere replaces the whole draft, senses included.** It is not a merge. That is deliberate — what is on screen afterwards is one word's filing rather than two halves of different ones — but it means anything typed before pressing it is gone. It works the same way inside an edit, so it will overwrite a filed word's answers with Wiktionary's.
-- **Saving an edit replaces every sense, and takes their examples with them.** The rows on screen are the rows that end up filed, ranked 1..n by position. Anything on the old sense rows that the form does not hold — `example_la`, `example_en` — is not carried across.
+- **Saving an edit replaces every sense with the rows on screen**, ranked 1..n by position. That is safe only because the form now holds every column a sense has. Add a column to `senses` and it has to reach `handleSubmit`'s `filing` — the senses are mapped field by field there, and one left out of that list is one that silently saves empty on every edit.
 - **A saved edit hands the desk back as a new word's.** The form empties and `mode` drops to `create`, then the route is sent to `/admin`. Both halves matter: an emptied form still addressed to a row would file the *next* word typed into it over the one just saved.
 - **The form is not keyed by the entry.** It notices a different word arriving and replaces its own draft, because a `key` would remount it — and unmount the confirmation banner at the exact moment a saved edit sends the route back to `/admin`.
 - **The fill is capped at eight senses, and Wiktionary's order is the rank order.** Cut rows before saving rather than after: position *is* the rank, so deleting sense 2 later renumbers everything below it.

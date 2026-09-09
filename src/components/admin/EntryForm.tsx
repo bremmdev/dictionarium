@@ -124,15 +124,9 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const { draft, senses, errors, status, lookup, mode } = state;
 
 	const editing = mode.kind === "edit";
-	// The senses are about to be replaced wholesale, and the form has no field
-	// for an example — so any that were filed are about to go. Said before the
-	// press rather than discovered after it.
-	const losingExamples =
-		editing &&
-		(entry?.senses.some((sense) => sense.exampleLa || sense.exampleEn) ??
-			false);
 
 	const meaningRefs = useRef(new Map<number, HTMLInputElement>());
+	const exampleRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
 	const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -160,6 +154,12 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		meaningRefs.current.get(state.focusSense)?.focus();
 		dispatch({ type: "focus-handled" });
 	}, [state.focusSense]);
+
+	useEffect(() => {
+		if (state.focusExample === null) return;
+		exampleRefs.current.get(state.focusExample)?.focus();
+		dispatch({ type: "example-focus-handled" });
+	}, [state.focusExample]);
 
 	const asks = isPartOfSpeech(draft.partOfSpeech)
 		? INFLECTS[draft.partOfSpeech]
@@ -209,7 +209,16 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 		const filing = {
 			...draft,
-			senses: senses.map(({ meaningEn, usage }) => ({ meaningEn, usage })),
+			// Named rather than spread: `id` and `showExamples` are this form's own
+			// bookkeeping and have no business crossing to the server. Anything a
+			// sense actually carries has to be listed here — a column added to the
+			// row and forgotten in this line is a column that silently saves empty.
+			senses: senses.map(({ meaningEn, usage, exampleLa, exampleEn }) => ({
+				meaningEn,
+				usage,
+				exampleLa,
+				exampleEn,
+			})),
 		};
 
 		try {
@@ -508,19 +517,11 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						" Saving replaces every sense this word has with the rows below, so position here is the rank it is filed under."}
 				</p>
 
-				{/* Not a validation message and not an alert: nothing is wrong yet.
-				    It is the one consequence of replacing the senses that is not
-				    visible in the rows themselves. */}
-				{losingExamples && (
-					<p className="rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3 text-ink-700 text-sm">
-						This word has example sentences filed against its senses. The form
-						does not hold examples, so saving will drop them.
-					</p>
-				)}
-
 				<ol className="space-y-3">
 					{senses.map((sense, i) => {
 						const meaningError = errors[`senses.${i}.meaningEn`];
+						const exampleLaError = errors[`senses.${i}.exampleLa`];
+						const exampleEnError = errors[`senses.${i}.exampleEn`];
 
 						return (
 							<li
@@ -533,69 +534,180 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 									{i + 1}
 								</span>
 
-								<div className="grid flex-1 gap-3 sm:grid-cols-[2fr_1fr]">
-									<div>
-										<label
-											htmlFor={`${fieldId}-meaning-${sense.id}`}
-											className="sr-only"
-										>
-											Meaning of sense {i + 1}
-										</label>
-										<input
-											id={`${fieldId}-meaning-${sense.id}`}
-											ref={(node) => {
-												if (node) meaningRefs.current.set(sense.id, node);
-												else meaningRefs.current.delete(sense.id);
-											}}
-											type="text"
-											autoComplete="off"
-											placeholder="to work, labour"
-											className={INPUT}
-											aria-invalid={meaningError !== undefined}
-											aria-describedby={
-												meaningError === undefined
-													? undefined
-													: `${fieldId}-meaning-${sense.id}-error`
-											}
-											value={sense.meaningEn}
-											onChange={(e) =>
-												dispatch({
-													type: "sense-changed",
-													id: sense.id,
-													patch: { meaningEn: e.target.value },
-												})
-											}
-										/>
-										{meaningError && (
-											<FieldError id={`${fieldId}-meaning-${sense.id}-error`}>
-												{meaningError}
-											</FieldError>
-										)}
+								<div className="flex-1 space-y-3">
+									<div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
+										<div>
+											<label
+												htmlFor={`${fieldId}-meaning-${sense.id}`}
+												className="sr-only"
+											>
+												Meaning of sense {i + 1}
+											</label>
+											<input
+												id={`${fieldId}-meaning-${sense.id}`}
+												ref={(node) => {
+													if (node) meaningRefs.current.set(sense.id, node);
+													else meaningRefs.current.delete(sense.id);
+												}}
+												type="text"
+												autoComplete="off"
+												placeholder="to work, labour"
+												className={INPUT}
+												aria-invalid={meaningError !== undefined}
+												aria-describedby={
+													meaningError === undefined
+														? undefined
+														: `${fieldId}-meaning-${sense.id}-error`
+												}
+												value={sense.meaningEn}
+												onChange={(e) =>
+													dispatch({
+														type: "sense-changed",
+														id: sense.id,
+														patch: { meaningEn: e.target.value },
+													})
+												}
+											/>
+											{meaningError && (
+												<FieldError id={`${fieldId}-meaning-${sense.id}-error`}>
+													{meaningError}
+												</FieldError>
+											)}
+										</div>
+
+										<div>
+											<label
+												htmlFor={`${fieldId}-usage-${sense.id}`}
+												className="sr-only"
+											>
+												Usage label for sense {i + 1} (optional)
+											</label>
+											<input
+												id={`${fieldId}-usage-${sense.id}`}
+												type="text"
+												autoComplete="off"
+												placeholder="usage (optional)"
+												className={INPUT}
+												value={sense.usage}
+												onChange={(e) =>
+													dispatch({
+														type: "sense-changed",
+														id: sense.id,
+														patch: { usage: e.target.value },
+													})
+												}
+											/>
+										</div>
 									</div>
 
-									<div>
-										<label
-											htmlFor={`${fieldId}-usage-${sense.id}`}
-											className="sr-only"
-										>
-											Usage label for sense {i + 1} (optional)
-										</label>
-										<input
-											id={`${fieldId}-usage-${sense.id}`}
-											type="text"
-											autoComplete="off"
-											placeholder="usage (optional)"
-											className={INPUT}
-											value={sense.usage}
-											onChange={(e) =>
-												dispatch({
-													type: "sense-changed",
-													id: sense.id,
-													patch: { usage: e.target.value },
-												})
-											}
-										/>
-									</div>
+									{sense.showExamples && (
+										<div className="grid gap-3 sm:grid-cols-2">
+											<div>
+												<label
+													htmlFor={`${fieldId}-example-la-${sense.id}`}
+													className="sr-only"
+												>
+													Latin example for sense {i + 1}
+												</label>
+												<input
+													id={`${fieldId}-example-la-${sense.id}`}
+													ref={(node) => {
+														if (node) exampleRefs.current.set(sense.id, node);
+														else exampleRefs.current.delete(sense.id);
+													}}
+													type="text"
+													lang="la"
+													autoComplete="off"
+													spellCheck={false}
+													placeholder="magnā cum laude"
+													className={`${INPUT} italic`}
+													aria-invalid={exampleLaError !== undefined}
+													aria-describedby={
+														exampleLaError === undefined
+															? undefined
+															: `${fieldId}-example-la-${sense.id}-error`
+													}
+													value={sense.exampleLa}
+													onChange={(e) =>
+														dispatch({
+															type: "sense-changed",
+															id: sense.id,
+															patch: { exampleLa: e.target.value },
+														})
+													}
+												/>
+												{exampleLaError && (
+													<FieldError
+														id={`${fieldId}-example-la-${sense.id}-error`}
+													>
+														{exampleLaError}
+													</FieldError>
+												)}
+											</div>
+
+											<div>
+												<label
+													htmlFor={`${fieldId}-example-en-${sense.id}`}
+													className="sr-only"
+												>
+													English translation of the example for sense {i + 1}
+												</label>
+												<input
+													id={`${fieldId}-example-en-${sense.id}`}
+													type="text"
+													autoComplete="off"
+													placeholder="with great praise"
+													className={INPUT}
+													aria-invalid={exampleEnError !== undefined}
+													aria-describedby={
+														exampleEnError === undefined
+															? undefined
+															: `${fieldId}-example-en-${sense.id}-error`
+													}
+													value={sense.exampleEn}
+													onChange={(e) =>
+														dispatch({
+															type: "sense-changed",
+															id: sense.id,
+															patch: { exampleEn: e.target.value },
+														})
+													}
+												/>
+												{exampleEnError && (
+													<FieldError
+														id={`${fieldId}-example-en-${sense.id}-error`}
+													>
+														{exampleEnError}
+													</FieldError>
+												)}
+											</div>
+										</div>
+									)}
+
+									{/* Off by default and revealed per sense: most senses carry
+									    no example, and two empty inputs on every row is a wall.
+									    Hiding clears, so what is off screen is never also
+									    on its way to the database. */}
+									<button
+										type="button"
+										onClick={() =>
+											dispatch({
+												type: sense.showExamples
+													? "sense-examples-hidden"
+													: "sense-examples-shown",
+												id: sense.id,
+											})
+										}
+										className="focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-500 text-xs uppercase tracking-[0.18em] hover:text-accent"
+									>
+										{sense.showExamples ? (
+											<X className="h-3 w-3" aria-hidden="true" />
+										) : (
+											<Plus className="h-3 w-3" aria-hidden="true" />
+										)}
+										{sense.showExamples ? "Remove example" : "Add example"}
+										<span className="sr-only"> for sense {i + 1}</span>
+									</button>
 								</div>
 
 								{/* An entry needs at least one sense, so the last row has

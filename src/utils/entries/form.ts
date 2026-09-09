@@ -17,7 +17,26 @@ import {
 } from "#/utils/entries/rules";
 
 /** The id is the React key and the ref key; it is never rendered. Position is the rank. */
-export type SenseRow = { id: number; meaningEn: string; usage: string };
+export type SenseRow = {
+	id: number;
+	meaningEn: string;
+	usage: string;
+	exampleLa: string;
+	exampleEn: string;
+	/**
+	 * Whether this row's two example inputs are on screen.
+	 *
+	 * The fields are off by default and revealed per sense
+	 */
+	showExamples: boolean;
+};
+
+/**
+ * A sense as a lookup hands it over. Deliberately not `Omit<SenseRow, "id">`:
+ * Wiktionary fills meanings, never examples, and this is where that is said
+ * once rather than remembered at each call site.
+ */
+export type SuggestedSense = { meaningEn: string; usage: string };
 
 /** Every answer the form collects, as typed — strings until parseEntryDraft has had it. */
 export type DraftFields = {
@@ -58,7 +77,7 @@ export type FormMode =
  */
 export type EntrySuggestion = {
 	draft: DraftFields;
-	senses: Array<Omit<SenseRow, "id">>;
+	senses: Array<SuggestedSense>;
 	/** What a person has to know about the fill: choices made, values dropped. */
 	warnings: Array<string>;
 };
@@ -78,6 +97,8 @@ export type FormState = {
 	nextSenseId: number;
 	/** The row whose meaning should take focus once it has rendered. */
 	focusSense: number | null;
+	/** The row whose Latin example should take focus once it has rendered. */
+	focusExample: number | null;
 	/** Keyed the way parseEntryDraft keys them: by field, and by position within senses. */
 	errors: Record<string, string>;
 	status: SubmitStatus;
@@ -89,7 +110,10 @@ export type FormAction =
 	| { type: "sense-changed"; id: number; patch: Partial<Omit<SenseRow, "id">> }
 	| { type: "sense-added" }
 	| { type: "sense-removed"; id: number }
+	| { type: "sense-examples-shown"; id: number }
+	| { type: "sense-examples-hidden"; id: number }
 	| { type: "focus-handled" }
+	| { type: "example-focus-handled" }
 	/** The route loaded a different word to work on, or none. */
 	| { type: "entry-loaded"; entry: EntryWithSenses | null }
 	| { type: "submit-started" }
@@ -100,7 +124,13 @@ export type FormAction =
 	| { type: "lookup-filled"; suggestion: EntrySuggestion }
 	| { type: "lookup-failed"; message: string };
 
-const EMPTY_SENSE = { meaningEn: "", usage: "" };
+const EMPTY_SENSE = {
+	meaningEn: "",
+	usage: "",
+	exampleLa: "",
+	exampleEn: "",
+	showExamples: false,
+};
 
 const EMPTY_DRAFT: DraftFields = {
 	lemma: "",
@@ -118,6 +148,7 @@ export const initialFormState: FormState = {
 	senses: [{ id: 0, ...EMPTY_SENSE }],
 	nextSenseId: 1,
 	focusSense: null,
+	focusExample: null,
 	errors: {},
 	status: { kind: "idle" },
 	lookup: { kind: "idle" },
@@ -150,10 +181,16 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 		senses:
 			entry.senses.length > 0
 				? entry.senses.map((sense, i) => ({
-						id: i,
-						meaningEn: sense.meaningEn,
-						usage: sense.usage ?? "",
-					}))
+					id: i,
+					meaningEn: sense.meaningEn,
+					usage: sense.usage ?? "",
+					exampleLa: sense.exampleLa ?? "",
+					exampleEn: sense.exampleEn ?? "",
+					// Shown exactly where there is something to show. An editor
+					// opening a filed word sees the examples it has and no empty
+					// pair on the senses that never had one.
+					showExamples: Boolean(sense.exampleLa || sense.exampleEn),
+				}))
 				: [{ id: 0, ...EMPTY_SENSE }],
 		nextSenseId: Math.max(entry.senses.length, 1),
 	};
@@ -244,8 +281,34 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				errors: withoutSenseErrors(state.errors),
 			};
 
+		case "sense-examples-shown":
+			return {
+				...state,
+				senses: state.senses.map((row) =>
+					row.id === action.id ? { ...row, showExamples: true } : row,
+				),
+				// A button that reveals an input should leave the caret in it.
+				focusExample: action.id,
+			};
+
+		case "sense-examples-hidden":
+			return {
+				...state,
+				// Cleared as well as closed. Hiding a value the editor cannot see but
+				// the submit would still send is the one thing this must not do.
+				senses: state.senses.map((row) =>
+					row.id === action.id
+						? { ...row, exampleLa: "", exampleEn: "", showExamples: false }
+						: row,
+				),
+				errors: withoutSenseErrors(state.errors),
+			};
+
 		case "focus-handled":
 			return { ...state, focusSense: null };
+
+		case "example-focus-handled":
+			return { ...state, focusExample: null };
 
 		// A wholesale replacement, the way a lookup is: what is on screen
 		// afterwards is one word's filing, never two halves of different ones.
@@ -281,12 +344,16 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 			const { draft, senses, warnings } = action.suggestion;
 			// A word Wiktionary had no definitions for is still a word to file, and
 			// the form needs a row to type the meaning into either way.
-			const rows = senses.length > 0 ? senses : [EMPTY_SENSE];
+			const rows: Array<SuggestedSense> =
+				senses.length > 0 ? senses : [{ meaningEn: "", usage: "" }];
 
 			return {
 				...state,
 				draft: clearInapplicable(draft),
+				// EMPTY_SENSE first, so a fill lands on closed, empty example fields:
+				// a lookup suggests meanings and never an example.
 				senses: rows.map((sense, i) => ({
+					...EMPTY_SENSE,
 					...sense,
 					id: state.nextSenseId + i,
 				})),
