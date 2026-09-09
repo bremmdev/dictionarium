@@ -64,6 +64,9 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 	// the first one is what a printed dictionary sets after the principal parts.
 	const [core] = entry.senses;
 
+	// We show one sense in the card, but want to indicate that there are more on the detail page
+	const rest = entry.senses.length - 1;
+
 	return (
 		// Only the lemma is the link, so its accessible name stays "ambulō" rather
 		// than the whole row run together. The after:inset-0 pseudo-element then
@@ -98,7 +101,16 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 				</p>
 			)}
 
-			{core && <p className="text-ink-900">{core.meaningEn}</p>}
+			{core && (
+				<p className="text-ink-900">
+					{core.meaningEn}
+					{rest > 0 && (
+						<span className="ml-2 whitespace-nowrap text-ink-500 text-sm">
+							+{rest} more {rest === 1 ? "meaning" : "meanings"}
+						</span>
+					)}
+				</p>
+			)}
 		</div>
 	);
 }

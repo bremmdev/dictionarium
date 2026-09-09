@@ -254,6 +254,20 @@ Only the lemma is the anchor. Wrapping the whole row was the first attempt and g
 
 Instead the `<Link>` wraps the lemma alone and stretches its hit area over the row with `after:absolute after:inset-0`. The name is `ambulō`, the `<h3>`s stay clean for heading navigation, and the whole row is still clickable. The tradeoff is that text inside a row is awkward to select — acceptable for a scan-and-click list, where copying happens on the detail page.
 
+### One meaning, and a count of the rest
+
+A row sets **rank 1 only** — the list is for scanning, and the headline sense is what a printed dictionary sets after the principal parts. But a word with five senses and a word with one look identical when only the first is shown, so a row with more says so:
+
+```
+to sit, to be seated  +4 more meanings
+to defend, guard or protect  +1 more meaning
+goddess
+```
+
+It is the count of what the row is *not* showing, not the total, so it answers the question actually being asked — is there more here than this line? The loader already reads every sense for its ranking, so this costs no extra query. It appears at exactly the point the detail page grows a **Meanings** section: both turn on at the second sense.
+
+The count sits inside the meaning's own `<p>`, so a screen reader reads it as part of that line rather than as a fragment stranded after it.
+
 ## Gotchas
 
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.
