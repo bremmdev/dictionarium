@@ -27,7 +27,7 @@ export const CONJUGATIONS = ["1", "2", "3", "4", "3io", "irregular"] as const;
 export const GENDERS = ["m", "f", "n"] as const;
 
 /**
- * Which question a part of speech has to answer. 
+ * Which question a part of speech has to answer.
  */
 export const INFLECTS = {
 	noun: "declension",

@@ -60,6 +60,87 @@ export const createEntry = createServerFn({ method: "POST" })
 	});
 
 /**
+ * The same word, filed again.
+ *
+ * The id travels beside the draft rather than inside it, because the lemma is
+ * one of the things an edit is allowed to change — so it cannot be what says
+ * which row is being changed. parseEntryDraft is the gate here exactly as it is
+ * on createEntry; it ignores the id, and this validator is what refuses one
+ * that is not a row number.
+ */
+export const updateEntry = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.validator((input: unknown) => {
+		const raw = (
+			typeof input === "object" && input !== null ? input : {}
+		) as Record<string, unknown>;
+
+		const id = raw.id;
+
+		// Not an EntryValidationError: no field on screen is wrong, so there is no
+		// input to hang the message on. A bad id is a bad request.
+		if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) {
+			throw new Error("That edit does not say which entry it belongs to.");
+		}
+
+		return { id, draft: parseEntryDraft(raw) };
+	})
+	.handler(async ({ data: { id, draft } }) => {
+		const { senses: drafted, ...columns } = draft;
+
+		return db.transaction((tx) => {
+			// The row may have been deleted since the form read it. Asking is what
+			// turns "0 rows updated" into a sentence.
+			const existing = tx
+				.select({ id: entries.id })
+				.from(entries)
+				.where(eq(entries.id, id))
+				.get();
+
+			if (!existing) {
+				throw new Error("That entry is no longer in the dictionary.");
+			}
+
+			// UNIQUE on lemma still stops the collision; this is only so a rename
+			// onto another word's headword reads as a sentence. The entry keeping
+			// its own lemma is not a collision with itself.
+			const clash = tx
+				.select({ id: entries.id })
+				.from(entries)
+				.where(eq(entries.lemma, columns.lemma))
+				.get();
+
+			if (clash && clash.id !== id) {
+				throw new Error(`“${columns.lemma}” is already in the dictionary.`);
+			}
+
+			tx.update(entries).set(columns).where(eq(entries.id, id)).run();
+
+			// Replaced, never merged: position is the rank, so a merge would have to
+			// decide which existing row each edited row "is", and it cannot — the
+			// editor may have reordered them, cut one from the middle, or rewritten
+			// a meaning outright. Deleting first also means the ranks that come back
+			// run 1..n by construction, the way they do for a create.
+			//
+			// The cost is that example_la and example_en go with them. The form does
+			// not collect examples, so it has nothing to write back.
+			tx.delete(senses).where(eq(senses.entryId, id)).run();
+
+			tx.insert(senses)
+				.values(
+					drafted.map((sense, i) => ({
+						...sense,
+						entryId: id,
+						rank: i + 1,
+					})),
+				)
+				.run();
+
+			return { lemma: columns.lemma };
+		});
+	});
+
+/**
  * The research assistant scripts/enrich-entries.ts uses, reachable from the
  * form: a lemma in, a filled draft out. It writes nothing — the editor reads
  * what came back and presses Adde, or does not.

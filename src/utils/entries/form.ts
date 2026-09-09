@@ -9,6 +9,7 @@
  *   - sense messages are keyed by position, because position is the rank, so
  *     adding or removing a row throws them away.
  */
+import type { EntryWithSenses } from "#/db/schema";
 import {
 	hasPrincipalParts,
 	INFLECTS,
@@ -32,8 +33,22 @@ export type DraftFields = {
 export type SubmitStatus =
 	| { kind: "idle" }
 	| { kind: "pending" }
-	| { kind: "created"; lemma: string }
+	/** `created` is the difference between “Additum” and “Ēmendātum”. Both empty the desk. */
+	| { kind: "saved"; lemma: string; created: boolean }
 	| { kind: "failed"; message: string };
+
+/**
+ * Which word this desk is filing, and whether it is already on file.
+ *
+ * The whole difference between the two flows, held in one place: it picks the
+ * server function the submit calls and the button it is pressed from. It is not
+ * fixed for the life of the form — a saved edit hands the desk back as a new
+ * word's, and a different entry arriving from the route replaces it.
+ */
+export type FormMode =
+	| { kind: "create" }
+	/** The row id, because the lemma is editable and cannot identify what is being edited. */
+	| { kind: "edit"; id: number };
 
 /**
  * A draft someone else wrote: what suggestFromWiktionary makes of a lemma, in
@@ -56,6 +71,7 @@ export type LookupStatus =
 	| { kind: "failed"; message: string };
 
 export type FormState = {
+	mode: FormMode;
 	draft: DraftFields;
 	senses: Array<SenseRow>;
 	/** Ids are handed out, never reused: a removed row must not be confused with its replacement. */
@@ -74,6 +90,8 @@ export type FormAction =
 	| { type: "sense-added" }
 	| { type: "sense-removed"; id: number }
 	| { type: "focus-handled" }
+	/** The route loaded a different word to work on, or none. */
+	| { type: "entry-loaded"; entry: EntryWithSenses | null }
 	| { type: "submit-started" }
 	| { type: "submit-invalid"; fields: Record<string, string> }
 	| { type: "submit-succeeded"; lemma: string }
@@ -95,6 +113,7 @@ const EMPTY_DRAFT: DraftFields = {
 };
 
 export const initialFormState: FormState = {
+	mode: { kind: "create" },
 	draft: EMPTY_DRAFT,
 	senses: [{ id: 0, ...EMPTY_SENSE }],
 	nextSenseId: 1,
@@ -103,6 +122,42 @@ export const initialFormState: FormState = {
 	status: { kind: "idle" },
 	lookup: { kind: "idle" },
 };
+
+/**
+ * A row read back into the desk it was filed from.
+ *
+ * The columns are nullable and the fields are strings, so NULL becomes "" —
+ * the same absence the form starts every create in, which is what lets one set
+ * of inputs serve both flows. Senses arrive in rank order, and this drops the
+ * rank: position is the rank on the way back in, exactly as it was on the way
+ * out.
+ */
+export function entryFormState(entry: EntryWithSenses): FormState {
+	return {
+		...initialFormState,
+		mode: { kind: "edit", id: entry.id },
+		draft: {
+			lemma: entry.lemma,
+			partOfSpeech: entry.partOfSpeech,
+			principalParts: entry.principalParts ?? "",
+			gender: entry.gender ?? "",
+			declension: entry.declension ?? "",
+			conjugation: entry.conjugation ?? "",
+			notes: entry.notes ?? "",
+		},
+		// A filed entry always has one, but the form has to have a row to type in
+		// even if check-senses.ts was somehow not looking.
+		senses:
+			entry.senses.length > 0
+				? entry.senses.map((sense, i) => ({
+						id: i,
+						meaningEn: sense.meaningEn,
+						usage: sense.usage ?? "",
+					}))
+				: [{ id: 0, ...EMPTY_SENSE }],
+		nextSenseId: Math.max(entry.senses.length, 1),
+	};
+}
 
 /**
  * The question that does not apply has to stay NULL, so this empties the
@@ -132,7 +187,14 @@ function withoutSenseErrors(errors: Record<string, string>) {
 	);
 }
 
-/** An entry emptied of its answers, keeping the id counter running. */
+/**
+ * An entry emptied of its answers, keeping the id counter running.
+ *
+ * The mode goes back to `create` with it, and that is not tidiness: an emptied
+ * form still pointed at a row would file the *next* word typed into it over the
+ * one just saved. Clearing the desk and leaving it addressed to a word are not
+ * two independent facts.
+ */
 function cleared(state: FormState): FormState {
 	return {
 		...initialFormState,
@@ -185,6 +247,11 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 		case "focus-handled":
 			return { ...state, focusSense: null };
 
+		// A wholesale replacement, the way a lookup is: what is on screen
+		// afterwards is one word's filing, never two halves of different ones.
+		case "entry-loaded":
+			return action.entry ? entryFormState(action.entry) : initialFormState;
+
 		case "submit-started":
 			return { ...state, errors: {}, status: { kind: "pending" } };
 
@@ -192,9 +259,16 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 			return { ...state, errors: action.fields, status: { kind: "idle" } };
 
 		case "submit-succeeded":
+			// Either way the word is filed and the desk is free, so either way it
+			// empties for the next one. The banner is the receipt, and it links to
+			// the page where the result can be read back.
 			return {
 				...cleared(state),
-				status: { kind: "created", lemma: action.lemma },
+				status: {
+					kind: "saved",
+					lemma: action.lemma,
+					created: state.mode.kind === "create",
+				},
 			};
 
 		case "submit-failed":

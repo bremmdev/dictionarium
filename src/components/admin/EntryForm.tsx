@@ -2,9 +2,11 @@ import { Button } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 import { useEffect, useId, useReducer, useRef } from "react";
-import { createEntry, suggestEntry } from "#/server/entries";
+import type { EntryWithSenses } from "#/db/schema";
+import { createEntry, suggestEntry, updateEntry } from "#/server/entries";
 import {
 	type DraftFields,
+	entryFormState,
 	formReducer,
 	initialFormState,
 } from "#/utils/entries/form";
@@ -94,25 +96,64 @@ function ChipGroup({
  *
  * Nothing here decides what is valid. parseEntryDraft does, and this form calls
  * it on submit for the messages only — the same function runs again as
- * createEntry's validator, where it is the actual gate. Nothing here decides
- * how the draft moves either: formReducer does, so one user action is one named
- * transition rather than a handful of setters that have to agree.
+ * createEntry's and updateEntry's validator, where it is the actual gate.
+ * Nothing here decides how the draft moves either: formReducer does, so one
+ * user action is one named transition rather than a handful of setters that
+ * have to agree.
  *
  * What is left is this component's own job: show the fields the chosen part of
  * speech has to answer and hide the ones it must leave NULL, so the shape of
  * the entry is visible before it is submitted rather than explained afterwards
  * by an error.
+ *
+ * One form, two flows. `entry` is the whole difference: absent, this files a
+ * new word; present, it files that one again. A draft is a draft whether it
+ * came from Wiktionary, from nothing, or from a row — so the fields, the
+ * validation, the focus handling and Quaere are shared rather than reproduced,
+ * and what differs is confined to `state.mode`. Which is also why the form is
+ * not keyed by the entry and remounted: it has to survive the moment a saved
+ * edit turns it back into a new word's desk, banner and all.
  */
-export function EntryForm() {
+export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const router = useRouter();
 	const fieldId = useId();
 
-	const [state, dispatch] = useReducer(formReducer, initialFormState);
-	const { draft, senses, errors, status, lookup } = state;
+	const [state, dispatch] = useReducer(formReducer, entry, (from) =>
+		from ? entryFormState(from) : initialFormState,
+	);
+	const { draft, senses, errors, status, lookup, mode } = state;
+
+	const editing = mode.kind === "edit";
+	// The senses are about to be replaced wholesale, and the form has no field
+	// for an example — so any that were filed are about to go. Said before the
+	// press rather than discovered after it.
+	const losingExamples =
+		editing &&
+		(entry?.senses.some((sense) => sense.exampleLa || sense.exampleEn) ??
+			false);
 
 	const meaningRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
 	const summaryRef = useRef<HTMLDivElement>(null);
+
+	/**
+	 * Which word the form is currently showing, as opposed to which one the
+	 * route is currently holding. They are the same except for one moment, and
+	 * that moment is the reason this is a ref rather than a `key` on the
+	 * component: a saved edit empties the desk itself and then sends the route
+	 * to /admin, so the entry disappearing from the route is news the form has
+	 * already acted on. Re-acting on it would wipe the banner that says so.
+	 */
+	const shown = useRef(entry?.id ?? null);
+
+	useEffect(() => {
+		const id = entry?.id ?? null;
+		if (shown.current === id) return;
+
+		// A different word arrived — from an edit link, or from leaving one.
+		shown.current = id;
+		dispatch({ type: "entry-loaded", entry: entry ?? null });
+	}, [entry]);
 
 	useEffect(() => {
 		if (state.focusSense === null) return;
@@ -166,13 +207,13 @@ export function EntryForm() {
 		e.preventDefault();
 		if (status.kind === "pending") return;
 
-		const entry = {
+		const filing = {
 			...draft,
 			senses: senses.map(({ meaningEn, usage }) => ({ meaningEn, usage })),
 		};
 
 		try {
-			parseEntryDraft(entry);
+			parseEntryDraft(filing);
 		} catch (err) {
 			if (!(err instanceof EntryValidationError)) throw err;
 
@@ -187,10 +228,27 @@ export function EntryForm() {
 		dispatch({ type: "submit-started" });
 
 		try {
-			const { lemma: added } = await createEntry({ data: entry });
-			dispatch({ type: "submit-succeeded", lemma: added });
+			const { lemma: saved } =
+				mode.kind === "edit"
+					? await updateEntry({ data: { ...filing, id: mode.id } })
+					: await createEntry({ data: filing });
+
+			// Ahead of the dispatch, because the dispatch is what empties the desk
+			// and drops it back to `create`: from here on the form is showing no
+			// word, and the navigation below must not be read as news.
+			shown.current = null;
+			dispatch({ type: "submit-succeeded", lemma: saved });
+
+			// The desk is a new word's again, so the URL has to stop naming the old
+			// one — the heading above the form reads from it. Replace rather than
+			// push: an emptied form is not a place to go Back to.
+			if (mode.kind === "edit") {
+				await router.navigate({ to: "/admin", search: {}, replace: true });
+			}
+
 			// The word count on the home page comes from a loader, and it is cached
-			// until something says otherwise. This is that something.
+			// until something says otherwise. So is the entry the detail page just
+			// showed, and this save is what makes it wrong. This is that something.
 			await router.invalidate();
 		} catch (err) {
 			dispatch({
@@ -210,12 +268,12 @@ export function EntryForm() {
 			{/* One live region for every outcome, so a screen reader hears the
 			    result of a submit or a lookup whichever way it went. */}
 			<div ref={summaryRef} tabIndex={-1} className="focus-ring space-y-4">
-				{status.kind === "created" && (
+				{status.kind === "saved" && (
 					// <output> rather than a <p role="status">: it is the element that
 					// carries that role natively, and this is a result of a submit.
 					<output className="block rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3">
 						<span className="font-bold text-accent" lang="la">
-							Additum.
+							{status.created ? "Additum." : "Ēmendātum."}
 						</span>{" "}
 						<Link
 							to="/verbum/$lemma"
@@ -226,7 +284,11 @@ export function EntryForm() {
 						>
 							{status.lemma}
 						</Link>{" "}
-						<span className="text-ink-500">is in the dictionary.</span>
+						<span className="text-ink-500">
+							{status.created
+								? "is in the dictionary."
+								: "is filed as it now reads."}
+						</span>
 					</output>
 				)}
 
@@ -442,7 +504,19 @@ export function EntryForm() {
 				<p className="text-ink-500 text-sm">
 					One row per genuinely distinct meaning, the first being the core one.
 					Commas within a sense, rows between senses.
+					{editing &&
+						" Saving replaces every sense this word has with the rows below, so position here is the rank it is filed under."}
 				</p>
+
+				{/* Not a validation message and not an alert: nothing is wrong yet.
+				    It is the one consequence of replacing the senses that is not
+				    visible in the rows themselves. */}
+				{losingExamples && (
+					<p className="rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3 text-ink-700 text-sm">
+						This word has example sentences filed against its senses. The form
+						does not hold examples, so saving will drop them.
+					</p>
+				)}
 
 				<ol className="space-y-3">
 					{senses.map((sense, i) => {
@@ -569,18 +643,33 @@ export function EntryForm() {
 				/>
 			</div>
 
-			<Button
-				type="submit"
-				variant="primary"
-				className="uppercase"
-				lang="la"
-				isLoading={status.kind === "pending"}
-			>
-				Adde
-				<span className="sr-only" lang="en">
-					{" (add entry)"}
-				</span>
-			</Button>
+			<div className="flex flex-wrap items-center gap-6">
+				<Button
+					type="submit"
+					variant="primary"
+					className="uppercase"
+					lang="la"
+					isLoading={status.kind === "pending"}
+				>
+					{editing ? "Ēmenda" : "Adde"}
+					<span className="sr-only" lang="en">
+						{editing ? " (save changes)" : " (add entry)"}
+					</span>
+				</Button>
+
+				{/* The way back out of an edit without making one. A create has no
+				    equivalent: there is no word it came from. */}
+				{editing && (
+					<Link
+						to="/verbum/$lemma"
+						params={{ lemma: entry?.lemma ?? draft.lemma }}
+						search={{}}
+						className="focus-ring text-accent"
+					>
+						Cancel
+					</Link>
+				)}
+			</div>
 		</form>
 	);
 }

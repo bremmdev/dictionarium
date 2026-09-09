@@ -1,5 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import {
+	createFileRoute,
+	Link,
+	notFound,
+	useLoaderData,
+} from "@tanstack/react-router";
+import { ArrowLeft, Pencil } from "lucide-react";
 import abacus from "#/assets/abacus-sketch.svg";
 import acanthus from "#/assets/acanthus-sketch.svg";
 import aqueduct from "#/assets/aqueduct-sketch.svg";
@@ -87,6 +92,37 @@ function BackLink() {
 	);
 }
 
+/**
+ * The way from reading a word to correcting it, for the one person who can.
+ *
+ * Hiding it from everyone else is presentation, not protection: /admin has its
+ * own guard, and updateEntry has authMiddleware — see vault/auth.md. The
+ * session comes from the root loader, which is already fetched and cached, so
+ * this costs no request of its own.
+ */
+function EditLink({ entry }: { entry: EntryWithSenses }) {
+	const root = useLoaderData({ from: "__root__" });
+
+	if (!root?.isAdmin) {
+		return null;
+	}
+
+	return (
+		<Link
+			to="/admin"
+			search={{ lemma: entry.lemma }}
+			className="focus-ring inline-flex items-center gap-2 rounded-full border border-parchment-300 bg-parchment-50 px-4 py-1.5 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] hover:border-accent hover:text-accent"
+			lang="la"
+		>
+			<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+			Ēmendā
+			<span className="sr-only" lang="en">
+				{" (edit this entry)"}
+			</span>
+		</Link>
+	);
+}
+
 /** The grammar as separate pills, so "noun" and "2nd decl." read as two facts. */
 function GrammarChips({ entry }: { entry: Entry }) {
 	return (
@@ -116,7 +152,12 @@ function WordBanner({ entry }: { entry: EntryWithSenses }) {
 			]}
 			content={
 				<>
-					<BackLink />
+					{/* Two ways out of the page, on one line: back to where the reader
+					    came from, and — for an editor — into the form that filed it. */}
+					<div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-start">
+						<BackLink />
+						<EditLink entry={entry} />
+					</div>
 
 					<p
 						className="mt-6 font-medium text-gold-600 text-sm uppercase tracking-[0.32em] md:text-base"
