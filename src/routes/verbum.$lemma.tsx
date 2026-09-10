@@ -244,10 +244,19 @@ function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 }
 
 /**
+ * The banner prints the core sense as a bare gloss: no usage label, no example.
+ * A lone sense that carries either of those still has something to say, so the
+ * section is only skipped when repeating it would add nothing.
+ */
+function saysMoreThanTheBanner(sense: EntryWithSenses["senses"][number]) {
+	return Boolean(sense.usage || sense.exampleLa || sense.exampleEn);
+}
+
+/**
  * Every sense the word has, in rank order. The core one is the banner's lede
  * as well, the way a dictionary prints the headword gloss and then numbers the
- * senses underneath — a word with a single sense has nothing to add here, so
- * the section is skipped rather than repeating that one line.
+ * senses underneath — a word with a single, bare sense has nothing to add here,
+ * so the section is skipped rather than repeating that one line.
  *
  * Each row shows its own rank rather than leaning on a list marker, so the
  * numbering matches the senses table and a gap in it shows up as a gap instead
@@ -257,7 +266,11 @@ function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 function Meanings({ entry }: { entry: EntryWithSenses }) {
 	const senses = entry.senses;
 
-	if (senses.length < 2) {
+	if (senses.length === 0) {
+		return null;
+	}
+
+	if (senses.length === 1 && !saysMoreThanTheBanner(senses[0])) {
 		return null;
 	}
 
