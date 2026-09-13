@@ -35,7 +35,7 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 					>
 						<img src={mosaic} alt="" aria-hidden="true" className="h-8 w-8" />
 						<span className="text-ink-900">Dictionarium</span>{" "}
-						<span className="text-gold-600 max-sm:hidden">Latinum</span>
+						<span className="text-gold-600 max-sm:hidden">Latinum.</span>
 					</Link>
 				</div>
 				<div className="flex items-center gap-6 resources">
