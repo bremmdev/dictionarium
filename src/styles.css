@@ -98,6 +98,41 @@ body {
   margin: 0;
 }
 
+header nav {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "logo resources"
+    "admin admin";
+
+  .logo {
+    grid-area: logo;
+  }
+
+  .resources {
+    grid-area: resources;
+  }
+
+  .admin-controls {
+    grid-area: admin;
+    justify-self: center;
+    padding-block-end: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: "logo resources admin";
+
+    .admin-controls {
+      justify-self: end;
+      padding-block-end: 0;
+      margin-inline-start: 1.5rem;
+    }
+  }
+}
+
+
 button {
   cursor: pointer;
 }

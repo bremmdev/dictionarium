@@ -1,5 +1,6 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import mosaic from "#/assets/mosaic-bold.svg";
 import { logout } from "#/server/auth";
@@ -24,8 +25,8 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 
 	return (
 		<header className="bg-parchment-50 font-display">
-			<nav className="border-parchment-200 border-b flex justify-between items-center uppercase max-w-page-width mx-auto w-full px-8">
-				<div className="flex h-14 w-full items-center">
+			<nav className="border-parchment-200 border-b uppercase max-w-page-width mx-auto w-full px-8">
+				<div className="flex h-14 w-full items-center logo">
 					<Link
 						to="/"
 						search={{}}
@@ -37,17 +38,33 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 						<span className="text-gold-600 max-sm:hidden">Latinum</span>
 					</Link>
 				</div>
-				<div className="flex items-center gap-6">
+				<div className="flex items-center gap-6 resources">
 					<Link to="/numbers" lang="la" className="nav-link focus-ring">
 						numerī{" "}
 						<span className="sr-only" lang="en">
 							{" (numbers)"}
 						</span>
 					</Link>
-					{isAdmin && (
+				</div>
+				{isAdmin && (
+					<div className="admin-controls flex gap-2">
+						<Button
+							as={Link}
+							to="/admin"
+							variant="secondary"
+							lang="la"
+							className="uppercase"
+						>
+							<Plus className="h-3.5 w-3.5" aria-hidden="true" />
+							scrībe
+							<span className="sr-only" lang="en">
+								{" (add a word)"}
+							</span>
+						</Button>
 						<Button
 							variant="secondary"
 							lang="la"
+							className="uppercase"
 							onClick={handleLogout}
 							isLoading={isLoggingOut}
 						>
@@ -56,8 +73,8 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 								{" (log out)"}
 							</span>
 						</Button>
-					)}
-				</div>
+					</div>
+				)}
 			</nav>
 		</header>
 	);
