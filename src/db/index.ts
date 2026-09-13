@@ -57,19 +57,19 @@ const g = globalThis as typeof globalThis & {
 
 g.__dictionariumDb ??= createClient();
 
-// When deploying new code a container orchestrator stops a process with SIGTERM, and Node's default action
-// is to exit 143 — non-zero, which the platform reads as a crash. close() runs a
-// final WAL checkpoint and truncates it; exit(0) reports the shutdown as intended.
-// Guarded on globalThis for the same reason as the handle above: HMR re-evaluates
-// this module, and every pass would stack another listener.
+// Nitro's server layer already handles SIGTERM/SIGINT: it stops accepting
+// connections, drains what is in flight, and lets the event loop empty so the
+// process exits 0 on its own. Handling the signal here too would race that drain
+// and close the database out from under a request still being served — so hook
+// "exit" instead, which runs once the loop is done. close() runs a final WAL
+// checkpoint and truncates it, and it is synchronous, which is all an exit
+// listener is allowed to be. Guarded on globalThis for the same reason as the
+// handle above: HMR re-evaluates this module, and every pass stacks a listener.
 if (!g.__dictionariumShutdownHooked) {
 	g.__dictionariumShutdownHooked = true;
-	for (const signal of ["SIGTERM", "SIGINT"] as const) {
-		process.once(signal, () => {
-			g.__dictionariumDb?.close();
-			process.exit(0);
-		});
-	}
+	process.once("exit", () => {
+		g.__dictionariumDb?.close();
+	});
 }
 
 export const db = drizzle(g.__dictionariumDb, { schema });

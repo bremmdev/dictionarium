@@ -5,7 +5,7 @@ The database is a single SQLite file opened by `src/db/index.ts`, which is the o
 Two consequences worth naming up front:
 
 - **Config is read once, at first import.** Changing a pragma means restarting the process, not reloading a page.
-- **Shutdown is part of the contract.** The SIGTERM handler at the bottom of the module is load-bearing for deployments — see [Shutdown is explicit](#shutdown-is-explicit).
+- **Shutdown is part of the contract.** Nitro handles the signal, this module closes the handle on `exit`, and `railway.json` makes sure the signal reaches Node at all. All three are load-bearing for deployments — see [Shutdown, and who owns the signal](#shutdown-and-who-owns-the-signal).
 
 ## Where the file lives
 
@@ -109,23 +109,42 @@ Two consequences of the same synchronicity:
 
 WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitignored. They are part of the database: copying `dictionarium.db` alone, while the server is running, does not give you a consistent backup. Use `VACUUM INTO 'backup.db'` or stop the process first.
 
-### Shutdown is explicit
+### Shutdown, and who owns the signal
 
-**Crucial for deployments — do not remove this handler.** It is not a tidiness nicety: it is the difference between a deploy that reports success and one that reports a crash. Every release restarts the process, so this code runs on every single deploy, and it is the only thing standing between an ordinary shutdown and a false alarm.
+**Crucial for deployments.** Every release restarts the process, so this path runs on every single deploy. Getting it wrong does not break the app — it makes every successful deploy report itself as a crash, which is worse, because it trains you to ignore the alarm.
+
+**Nitro owns the signals, not this module.** The server layer under Nitro (srvx) registers its own `SIGTERM`/`SIGINT` handlers unconditionally in production — the only escapes are `gracefulShutdown: false` or a `CI`/`TEST` env var, and Nitro's `serve()` passes neither. On a signal it stops accepting connections, drains what is in flight for up to five seconds, and returns. It never calls `process.exit`; once the loop is empty the process exits `0` by itself.
+
+So this module does **not** hook the signal:
 
 ```ts
-for (const signal of ["SIGTERM", "SIGINT"] as const) {
-	process.once(signal, () => {
-		g.__dictionariumDb?.close();
-		process.exit(0);
-	});
-}
+process.once("exit", () => {
+	g.__dictionariumDb?.close();
+});
 ```
 
-An orchestrator stops a container by sending `SIGTERM`. Node's default action for an unhandled `SIGTERM` is to terminate with exit code 143 (`128 + 15`), and a non-zero exit is how a platform decides a process **crashed** — so without this handler every ordinary shutdown is reported as a failure. On Railway that arrives as a "Deploy Crashed!" email on a deploy that in fact succeeded, because the mounted volume can only be attached to one container at a time: the old container has to be stopped before the new one can start, so it is `SIGTERM`ed on _every_ deploy. The alarm is real and the deployment is fine, which is the worst combination — it trains you to ignore the alarm.
+Racing Nitro for the signal is the bug to avoid. Two listeners on one signal run in registration order, and closing the handle from ours would pull the database out from under a request Nitro is still draining. `"exit"` fires after the loop is already done, so the ordering is settled by construction rather than by luck. The constraint in return is that an `exit` listener has to be synchronous — no cost here, because better-sqlite3 is synchronous anyway.
 
-`close()` is what makes the exit worth handling rather than just quieting. It runs a final checkpoint and truncates the WAL, leaving the sidecar files small and the database file current. This is **not** a data-safety fix: SQLite recovers a live `-wal` on next open, so nothing committed is lost either way. It is about not leaving a growing WAL on the volume across restarts.
+`close()` runs a final checkpoint and truncates the WAL. This is **not** a data-safety fix: SQLite recovers a live `-wal` on next open, so nothing committed is lost either way. It is about not leaving a growing WAL on the volume across restarts.
 
 The `globalThis` guard is there for the same reason as the handle it protects — HMR re-evaluates the module, and each pass would stack another listener until Node warns about a leak.
 
-Two things this cannot cover. `SIGKILL` is not catchable, so a container killed after its grace period expires still exits abruptly (safely, per WAL recovery). And because better-sqlite3 is synchronous, a transaction in flight holds the event loop until it returns — the handler runs after it commits or rolls back, never in the middle of one.
+### The signal has to reach Node
+
+```json
+{ "deploy": { "startCommand": "node .output/server/index.mjs" } }
+```
+
+That line in `railway.json` is load-bearing, and worth writing down because the symptom points somewhere else entirely.
+
+Railway sends `SIGTERM` to PID 1. Started via `npm start`, PID 1 is npm, which spawns `sh -c node .output/server/index.mjs`, which spawns Node. The shell has no `SIGTERM` handler, so it dies on the default action; npm reports its child's termination signal and exits non-zero; Node is orphaned two levels down, never signalled at all, and is reaped by `SIGKILL` when the container tears down. Railway sees a non-zero exit and mails "Deploy Crashed!" about a deploy that in fact succeeded.
+
+The tell is a **missing** log line. When Nitro's handler runs it writes `Stopping server gracefully (5s)...` to stderr. A deploy log with `npm error signal SIGTERM` and no such line means the shutdown code never ran at all — the problem is upstream of Node, and no handler code inside the process can fix it. That is the dead end this section exists to prevent: the wrapper is the bug, not the app.
+
+Running Node directly also drops the `npm warn config production` line from the deploy log, which was npm's and never ours.
+
+**The consequence to keep in mind:** Node is now PID 1, and Linux discards signals that PID 1 has registered no handler for. Nitro registers one, so the container still shuts down cleanly — but that handler is now the only thing between a clean exit and waiting out the grace period for a `SIGKILL`. It is a dependency, not a convenience.
+
+### What is still not covered
+
+`SIGKILL` is not catchable, so a container killed after its grace period expires still exits abruptly — safely, per WAL recovery, but without the checkpoint. And because better-sqlite3 is synchronous, a transaction in flight holds the event loop until it returns, so shutdown waits for it to commit or roll back rather than interrupting it.
