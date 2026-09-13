@@ -2,9 +2,10 @@
 
 The database is a single SQLite file opened by `src/db/index.ts`, which is the only module that constructs a connection. Everything else — the server functions in `src/server/`, the scripts in `scripts/` — imports the `db` it exports.
 
-A consequence worth naming up front:
+Two consequences worth naming up front:
 
 - **Config is read once, at first import.** Changing a pragma means restarting the process, not reloading a page.
+- **Shutdown is part of the contract.** The SIGTERM handler at the bottom of the module is load-bearing for deployments — see [Shutdown is explicit](#shutdown-is-explicit).
 
 ## Where the file lives
 
@@ -107,3 +108,24 @@ Two consequences of the same synchronicity:
 ## Operations
 
 WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitignored. They are part of the database: copying `dictionarium.db` alone, while the server is running, does not give you a consistent backup. Use `VACUUM INTO 'backup.db'` or stop the process first.
+
+### Shutdown is explicit
+
+**Crucial for deployments — do not remove this handler.** It is not a tidiness nicety: it is the difference between a deploy that reports success and one that reports a crash. Every release restarts the process, so this code runs on every single deploy, and it is the only thing standing between an ordinary shutdown and a false alarm.
+
+```ts
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+	process.once(signal, () => {
+		g.__dictionariumDb?.close();
+		process.exit(0);
+	});
+}
+```
+
+An orchestrator stops a container by sending `SIGTERM`. Node's default action for an unhandled `SIGTERM` is to terminate with exit code 143 (`128 + 15`), and a non-zero exit is how a platform decides a process **crashed** — so without this handler every ordinary shutdown is reported as a failure. On Railway that arrives as a "Deploy Crashed!" email on a deploy that in fact succeeded, because the mounted volume can only be attached to one container at a time: the old container has to be stopped before the new one can start, so it is `SIGTERM`ed on _every_ deploy. The alarm is real and the deployment is fine, which is the worst combination — it trains you to ignore the alarm.
+
+`close()` is what makes the exit worth handling rather than just quieting. It runs a final checkpoint and truncates the WAL, leaving the sidecar files small and the database file current. This is **not** a data-safety fix: SQLite recovers a live `-wal` on next open, so nothing committed is lost either way. It is about not leaving a growing WAL on the volume across restarts.
+
+The `globalThis` guard is there for the same reason as the handle it protects — HMR re-evaluates the module, and each pass would stack another listener until Node warns about a leak.
+
+Two things this cannot cover. `SIGKILL` is not catchable, so a container killed after its grace period expires still exits abruptly (safely, per WAL recovery). And because better-sqlite3 is synchronous, a transaction in flight holds the event loop until it returns — the handler runs after it commits or rolls back, never in the middle of one.

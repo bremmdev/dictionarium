@@ -30,7 +30,7 @@ function createClient() {
 	if (row?.journal_mode !== "wal") {
 		console.error(
 			`SQLite: expected WAL, got "${row?.journal_mode}" for ${dbFilePath}. ` +
-				`Readers and writers will block each other.`,
+			`Readers and writers will block each other.`,
 		);
 	}
 
@@ -52,8 +52,24 @@ function createClient() {
 // Downside: on config changes we need to restart the server to reload the database.
 const g = globalThis as typeof globalThis & {
 	__dictionariumDb?: Database.Database;
+	__dictionariumShutdownHooked?: boolean;
 };
 
 g.__dictionariumDb ??= createClient();
+
+// When deploying new code a container orchestrator stops a process with SIGTERM, and Node's default action
+// is to exit 143 — non-zero, which the platform reads as a crash. close() runs a
+// final WAL checkpoint and truncates it; exit(0) reports the shutdown as intended.
+// Guarded on globalThis for the same reason as the handle above: HMR re-evaluates
+// this module, and every pass would stack another listener.
+if (!g.__dictionariumShutdownHooked) {
+	g.__dictionariumShutdownHooked = true;
+	for (const signal of ["SIGTERM", "SIGINT"] as const) {
+		process.once(signal, () => {
+			g.__dictionariumDb?.close();
+			process.exit(0);
+		});
+	}
+}
 
 export const db = drizzle(g.__dictionariumDb, { schema });
