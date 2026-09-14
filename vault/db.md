@@ -111,7 +111,15 @@ WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitigno
 
 ### Backups
 
-`src/db/backup.ts` writes a dump on a schedule; `src/db/index.ts` starts it. This is the only backup there is — there is no platform-level snapshot underneath it.
+`src/db/backup.ts` writes a dump on a schedule; a Nitro plugin starts it. This is the only backup there is — there is no platform-level snapshot underneath it.
+
+**Why a plugin and not just the database module.** `src/db/index.ts` looks like the obvious place to start a scheduler — every server path imports it. But it is bundled into an SSR chunk that Nitro loads when a route first renders, not at boot.
+
+So a schedule started at that module's import starts on the first request, and a service that is redeployed and then sits idle never writes a backup.
+
+`src/nitro/backups.ts` is registered under `nitro({ plugins })` in `vite.config.ts`. Nitro runs its plugins once at startup, before anything is served, so the schedule no longer depends on traffic. After the change `better-sqlite3` is a static import at the top of `index.mjs` — that is the thing to check if this is ever in doubt.
+
+**`scheduleBackups` is idempotent**, guarded on `globalThis`. Two timers on one database would write and prune against each other, and Vite re-evaluates modules while Nitro re-runs plugins, so the guard has to survive module-cache invalidation. It lives in the function rather than at the call site because it is a property of starting a schedule, not of a caller remembering.
 
 **Why a dump and not a file copy.** Under WAL the database is three files, and a copy taken while the server is writing captures them across a window rather than at an instant. The main file and the `-wal` can then disagree, and on the next open recovery stops at the first frame whose checksum fails. You lose the tail, quietly, and only find out when you restore. Anything that copies the live files — `cp`, `rsync`, a filesystem snapshot — has this window.
 
@@ -146,33 +154,15 @@ sqlite3 backups/dictionarium-....db 'pragma quick_check;'
 Losing the volume loses the database and every dump beside it, so one copy has to live somewhere else. That is done by hand. The automation was considered and dropped on purpose — one writer, a database measured in tens of kilobytes, and a recurring note is enough machinery for the risk.
 
 ```sh
-railway volume files list /backups
-railway volume files download /backups/dictionarium-....db ./backups/production/
+railway volume files list backups
+railway volume files download backups/dictionarium-....db ./backups/production/
 ```
 
 **Copy a dump, not the live files.** The three live files are only safe to copy while nothing is writing them, and the dump is safe to copy always. Downloading `dictionarium.db` with its `-wal` and `-shm` does work — open the copy and SQLite replays the WAL — but it is three files that have to arrive as a set, and it is correct only because of an assumption about who is writing. The dump is one file that is consistent by construction. Take the assumption out of the routine.
 
 **The assumption, for when the dump is not an option.** Every write in this app goes through `src/server/entries.ts` — the admin editor. Nothing on the read path writes, so while you are not editing, the live files are static and a copy of them is sound. That is an operational property, not a structural one: a hit counter, a search log, a last-viewed timestamp would each break it silently, and a torn copy does not announce itself. You find out at restore time.
 
-**Remote paths are rooted at the volume, not the container.** The mount is `/data`, but you address the dumps as `/backups/...` — the CLI prepends the mount itself.
-
-```
-Failed to list remote directory /data/backup
-```
-
-**Do not run the Railway CLI from Git Bash.** MSYS2 rewrites any argument that looks like an absolute POSIX path into a Windows one, before the CLI sees it. It applies to `VAR=/path` too, which is where it does real damage. Both of these have happened here:
-
-```
-# railway volume files list /backups
-Failed to list remote directory /data/C:/Program Files/Git/backup
-
-# railway variables --set DB_BACKUP_DIR=/data/backups
-SQLite: backed up to /app/C:/Program Files/Git/data/backups/dictionarium-....db
-```
-
-The first is merely confusing — the error names a path nobody typed. The second is worse, because **nothing fails.** The service stores `C:/Program Files/Git/data/backups`, which is not absolute on Linux, so `path.resolve` hangs it off the working directory and the scheduler cheerfully writes backups to a nonsense path on the container's ephemeral filesystem. Every log line says success, and the volume stays empty. `railway variables` is what shows you the truth.
-
-Use PowerShell, or prefix with `MSYS_NO_PATHCONV=1`, and check the value afterwards rather than assuming it arrived intact.
+ MSYS2 rewrites any argument that looks like an absolute POSIX path into a Windows one, before the CLI sees it. This will mangle the path if we use a slash in front of it.
 
 ### Shutdown, and who owns the signal
 

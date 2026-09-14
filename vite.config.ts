@@ -11,7 +11,14 @@ const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
-		nitro({ rollupConfig: { external: [/^@sentry\//] } }),
+		nitro({
+			rollupConfig: { external: [/^@sentry\//] },
+			// Runs at server startup, before anything is served. The database module
+			// itself is bundled into an SSR chunk that only loads on the first rendered
+			// request, so without this the backup schedule would start on first traffic
+			// rather than on boot — see vault/db.md.
+			plugins: ["./src/nitro/backups.ts"],
+		}),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),

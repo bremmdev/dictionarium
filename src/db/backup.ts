@@ -8,6 +8,23 @@ import type Database from "better-sqlite3";
 // while a file written by VACUUM INTO is consistent by construction.
 const backupDir = path.resolve(process.env.DB_BACKUP_DIR ?? "backups");
 
+// An explicitly configured DB_BACKUP_DIR that is not absolute is a mistake rather
+// than a choice, and a silent one: path.resolve hangs it off the working directory,
+// which on the container is the application and not the volume, so every backup lands
+// on a filesystem the next deploy discards while the logs report success. The way to
+// produce it is not exotic — Git Bash rewrites `--set DB_BACKUP_DIR=/data/backups`
+// into a Windows path before the Railway CLI ever sees it, and `C:/...` is not
+// absolute on Linux. Loud, but not fatal: a misfiled backup does not justify
+// refusing to boot. The unset default stays relative on purpose, for dev.
+const configuredDir = process.env.DB_BACKUP_DIR;
+if (configuredDir && !path.isAbsolute(configuredDir)) {
+	console.error(
+		`SQLite: DB_BACKUP_DIR="${configuredDir}" is not absolute, so backups go to ` +
+			`${backupDir} — relative to the working directory, which is probably not ` +
+			`the volume you meant.`,
+	);
+}
+
 // The prefix is load-bearing: pruning only ever considers files that match it, so
 // anything dropped in this directory by hand is left alone.
 const prefix = "dictionarium-";
@@ -15,8 +32,7 @@ const suffix = ".db";
 
 // Never fire a backup in the first minute of a process. Deploys restart the server,
 // and a backup on every boot would mean a busy afternoon of deploys evicts every
-// older copy from the retention window. It also keeps the scripts in scripts/, which
-// import the database too, from writing a backup on their way past.
+// older copy from the retention window.
 const minDelayMs = 60_000;
 
 function envNumber(name: string, fallback: number): number {
@@ -125,6 +141,18 @@ function newestBackupAt(): number {
  * resetting it.
  */
 export function scheduleBackups(client: Database.Database): void {
+	// Calling this twice would put two timers on one database, each writing and pruning
+	// against the other. Vite re-evaluates modules on change and Nitro re-runs its
+	// plugins, so the guard lives on globalThis, which survives module-cache
+	// invalidation — module-level state would be discarded along with the old timer's
+	// owner but not the timer. Idempotence belongs here rather than at the call site:
+	// it is a property of starting a schedule, not of any one caller remembering.
+	const g = globalThis as typeof globalThis & {
+		__dictionariumBackupsScheduled?: boolean;
+	};
+	if (g.__dictionariumBackupsScheduled) return;
+	g.__dictionariumBackupsScheduled = true;
+
 	const intervalMs = envNumber("DB_BACKUP_INTERVAL_HOURS", 24) * 60 * 60 * 1000;
 	if (intervalMs <= 0) return;
 
@@ -135,8 +163,9 @@ export function scheduleBackups(client: Database.Database): void {
 		);
 
 		// unref: this timer must never be the reason a process stays alive. The server
-		// is held open by its own listener, and a script that imports the database
-		// should still exit the moment its work is done.
+		// is held open by its own listener, so the schedule costs nothing here — and a
+		// pending backup cannot hold the process open during a shutdown that is waiting
+		// for the event loop to empty.
 		setTimeout(() => {
 			try {
 				const file = createBackup(client);
