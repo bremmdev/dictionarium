@@ -117,11 +117,11 @@ WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitigno
 
 `VACUUM INTO` does not. It reads the database through a read transaction and writes a fresh, compacted file, so the result is consistent by construction and carries no sidecars: one file, restorable on its own.
 
-| Variable                    | Default   | |
-| --------------------------- | --------- | --- |
-| `DB_BACKUP_DIR`             | `backups` | Must point inside the volume mount in production — the container filesystem is discarded on every deploy. |
-| `DB_BACKUP_INTERVAL_HOURS`  | `24`      | `0` disables the scheduler entirely. |
-| `DB_BACKUP_KEEP`            | `7`       | How many dumps survive pruning. |
+| Variable                   | Default   |                                                                                                           |
+| -------------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| `DB_BACKUP_DIR`            | `backups` | Must point inside the volume mount in production — the container filesystem is discarded on every deploy. |
+| `DB_BACKUP_INTERVAL_HOURS` | `24`      | `0` disables the scheduler entirely.                                                                      |
+| `DB_BACKUP_KEEP`           | `7`       | How many dumps survive pruning.                                                                           |
 
 **The schedule is anchored to the newest file, not to process start.** On Railway, process start means "whenever we last deployed". A plain 24-hour interval on a service that redeploys twice a day would never produce a single backup. Each tick reads the mtime of the newest dump, sleeps until that plus the interval, and reschedules — so a restart resumes the schedule instead of resetting it.
 
@@ -139,7 +139,40 @@ Restoring is a file copy with the process stopped, and it is worth confirming wh
 sqlite3 backups/dictionarium-....db 'pragma quick_check;'
 ```
 
-**What this still is not.** The dumps sit on the same volume as the database. They cover a bad migration, a botched bulk edit, a corrupted live file — every failure short of losing the volume, which they do not cover at all, because they go with it. Nothing here is offsite, and there is no platform backup behind it: copies have to be shipped somewhere else for that, and no code does that yet. Until something does, the volume is a single point of failure.
+**What this still is not.** The dumps sit on the same volume as the database. They cover a bad migration, a botched bulk edit, a corrupted live file — every failure short of losing the volume, which they do not cover at all, because they go with it. Nothing automated ships a copy anywhere else. That step is deliberately a habit rather than code: see [Keeping an offsite copy](#keeping-an-offsite-copy).
+
+### Keeping an offsite copy
+
+Losing the volume loses the database and every dump beside it, so one copy has to live somewhere else. That is done by hand. The automation was considered and dropped on purpose — one writer, a database measured in tens of kilobytes, and a recurring note is enough machinery for the risk.
+
+```sh
+railway volume files list /backups
+railway volume files download /backups/dictionarium-....db ./backups/production/
+```
+
+**Copy a dump, not the live files.** The three live files are only safe to copy while nothing is writing them, and the dump is safe to copy always. Downloading `dictionarium.db` with its `-wal` and `-shm` does work — open the copy and SQLite replays the WAL — but it is three files that have to arrive as a set, and it is correct only because of an assumption about who is writing. The dump is one file that is consistent by construction. Take the assumption out of the routine.
+
+**The assumption, for when the dump is not an option.** Every write in this app goes through `src/server/entries.ts` — the admin editor. Nothing on the read path writes, so while you are not editing, the live files are static and a copy of them is sound. That is an operational property, not a structural one: a hit counter, a search log, a last-viewed timestamp would each break it silently, and a torn copy does not announce itself. You find out at restore time.
+
+**Remote paths are rooted at the volume, not the container.** The mount is `/data`, but you address the dumps as `/backups/...` — the CLI prepends the mount itself.
+
+```
+Failed to list remote directory /data/backup
+```
+
+**Do not run the Railway CLI from Git Bash.** MSYS2 rewrites any argument that looks like an absolute POSIX path into a Windows one, before the CLI sees it. It applies to `VAR=/path` too, which is where it does real damage. Both of these have happened here:
+
+```
+# railway volume files list /backups
+Failed to list remote directory /data/C:/Program Files/Git/backup
+
+# railway variables --set DB_BACKUP_DIR=/data/backups
+SQLite: backed up to /app/C:/Program Files/Git/data/backups/dictionarium-....db
+```
+
+The first is merely confusing — the error names a path nobody typed. The second is worse, because **nothing fails.** The service stores `C:/Program Files/Git/data/backups`, which is not absolute on Linux, so `path.resolve` hangs it off the working directory and the scheduler cheerfully writes backups to a nonsense path on the container's ephemeral filesystem. Every log line says success, and the volume stays empty. `railway variables` is what shows you the truth.
+
+Use PowerShell, or prefix with `MSYS_NO_PATHCONV=1`, and check the value afterwards rather than assuming it arrived intact.
 
 ### Shutdown, and who owns the signal
 
