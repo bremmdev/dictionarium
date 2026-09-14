@@ -29,7 +29,7 @@ path.resolve(process.env.DB_FILE_NAME ?? "src/db/dictionarium.db");
 
 **Pin, don't inherit.** `foreign_keys = ON` and `synchronous = NORMAL` are both no-ops against today's better-sqlite3, which compiles with `SQLITE_DEFAULT_FOREIGN_KEYS=1` and `SQLITE_DEFAULT_WAL_SYNCHRONOUS=1` (the latter applies only in WAL mode). Those are properties of a vendored build, not of SQLite. Stating them means a swapped binding cannot quietly turn off constraint enforcement or change durability.
 
-**`synchronous = NORMAL` is a durability trade, not a free win.** Under WAL it cannot corrupt the database; what it risks is losing the last committed transactions on a power cut or OS crash. Acceptable here because every write comes from a seed script that is idempotent (upsert on `lemma`, and on `(entry_id, rank)` for senses) and can simply be rerun. It would not be acceptable for user-submitted data.
+**`synchronous = NORMAL` is a durability trade, not a free win.** Under WAL it cannot corrupt the database; what it risks is losing the last committed transactions on a power cut or OS crash.
 
 **WAL is checked, not assumed.** Setting `journal_mode` does not throw on failure; it returns the mode SQLite actually settled on, and a network filesystem will quietly leave you on `delete`. So the result is read back and a mismatch is logged loudly — otherwise you would believe you had concurrent reads and not have them.
 
@@ -48,7 +48,7 @@ Vite's dev server re-evaluates modules on change. Module-scope state is discarde
 
 Drizzle is re-wrapped on each evaluation, which is fine — it is a stateless wrapper over the handle.
 
-## Why `drizzle()` gets the handle *and* the schema
+## Why `drizzle()` gets the handle _and_ the schema
 
 `drizzle()` is overloaded: it takes either a file path or a live `better-sqlite3` handle. Passing the path here would be the quiet disaster — Drizzle would open a **second** connection with none of the pragmas above on it, and `createClient()` would sit unused while the app ran on defaults. Nothing would throw; the app would simply stop having the guarantees this file argues for. The handle is the entire point of the wrapper.
 
@@ -59,20 +59,20 @@ The `{ schema }` second argument is separate and does nothing to the connection.
 better-sqlite3 is synchronous, and its transaction wrapper commits on the same tick the callback returns. It refuses a promise outright — `lib/methods/transaction.js`:
 
 ```js
-before.run();                                   // BEGIN, or SAVEPOINT if nested
+before.run(); // BEGIN, or SAVEPOINT if nested
 try {
-	const result = apply.call(fn, this, arguments);
-	if (result && typeof result.then === 'function') {
-		throw new TypeError('Transaction function cannot return a promise');
-	}
-	after.run();                                  // COMMIT
-	return result;
+  const result = apply.call(fn, this, arguments);
+  if (result && typeof result.then === "function") {
+    throw new TypeError("Transaction function cannot return a promise");
+  }
+  after.run(); // COMMIT
+  return result;
 } catch (ex) {
-	if (db.inTransaction) {
-		undo.run();                                 // ROLLBACK, or ROLLBACK TO
-		if (undo !== rollback) after.run();         // ...and RELEASE the savepoint
-	}
-	throw ex;
+  if (db.inTransaction) {
+    undo.run(); // ROLLBACK, or ROLLBACK TO
+    if (undo !== rollback) after.run(); // ...and RELEASE the savepoint
+  }
+  throw ex;
 }
 ```
 
@@ -102,7 +102,7 @@ The rule is scoped to the callback body. `await db.insert(...)` at the top level
 
 Two consequences of the same synchronicity:
 
-- **A transaction blocks this process for its whole duration.** Nothing interleaves, which is what makes the guarantee cheap — and why `busy_timeout` above is about *other* processes, not this one. Keep transactions small anyway; the event loop is stopped while one runs.
+- **A transaction blocks this process for its whole duration.** Nothing interleaves, which is what makes the guarantee cheap — and why `busy_timeout` above is about _other_ processes, not this one. Keep transactions small anyway; the event loop is stopped while one runs.
 - **Nesting produces a `SAVEPOINT`, not a second `BEGIN`.** `db.transaction` inside `db.transaction` is safe: the inner one rolls back to its savepoint, releases it, and rethrows — so the outer transaction can catch and carry on, or let it propagate and roll everything back.
 
 ## Operations
@@ -119,7 +119,7 @@ So this module does **not** hook the signal:
 
 ```ts
 process.once("exit", () => {
-	g.__dictionariumDb?.close();
+  g.__dictionariumDb?.close();
 });
 ```
 
