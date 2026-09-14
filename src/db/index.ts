@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
+import { scheduleBackups } from "./backup";
 import * as schema from "./schema";
 
 const dbFilePath = path.resolve(
@@ -53,9 +54,17 @@ function createClient() {
 const g = globalThis as typeof globalThis & {
 	__dictionariumDb?: Database.Database;
 	__dictionariumShutdownHooked?: boolean;
+	__dictionariumBackupsScheduled?: boolean;
 };
 
 g.__dictionariumDb ??= createClient();
+
+// Scheduled here because this is the module every server entry point already
+// imports, and the app has no other startup hook.
+if (!g.__dictionariumBackupsScheduled) {
+	g.__dictionariumBackupsScheduled = true;
+	scheduleBackups(g.__dictionariumDb);
+}
 
 // Nitro's server layer already handles SIGTERM/SIGINT: it stops accepting
 // connections, drains what is in flight, and lets the event loop empty so the

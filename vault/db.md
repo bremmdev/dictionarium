@@ -109,6 +109,38 @@ Two consequences of the same synchronicity:
 
 WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitignored. They are part of the database: copying `dictionarium.db` alone, while the server is running, does not give you a consistent backup. Use `VACUUM INTO 'backup.db'` or stop the process first.
 
+### Backups
+
+`src/db/backup.ts` writes a dump on a schedule; `src/db/index.ts` starts it. This is the only backup there is — there is no platform-level snapshot underneath it.
+
+**Why a dump and not a file copy.** Under WAL the database is three files, and a copy taken while the server is writing captures them across a window rather than at an instant. The main file and the `-wal` can then disagree, and on the next open recovery stops at the first frame whose checksum fails. You lose the tail, quietly, and only find out when you restore. Anything that copies the live files — `cp`, `rsync`, a filesystem snapshot — has this window.
+
+`VACUUM INTO` does not. It reads the database through a read transaction and writes a fresh, compacted file, so the result is consistent by construction and carries no sidecars: one file, restorable on its own.
+
+| Variable                    | Default   | |
+| --------------------------- | --------- | --- |
+| `DB_BACKUP_DIR`             | `backups` | Must point inside the volume mount in production — the container filesystem is discarded on every deploy. |
+| `DB_BACKUP_INTERVAL_HOURS`  | `24`      | `0` disables the scheduler entirely. |
+| `DB_BACKUP_KEEP`            | `7`       | How many dumps survive pruning. |
+
+**The schedule is anchored to the newest file, not to process start.** On Railway, process start means "whenever we last deployed". A plain 24-hour interval on a service that redeploys twice a day would never produce a single backup. Each tick reads the mtime of the newest dump, sleeps until that plus the interval, and reschedules — so a restart resumes the schedule instead of resetting it.
+
+Two guards around that. The delay has a one-minute floor, so an afternoon of deploys cannot write a backup per boot and evict the retention window; and the timer is `unref`'d, so it is never the reason a process stays alive — the scripts in `scripts/` import the database too, and still exit the moment they are done.
+
+**A backup is complete or absent, never partial.** `VACUUM INTO` fills its target progressively and refuses to overwrite, so a crash halfway through would leave a partial file wearing a finished backup's name. The dump is written as `.partial` and renamed, which is atomic within a filesystem.
+
+**Pruning only considers the `dictionarium-` prefix.** Anything you drop in that directory by hand — `backups/2026-09-05.db`, say — is never a candidate for deletion.
+
+**An empty database is not backed up.** better-sqlite3 creates the file when it is missing, and `src/db/index.ts` creates the directories above it, so a `DB_FILE_NAME` pointing somewhere unreachable does not fail — it quietly produces an empty database. Dumping that would report success and then evict a real copy from the retention window. So `createBackup` refuses a database with no tables at all: even a migrated-but-unseeded one has `__drizzle_migrations`, so an empty schema means the file was conjured rather than found. The scheduler logs the refusal and carries on.
+
+Restoring is a file copy with the process stopped, and it is worth confirming what you copied first:
+
+```sh
+sqlite3 backups/dictionarium-....db 'pragma quick_check;'
+```
+
+**What this still is not.** The dumps sit on the same volume as the database. They cover a bad migration, a botched bulk edit, a corrupted live file — every failure short of losing the volume, which they do not cover at all, because they go with it. Nothing here is offsite, and there is no platform backup behind it: copies have to be shipped somewhere else for that, and no code does that yet. Until something does, the volume is a single point of failure.
+
 ### Shutdown, and who owns the signal
 
 **Crucial for deployments.** Every release restarts the process, so this path runs on every single deploy. Getting it wrong does not break the app — it makes every successful deploy report itself as a crash, which is worse, because it trains you to ignore the alarm.
