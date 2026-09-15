@@ -56,29 +56,7 @@ The `{ schema }` second argument is separate and does nothing to the connection.
 
 ## No `await` inside a transaction
 
-better-sqlite3 is synchronous, and its transaction wrapper commits on the same tick the callback returns. It refuses a promise outright — `lib/methods/transaction.js`:
-
-```js
-before.run(); // BEGIN, or SAVEPOINT if nested
-try {
-  const result = apply.call(fn, this, arguments);
-  if (result && typeof result.then === "function") {
-    throw new TypeError("Transaction function cannot return a promise");
-  }
-  after.run(); // COMMIT
-  return result;
-} catch (ex) {
-  if (db.inTransaction) {
-    undo.run(); // ROLLBACK, or ROLLBACK TO
-    if (undo !== rollback) after.run(); // ...and RELEASE the savepoint
-  }
-  throw ex;
-}
-```
-
-An `await` anywhere in the callback makes it return a promise at the first suspension point. Without that guard `after.run()` would fire immediately — **COMMIT before the awaited work happened**, with everything after the await landing outside the transaction. And `BEGIN` / `COMMIT` are state on the one shared connection this file exports, so anything else running during the await would be swept into the transaction and committed or rolled back with it.
-
-The `throw` is inside the `try`, so the mistake costs a rollback and a loud `TypeError`, not a half-written row.
+better-sqlite3 is synchronous, and its transaction wrapper commits on the same tick the callback returns. It refuses a promise outright. An `await` anywhere in the callback makes it return a promise at the first suspension point and it would **COMMIT before the awaited work happened**, with everything after the await landing outside the transaction. And `BEGIN` / `COMMIT` are state on the one shared connection this file exports, so anything else running during the await would be swept into the transaction and committed or rolled back with it.
 
 Drizzle's driver types this honestly — `drizzle-orm/better-sqlite3/session.d.ts`. Note the return: `T`, not `Promise<T>`.
 
@@ -96,7 +74,7 @@ return db.transaction((tx) => {
 });
 ```
 
-**The trap is that `await` compiles.** Drizzle's query builders are thenables, so `await tx.insert(...)` type-checks and reads like every other ORM — and turns the callback async. `.get()` / `.all()` / `.run()` execute on the spot instead. `createEntry` is the worked example, in [editor.md](./editor.md#a-session-at-the-desk).
+**The trap is that `await` compiles.** Drizzle's query builders are thenables, so `await tx.insert(...)` type-checks and reads like every other ORM — and turns the callback async.
 
 The rule is scoped to the callback body. `await db.insert(...)` at the top level of a script is fine; there is no transaction open around it.
 
@@ -117,13 +95,9 @@ WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitigno
 
 So a schedule started at that module's import starts on the first request, and a service that is redeployed and then sits idle never writes a backup.
 
-`src/nitro/backups.ts` is registered under `nitro({ plugins })` in `vite.config.ts`. Nitro runs its plugins once at startup, before anything is served, so the schedule no longer depends on traffic. After the change `better-sqlite3` is a static import at the top of `index.mjs` — that is the thing to check if this is ever in doubt.
+`src/nitro/backups.ts` is registered under `nitro({ plugins })` in `vite.config.ts`. Nitro runs its plugins once at startup, before anything is served, so the schedule no longer depends on traffic.
 
-**`scheduleBackups` is idempotent**, guarded on `globalThis`. Two timers on one database would write and prune against each other, and Vite re-evaluates modules while Nitro re-runs plugins, so the guard has to survive module-cache invalidation. It lives in the function rather than at the call site because it is a property of starting a schedule, not of a caller remembering.
-
-**Why a dump and not a file copy.** Under WAL the database is three files, and a copy taken while the server is writing captures them across a window rather than at an instant. The main file and the `-wal` can then disagree, and on the next open recovery stops at the first frame whose checksum fails. You lose the tail, quietly, and only find out when you restore. Anything that copies the live files — `cp`, `rsync`, a filesystem snapshot — has this window.
-
-`VACUUM INTO` does not. It reads the database through a read transaction and writes a fresh, compacted file, so the result is consistent by construction and carries no sidecars: one file, restorable on its own.
+`VACUUM INTO` reads the database through a read transaction and writes a fresh, compacted file, so the result is consistent by construction and carries no sidecars: one file, restorable on its own.
 
 | Variable                   | Default   |                                                                                                           |
 | -------------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
@@ -133,7 +107,7 @@ So a schedule started at that module's import starts on the first request, and a
 
 **The schedule is anchored to the newest file, not to process start.** On Railway, process start means "whenever we last deployed". A plain 24-hour interval on a service that redeploys twice a day would never produce a single backup. Each tick reads the mtime of the newest dump, sleeps until that plus the interval, and reschedules — so a restart resumes the schedule instead of resetting it.
 
-Two guards around that. The delay has a one-minute floor, so an afternoon of deploys cannot write a backup per boot and evict the retention window; and the timer is `unref`'d, so it is never the reason a process stays alive — the scripts in `scripts/` import the database too, and still exit the moment they are done.
+The delay has a one-minute floor, so an afternoon of deploys cannot write a backup per boot and evict the retention window.
 
 **A backup is complete or absent, never partial.** `VACUUM INTO` fills its target progressively and refuses to overwrite, so a crash halfway through would leave a partial file wearing a finished backup's name. The dump is written as `.partial` and renamed, which is atomic within a filesystem.
 
@@ -158,11 +132,9 @@ railway volume files list backups
 railway volume files download backups/dictionarium-....db ./backups/production/
 ```
 
+MSYS2 rewrites any argument that looks like an absolute POSIX path into a Windows one, before the CLI sees it. This will mangle the path if we use a slash in front of it, so we use 'backup' and not '/backups'. Railway CLI prepends '/data' for our volume.
+
 **Copy a dump, not the live files.** The three live files are only safe to copy while nothing is writing them, and the dump is safe to copy always. Downloading `dictionarium.db` with its `-wal` and `-shm` does work — open the copy and SQLite replays the WAL — but it is three files that have to arrive as a set, and it is correct only because of an assumption about who is writing. The dump is one file that is consistent by construction. Take the assumption out of the routine.
-
-**The assumption, for when the dump is not an option.** Every write in this app goes through `src/server/entries.ts` — the admin editor. Nothing on the read path writes, so while you are not editing, the live files are static and a copy of them is sound. That is an operational property, not a structural one: a hit counter, a search log, a last-viewed timestamp would each break it silently, and a torn copy does not announce itself. You find out at restore time.
-
- MSYS2 rewrites any argument that looks like an absolute POSIX path into a Windows one, before the CLI sees it. This will mangle the path if we use a slash in front of it.
 
 ### Shutdown, and who owns the signal
 
