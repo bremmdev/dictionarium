@@ -16,10 +16,12 @@ import {
 	EntryValidationError,
 	GENDERS,
 	hasPrincipalParts,
+	hasTerminations,
 	INFLECTS,
 	isPartOfSpeech,
 	PARTS_OF_SPEECH,
 	parseEntryDraft,
+	TERMINATIONS,
 } from "#/utils/entries/rules";
 import { normalizeLemma } from "#/utils/search/rules";
 
@@ -37,6 +39,44 @@ const INPUT =
  */
 const CHIP =
 	"cursor-pointer rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] hover:border-gold-400 has-[:checked]:border-accent has-[:checked]:bg-accent has-[:checked]:text-parchment-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-2";
+
+/**
+ * What the principal-parts input is called and what goes in it, per part of
+ * speech. Keyed by the three hasPrincipalParts admits — a fourth would be a type
+ * error here rather than a field labelled "Genitive" holding something else.
+ */
+const FILING: Record<
+	"noun" | "verb" | "adjective",
+	{ legend: string; hint: string; placeholder: string }
+> = {
+	verb: {
+		legend: "Principal parts",
+		hint: "The rest of the filing, separated by commas: present, infinitive, perfect, supine.",
+		placeholder: "labōrō, labōrāre, labōrāvī, labōrātum",
+	},
+	noun: {
+		legend: "Genitive",
+		hint: "The rest of the filing, as a dictionary prints it after the nominative.",
+		placeholder: "puellae",
+	},
+	adjective: {
+		legend: "Terminations",
+		hint: "The filing as a dictionary prints it, lemma first, separated by commas.",
+		placeholder: "bonus, bona, bonum",
+	},
+};
+
+/**
+ * A 3rd-declension adjective has already said how many forms it files with, so
+ * the placeholder can show that shape rather than a generic one — and a
+ * one-termination adjective in particular is the case where the second form is
+ * a genitive, which is worth showing before it is typed wrong.
+ */
+const ADJECTIVE_FILING_EXAMPLE: Record<string, string> = {
+	"1": "vetus, veteris",
+	"2": "fortis, forte",
+	"3": "ācer, ācris, ācre",
+};
 
 function FieldError({ id, children }: { id: string; children: string }) {
 	return (
@@ -443,6 +483,22 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						/>
 					)}
 
+					{/* The follow-up to declension, and it appears the moment `3` is
+					    picked: acer, fortis and vetus are all third-declension
+					    adjectives and file with three, two and one form. Nothing else
+					    is asked, so nothing else shows this. */}
+					{hasTerminations(draft.partOfSpeech, draft.declension) && (
+						<ChipGroup
+							legend="Terminations"
+							hint="How many forms it files with: 3 is acer, acris, acre; 2 is fortis, forte; 1 is vetus, veteris."
+							name={`${fieldId}-terminations`}
+							options={TERMINATIONS}
+							value={draft.terminations}
+							error={errors.terminations}
+							onChange={setField("terminations")}
+						/>
+					)}
+
 					{asks === "conjugation" && (
 						<ChipGroup
 							legend="Conjugation"
@@ -467,15 +523,13 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						/>
 					)}
 
-					{hasPrincipalParts(draft.partOfSpeech) && (
+					{hasPrincipalParts(draft.partOfSpeech, draft.declension) && (
 						<div className="space-y-2">
 							<label htmlFor={`${fieldId}-principal-parts`} className={LABEL}>
-								{draft.partOfSpeech === "verb" ? "Principal parts" : "Genitive"}
+								{FILING[draft.partOfSpeech].legend}
 							</label>
 							<p className="text-ink-500 text-sm">
-								{draft.partOfSpeech === "verb"
-									? "The rest of the filing, separated by commas: present, infinitive, perfect, supine."
-									: "The rest of the filing, as a dictionary prints it after the nominative."}
+								{FILING[draft.partOfSpeech].hint}
 							</p>
 							<input
 								id={`${fieldId}-principal-parts`}
@@ -484,9 +538,10 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 								autoComplete="off"
 								spellCheck={false}
 								placeholder={
-									draft.partOfSpeech === "verb"
-										? "labōrō, labōrāre, labōrāvī, labōrātum"
-										: "puellae"
+									draft.partOfSpeech === "adjective"
+										? (ADJECTIVE_FILING_EXAMPLE[draft.terminations] ??
+											FILING.adjective.placeholder)
+										: FILING[draft.partOfSpeech].placeholder
 								}
 								className={`${INPUT} italic`}
 								aria-invalid={errors.principalParts !== undefined}

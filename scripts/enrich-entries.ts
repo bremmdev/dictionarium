@@ -40,6 +40,7 @@ const COLUMN_ORDER: Array<
     "principalParts",
     "gender",
     "declension",
+    "terminations",
     "conjugation",
     "notes",
 ];

@@ -11,6 +11,12 @@ const ORDINALS: Record<string, string> = {
 	"5": "5th",
 };
 
+const TERMINATION_WORDS: Record<string, string> = {
+	"1": "one",
+	"2": "two",
+	"3": "three",
+};
+
 const GENDERS: Record<string, string> = {
 	m: "masc.",
 	f: "fem.",
@@ -30,6 +36,14 @@ export function grammarFacts(entry: Entry) {
 		} else {
 			parts.push(`${ORDINALS[entry.declension] ?? entry.declension} decl.`);
 		}
+	}
+
+	// Said in the grammar's own words rather than as a bare number, because "1"
+	// beside "3rd decl." reads as a second, contradictory declension.
+	if (entry.terminations) {
+		parts.push(
+			`${TERMINATION_WORDS[entry.terminations] ?? entry.terminations}-termination`,
+		);
 	}
 
 	if (entry.conjugation) {

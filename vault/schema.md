@@ -12,12 +12,14 @@ The app will be public — read-only lookup for everyone, an authenticated admin
 | --------------- | ------------------------------ | --------------------------------- |
 | Verb            | the four principal parts       | _currō, currere, cucurrī, cursum_ |
 | Noun            | nominative + genitive + gender | _puella, puellae, f._             |
+| Adjective       | one form per termination       | _ācer, ācris, ācre_               |
 | Everything else | the word itself                | _quoque_                          |
 
 On the row:
 
 - **lemma** is the canonical headword (1st principal part of a verb; nominative of a noun; the word itself otherwise).
-- **principal_parts** holds the rest of the dictionary filing: all four parts for a verb, the genitive for a noun. Null when the lemma is the whole filing.
+- **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for an adjective means only the indeclinable ones.
+- The lemma repeats inside the string wherever a dictionary prints it there. A verb's first principal part is its lemma and always was; an adjective's masculine is the same, and _bonus, bona, bonum_ is the line a reader expects. A noun is the exception, because _puella, puellae_ is filed as a nominative and a genitive rather than as one run-on line.
 - **gender** is its own column on nouns (`m` / `f` / `n`), not buried in the principal-parts string.
 
 ## Store what you query by
@@ -64,9 +66,10 @@ Run it as often as you like, extend it, rerun it; no duplicates. A caveat:
 | `lemma`           | yes      | display lemma, macrons kept; **unique**                                            |
 | `lemma_plain`     | yes      | macron-stripped search key                                                         |
 | `part_of_speech`  | yes      | `verb`, `noun`, `adverb`, …                                                        |
-| `principal_parts` | no       | four parts (verb) or genitive (noun)                                               |
+| `principal_parts` | no       | four parts (verb), genitive (noun), or the terminations (adjective)                |
 | `gender`          | no       | nouns: `m` / `f` / `n`                                                             |
 | `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`; NULL only where the question does not apply |
+| `terminations`    | no       | 3rd-declension adjectives: `1` / `2` / `3`; same NULL rule                         |
 | `conjugation`     | no       | text — `1`…`4`, `3io`, `irregular`; same NULL rule                                 |
 | `notes`           | no       | free text                                                                          |
 
@@ -98,6 +101,41 @@ The column's question was never "which numbered table?" — it is **how does thi
 
 It is not a numeral problem, either. The grammar has a named class for it: "A few adjectives are indeclinable: _damnās, frūgī, nēquam, necesse, tot, quot, aliquot, totidem, potis_" ([A&G §122](https://dcc.dickinson.edu/grammar/latin/indeclinable-adjectives)).
 
+### `terminations`, and why counting the forms cannot replace it
+
+A 3rd-declension adjective files with one, two or three nominative forms, and the grammar has a name for each class ([A&G §§115–121](https://dcc.dickinson.edu/grammar/latin/adjectives-third-declension)). Printed dictionaries never name it. Lewis & Short files _ācer, cris, cre, adj._ and the OLD files _ACER ~cris ~cre, a._ — the forms are the statement, and the reader is expected to count.
+
+So the first question was whether this column is a column at all, or whether `principal_parts` already holds the answer. It does not:
+
+| Lemma    | `principal_parts`   | Forms | Class               |
+| -------- | ------------------- | ----- | ------------------- |
+| _ācer_   | _ācer, ācris, ācre_ | 3     | three-termination   |
+| _fortis_ | _fortis, forte_     | 2     | two-termination     |
+| _vetus_  | _vetus, veteris_    | 2     | **one**-termination |
+
+_fortis_ and _vetus_ file the same number of forms and are not the same class. The second form of _fortis, forte_ is a neuter; the second form of _vetus, veteris_ is a **genitive**, printed because a one-termination adjective has no separate genders to give and its nominative hides the stem (_veter-_). Counting commas gets _vetus_ wrong, and gets it wrong silently.
+
+That is the whole case for the column. It is the same case `declension` makes one row up — store what you query by — with a harder edge: `declension` is derivable from the genitive and stored anyway for convenience, whereas `terminations` is **not derivable at all** from what the row holds.
+
+| Value in `terminations` | Means                                                              |
+| ----------------------- | ------------------------------------------------------------------ |
+| `3`                     | one form per gender (_ācer, ācris, ācre_)                          |
+| `2`                     | masculine and feminine share a form (_fortis, forte_)              |
+| `1`                     | one form for all three, filed with its genitive (_vetus, veteris_) |
+| NULL                    | the question does not apply                                        |
+
+**Only `declension = '3'` is asked.** A `1-2` adjective has already answered by being `1-2`: built from 1st- and 2nd-declension endings, it has one form per gender by construction, so a `terminations` beside it would be a second place to say the same thing and a first place to contradict it. An indeclinable adjective is not asked for the opposite reason — it has no terminations to count, and it is the one adjective whose `principal_parts` is NULL.
+
+This makes `terminations` the only column whose applicability turns on **another column's value** rather than on the part of speech. `hasTerminations(partOfSpeech, declension)` is where that is written down, and the form, the validator and `check-inflection.ts` all read it rather than each restating the rule.
+
+It also means the admin form has a field that appears when a _different_ field changes, and two ways to strand an answer instead of one: moving an adjective off `3` leaves a termination count with no question, and moving it onto `indeclinable` leaves a filing with no forms. `clearInapplicable` empties both in the same pass that handles a changed part of speech.
+
+#### What is deliberately not a column
+
+**i-stem vs consonant-stem.** Most 3rd-declension adjectives are i-stems; _vetus_, _pauper_, _dīves_, _prīnceps_ and _particeps_ are not, and decline with ablative singular _-e_ and genitive plural _-um_. Wiktionary says so — its line for _vetus_ reads "third-declension one-termination adjective (non-i-stem)". It stays in `notes` until something generates full paradigms, because it is a handful of exceptions rather than a class to filter on. The line: **terminations is a class, consonant-stem is an exception.**
+
+**Numerals.** _trēs, tria_ is 3rd-declension and files with two forms, but `hasTerminations` asks adjectives only. If a numeral ever needs the answer it is one condition, not a new column.
+
 ### `numeral` is a filing label, not a grammatical claim
 
 `part_of_speech` gains `numeral`, covering cardinals and ordinals alike. The grammar would not group them: it calls _prīmus_ an adjective of the 1st and 2nd declensions and _septem_ an indeclinable one ([A&G §134](https://dcc.dickinson.edu/grammar/latin/numerals)). But `part_of_speech` is what a reader sees on the card, and _numeral_ is what they are looking for. The grammar goes in `notes`, where it can be a sentence instead of an enum.
@@ -128,13 +166,18 @@ pconst INFLECTS: Record<string, "declension" | "conjugation" | "neither"> = {
 };
 ```
 
-Three rules fall out of that map:
+Five rules fall out of that map — three from the map itself, two more from the filing:
 
 1. the question that applies must be answered, and answered in the vocabulary above — a noun with `declension` NULL is a finding;
 2. the question that does not apply must stay NULL — a noun carrying a `conjugation` is a finding too, or NULL goes straight back to meaning two things;
 3. **a part of speech the map has never heard of is itself a finding.** Nobody has decided whether it inflects, so neither of its columns can be read either way.
 
-The third rule is the one that earns the script. `adjective` and `pronoun` sit in the map already and have never been seeded; the day one arrives, either its declension is there or the check names the word. What cannot happen is a new word class slipping past on the reading "both columns are NULL, so presumably it does not inflect" — the script holds no opinion it was not given, and says so rather than guessing.
+Then the same shape again, one question further down, for the two columns that hold a word's filing rather than its inflection class:
+
+4. a 3rd-declension adjective must say how many terminations it has, and nothing else may carry the answer;
+5. a word whose filing is more than its lemma must hold it — a verb's four parts, a noun's genitive, an adjective's terminations — and a word whose lemma is the whole filing must leave it NULL.
+
+The third rule is the one that earns the script. `adjective` and `pronoun` sat in the map for a long time with nothing filed under them; the day the first adjective arrived, either its declension was there or the check named the word. What cannot happen is a new word class slipping past on the reading "both columns are NULL, so presumably it does not inflect" — the script holds no opinion it was not given, and says so rather than guessing.
 
 ## `senses`
 
@@ -192,12 +235,12 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 
 `npm run check` is the gate. It runs the four guards, then Biome:
 
-| Guard                 | Alone                      | What it holds                                                                                 |
-| --------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
-| `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md) |
-| `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)           |
-| `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                           |
-| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` means one thing — [above](#the-invariant-this-creates)   |
+| Guard                 | Alone                      | What it holds                                                                                                                    |
+| --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md)                                    |
+| `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)                                              |
+| `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                                                              |
+| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
 
 Each names the rows it objects to, and exits non-zero:
 

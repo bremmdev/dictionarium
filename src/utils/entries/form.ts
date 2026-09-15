@@ -12,6 +12,7 @@
 import type { EntryWithSenses } from "#/db/schema";
 import {
 	hasPrincipalParts,
+	hasTerminations,
 	INFLECTS,
 	isPartOfSpeech,
 } from "#/utils/entries/rules";
@@ -45,6 +46,8 @@ export type DraftFields = {
 	principalParts: string;
 	gender: string;
 	declension: string;
+	/** 3rd-declension adjectives only: '1' | '2' | '3'. See hasTerminations. */
+	terminations: string;
 	conjugation: string;
 	notes: string;
 };
@@ -138,6 +141,7 @@ const EMPTY_DRAFT: DraftFields = {
 	principalParts: "",
 	gender: "",
 	declension: "",
+	terminations: "",
 	conjugation: "",
 	notes: "",
 };
@@ -173,6 +177,7 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 			principalParts: entry.principalParts ?? "",
 			gender: entry.gender ?? "",
 			declension: entry.declension ?? "",
+			terminations: entry.terminations ?? "",
 			conjugation: entry.conjugation ?? "",
 			notes: entry.notes ?? "",
 		},
@@ -181,16 +186,16 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 		senses:
 			entry.senses.length > 0
 				? entry.senses.map((sense, i) => ({
-					id: i,
-					meaningEn: sense.meaningEn,
-					usage: sense.usage ?? "",
-					exampleLa: sense.exampleLa ?? "",
-					exampleEn: sense.exampleEn ?? "",
-					// Shown exactly where there is something to show. An editor
-					// opening a filed word sees the examples it has and no empty
-					// pair on the senses that never had one.
-					showExamples: Boolean(sense.exampleLa || sense.exampleEn),
-				}))
+						id: i,
+						meaningEn: sense.meaningEn,
+						usage: sense.usage ?? "",
+						exampleLa: sense.exampleLa ?? "",
+						exampleEn: sense.exampleEn ?? "",
+						// Shown exactly where there is something to show. An editor
+						// opening a filed word sees the examples it has and no empty
+						// pair on the senses that never had one.
+						showExamples: Boolean(sense.exampleLa || sense.exampleEn),
+					}))
 				: [{ id: 0, ...EMPTY_SENSE }],
 		nextSenseId: Math.max(entry.senses.length, 1),
 	};
@@ -201,6 +206,13 @@ export function entryFormState(entry: EntryWithSenses): FormState {
  * answers the current part of speech does not ask for. A gender typed while
  * "noun" was selected would otherwise ride along into an adverb and be rejected
  * by a rule the editor can no longer see on screen.
+ *
+ * Two of the fields hang off the declension rather than the part of speech, so
+ * the cleared declension is what they are asked about — not the one still in the
+ * draft. Picking `indeclinable` for an adjective has to strand its terminations
+ * and its filing in the same pass that strands them when the word stops being an
+ * adjective at all; doing it in two passes would leave a value on screen for one
+ * render and in the submit for good.
  */
 function clearInapplicable(draft: DraftFields): DraftFields {
 	const { partOfSpeech } = draft;
@@ -208,12 +220,19 @@ function clearInapplicable(draft: DraftFields): DraftFields {
 		? INFLECTS[partOfSpeech]
 		: undefined;
 
+	const declension = asks === "declension" ? draft.declension : "";
+
 	return {
 		...draft,
-		declension: asks === "declension" ? draft.declension : "",
+		declension,
 		conjugation: asks === "conjugation" ? draft.conjugation : "",
 		gender: partOfSpeech === "noun" ? draft.gender : "",
-		principalParts: hasPrincipalParts(partOfSpeech) ? draft.principalParts : "",
+		terminations: hasTerminations(partOfSpeech, declension)
+			? draft.terminations
+			: "",
+		principalParts: hasPrincipalParts(partOfSpeech, declension)
+			? draft.principalParts
+			: "",
 	};
 }
 
@@ -240,6 +259,12 @@ function cleared(state: FormState): FormState {
 	};
 }
 
+/** The fields whose value decides which other fields still have a question. */
+const STRANDS_ANSWERS = new Set<keyof DraftFields>([
+	"partOfSpeech",
+	"declension",
+]);
+
 export function formReducer(state: FormState, action: FormAction): FormState {
 	switch (action.type) {
 		case "field": {
@@ -247,9 +272,14 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 
 			return {
 				...state,
-				// Only a new part of speech can strand an answer; a lemma cannot.
-				draft:
-					action.name === "partOfSpeech" ? clearInapplicable(draft) : draft,
+				// Two fields can strand an answer, and a lemma cannot. The part of
+				// speech is the obvious one. The declension joined it when adjectives
+				// started being filed by it: moving one off `3` leaves a terminations
+				// answer that no longer has a question, and moving one onto
+				// `indeclinable` leaves a filing that no longer has forms.
+				draft: STRANDS_ANSWERS.has(action.name)
+					? clearInapplicable(draft)
+					: draft,
 			};
 		}
 

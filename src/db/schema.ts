@@ -15,9 +15,13 @@ export const entries = sqliteTable("entries", {
 	partOfSpeech: text("part_of_speech").notNull(), // 'verb' | 'noun' | 'adverb' | ...
 	// verbs: "labōrō, labōrāre, labōrāvī, labōrātum"
 	// nouns: the genitive, e.g. "puellae"
+	// adjectives: the other terminations, e.g. "ācer, ācris, ācre"
 	principalParts: text("principal_parts"),
 	gender: text("gender"), // nouns: 'm' | 'f' | 'n'
 	declension: text("declension"), // nouns/adjectives: '1'..'5'
+	// 3rd-declension adjectives: '1' | '2' | '3' — how many nominative
+	// terminations it files with. NULL wherever the question does not apply.
+	terminations: text("terminations"),
 	conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
 	notes: text("notes"),
 });

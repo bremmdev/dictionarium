@@ -30,7 +30,7 @@ function createClient() {
 	if (row?.journal_mode !== "wal") {
 		console.error(
 			`SQLite: expected WAL, got "${row?.journal_mode}" for ${dbFilePath}. ` +
-			`Readers and writers will block each other.`,
+				`Readers and writers will block each other.`,
 		);
 	}
 

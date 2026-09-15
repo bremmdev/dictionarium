@@ -29,6 +29,13 @@
       "when": 1788199836967,
       "tag": "0003_drop_entries_meaning",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789489240611,
+      "tag": "0004_add_adjective_terminations",
+      "breakpoints": true
     }
   ]
 }

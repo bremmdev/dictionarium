@@ -22,11 +22,14 @@ import {
 	CONJUGATIONS,
 	DECLENSIONS,
 	GENDERS,
+	hasTerminations,
 	INFLECTS,
 	isConjugation,
 	isDeclension,
 	isGender,
 	isPartOfSpeech,
+	isTerminations,
+	TERMINATIONS,
 } from "#/utils/entries/rules";
 import { normalizeLemma } from "#/utils/search/rules";
 
@@ -50,6 +53,7 @@ export type WiktionaryRow = {
 	principalParts?: string;
 	gender?: string;
 	declension?: string;
+	terminations?: string;
 	conjugation?: string;
 	notes?: string;
 	/** Position is the rank, so Wiktionary's own order is the dictionary order. */
@@ -434,6 +438,19 @@ function readDeclension(grammar: string) {
 	return /\bindeclinable\b/.test(grammar) ? "indeclinable" : undefined;
 }
 
+/**
+ * Wiktionary names the class in the headword line — "third-declension
+ * three-termination adjective" — which is the one place this fact is written
+ * down in words rather than left to be read off the forms. Lewis & Short and the
+ * OLD print acer, cris, cre and say nothing; the count is the reader's to make.
+ */
+function readTerminations(grammar: string) {
+	const counted = grammar.match(/\b(one|two|three)[- ]termination\b/);
+	return counted
+		? String(["one", "two", "three"].indexOf(counted[1]) + 1)
+		: undefined;
+}
+
 function readConjugation(grammar: string) {
 	if (/irregular conjugation/.test(grammar)) return "irregular";
 	if (/third \(-i[ōo] variant\) conjugation/.test(grammar)) return "3io";
@@ -494,13 +511,21 @@ function readPrincipalParts(candidate: Candidate) {
 	}
 
 	if (partOfSpeech === "adjective") {
-		// Third-declension adjectives file with fewer forms: ācer, ācris, ācre.
+		// One line per termination the adjective actually has: bonus, bona, bonum
+		// and ācer, ācris, ācre give three; fortis, forte gives two.
 		const filed = [
 			headword,
 			findForm(forms, /feminine/),
 			findForm(forms, /neuter/),
 		].filter(Boolean);
-		return filed.length > 1 ? filed.join(", ") : undefined;
+
+		if (filed.length > 1) return filed.join(", ");
+
+		// Nothing but the headword, so this is a one-termination adjective: it has
+		// no separate genders to print, and what a dictionary prints beside it is
+		// the genitive — vetus, veteris — because the nominative hides the stem.
+		const genitive = findForm(forms, /genitive/);
+		return genitive ? `${headword}, ${genitive}` : undefined;
 	}
 
 	return undefined;
@@ -615,6 +640,10 @@ function toRow(candidate: Candidate): WiktionaryRow {
 		principalParts: readPrincipalParts(candidate) || undefined,
 		gender: isNoun ? readGender(candidate) : undefined,
 		declension: isNominal ? readDeclension(candidate.grammar) : undefined,
+		terminations:
+			candidate.partOfSpeech === "adjective"
+				? readTerminations(candidate.grammar)
+				: undefined,
 		conjugation:
 			candidate.partOfSpeech === "verb"
 				? readConjugation(candidate.grammar)
@@ -747,6 +776,7 @@ export async function suggestFromWiktionary(
 	const read = {
 		gender: row.gender ?? "",
 		declension: row.declension ?? "",
+		terminations: row.terminations ?? "",
 		conjugation: row.conjugation ?? "",
 	};
 
@@ -756,6 +786,7 @@ export async function suggestFromWiktionary(
 		principalParts: row.principalParts ?? "",
 		gender: isGender(read.gender) ? read.gender : "",
 		declension: isDeclension(read.declension) ? read.declension : "",
+		terminations: isTerminations(read.terminations) ? read.terminations : "",
 		conjugation: isConjugation(read.conjugation) ? read.conjugation : "",
 		notes: row.notes ?? "",
 	};
@@ -766,6 +797,7 @@ export async function suggestFromWiktionary(
 	for (const [field, vocabulary] of [
 		["gender", GENDERS],
 		["declension", DECLENSIONS],
+		["terminations", TERMINATIONS],
 		["conjugation", CONJUGATIONS],
 	] as const) {
 		if (read[field] !== "" && draft[field] === "") {
@@ -783,6 +815,20 @@ export async function suggestFromWiktionary(
 	if (asks !== undefined && asks !== "neither" && draft[asks] === "") {
 		warnings.push(
 			`Wiktionary does not say how this ${partOfSpeech} inflects, so the ${asks} is for you to answer`,
+		);
+	}
+
+	// And the follow-up question, which only a 3rd-declension adjective is asked.
+	// Wiktionary usually names the class outright, but an adjective whose entry
+	// predates that template says only "third-declension adjective" — and then
+	// the count has to be read off the forms by someone who can tell a neuter
+	// from a genitive.
+	if (
+		hasTerminations(partOfSpeech, draft.declension) &&
+		draft.terminations === ""
+	) {
+		warnings.push(
+			"Wiktionary does not say how many terminations this adjective has, so that is for you to answer",
 		);
 	}
 

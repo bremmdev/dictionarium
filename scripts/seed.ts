@@ -17,6 +17,7 @@ type SeedWord = {
   principalParts?: string;
   gender?: string;
   declension?: string;
+  terminations?: string;
   conjugation?: string;
   notes?: string;
   /**
@@ -928,6 +929,7 @@ await db
       principalParts: sql`excluded.principal_parts`,
       gender: sql`excluded.gender`,
       declension: sql`excluded.declension`,
+      terminations: sql`excluded.terminations`,
       conjugation: sql`excluded.conjugation`,
       notes: sql`excluded.notes`,
     },

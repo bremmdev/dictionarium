@@ -24,6 +24,18 @@ export const DECLENSIONS = [
 
 export const CONJUGATIONS = ["1", "2", "3", "4", "3io", "irregular"] as const;
 
+/**
+ * How many nominative forms a 3rd-declension adjective files with: acer, acris,
+ * acre is three; fortis, forte is two; vetus, veteris is one.
+ *
+ * Not derivable from the filing, which is the whole reason it is a column. Count
+ * the forms in principal_parts and two of the three answers look identical — a
+ * two-termination adjective files a neuter second, a one-termination adjective
+ * files its genitive second, and both are two forms. A dictionary tells them
+ * apart by knowing what it printed; this has to be told.
+ */
+export const TERMINATIONS = ["1", "2", "3"] as const;
+
 export const GENDERS = ["m", "f", "n"] as const;
 
 /**
@@ -46,6 +58,7 @@ export type PartOfSpeech = keyof typeof INFLECTS;
 export type Declension = (typeof DECLENSIONS)[number];
 export type Conjugation = (typeof CONJUGATIONS)[number];
 export type Gender = (typeof GENDERS)[number];
+export type Terminations = (typeof TERMINATIONS)[number];
 
 /** Insertion order, so the form's buttons read noun, adjective, numeral, … */
 export const PARTS_OF_SPEECH = Object.keys(INFLECTS) as Array<PartOfSpeech>;
@@ -66,11 +79,38 @@ export function isGender(value: string): value is Gender {
 	return (GENDERS as ReadonlyArray<string>).includes(value);
 }
 
-/** Nouns file their genitive there, verbs their principal parts; see vault/schema.md. */
+export function isTerminations(value: string): value is Terminations {
+	return (TERMINATIONS as ReadonlyArray<string>).includes(value);
+}
+
+/**
+ * Nouns file their genitive there, verbs their principal parts, adjectives their
+ * terminations; see vault/schema.md.
+ *
+ * An indeclinable adjective is the exception inside the exception: nequam and
+ * frugi never change shape, so there is no second form to print and the lemma is
+ * the whole filing after all. Which is why this takes the declension too — for a
+ * noun or a verb the answer does not depend on it, and for an adjective it does.
+ */
 export function hasPrincipalParts(
 	partOfSpeech: string,
-): partOfSpeech is "noun" | "verb" {
-	return partOfSpeech === "noun" || partOfSpeech === "verb";
+	declension?: string,
+): partOfSpeech is "noun" | "verb" | "adjective" {
+	if (partOfSpeech === "noun" || partOfSpeech === "verb") return true;
+	return partOfSpeech === "adjective" && declension !== "indeclinable";
+}
+
+/**
+ * Only a 3rd-declension adjective is asked how many terminations it has.
+ *
+ * `1-2` is not asked because it has already answered: an adjective built from
+ * 1st- and 2nd-declension endings has one form per gender by construction, so a
+ * terminations column beside it would be a second place to say the same thing
+ * and a first place to contradict it. Indeclinables are not asked for the
+ * opposite reason — they have no terminations to count.
+ */
+export function hasTerminations(partOfSpeech: string, declension: string) {
+	return partOfSpeech === "adjective" && declension === "3";
 }
 
 export type SenseDraft = {
@@ -90,6 +130,7 @@ export type EntryDraft = {
 	principalParts: string | null;
 	gender: Gender | null;
 	declension: Declension | null;
+	terminations: Terminations | null;
 	conjugation: Conjugation | null;
 	notes: string | null;
 	/** Position is the rank, so ranks running 1..n with no gaps falls out of the array. */
@@ -156,6 +197,17 @@ function suspectCharacter(value: string) {
 
 	return null;
 }
+
+/**
+ * What is missing when principal_parts is empty, said in the word's own terms.
+ * Keyed by the parts of speech hasPrincipalParts admits, so the two cannot drift.
+ */
+const EMPTY_FILING: Record<"noun" | "verb" | "adjective", string> = {
+	verb: "A verb is filed by its principal parts, separated by commas.",
+	noun: "A noun is filed with its genitive.",
+	adjective:
+		"An adjective is filed with its other terminations: acer, acris, acre — or vetus, veteris, where there is only a genitive to give.",
+};
 
 /** "a noun", but "an adverb" — a part of speech is named inside a sentence. */
 function aWord(word: string) {
@@ -250,6 +302,30 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		fields.conjugation = `${opens(aWord(partOfSpeech))} does not conjugate, so it cannot carry a conjugation.`;
 	}
 
+	// --- terminations ------------------------------------------------------
+	// The follow-up question to declension, and the only one that depends on an
+	// answer rather than on the part of speech: a 3rd-declension adjective has
+	// to say how many forms it files with, because counting them cannot.
+	const terminationsInput = text(raw.terminations);
+	let terminations: Terminations | null = null;
+
+	if (hasTerminations(partOfSpeech, declensionInput)) {
+		if (terminationsInput === "") {
+			fields.terminations = `A 3rd-declension adjective files with one, two or three terminations (${TERMINATIONS.join(" | ")}) — acer, acris, acre is three.`;
+		} else if (!isTerminations(terminationsInput)) {
+			fields.terminations = `“${terminationsInput}” is not one of ${TERMINATIONS.join(" | ")}.`;
+		} else {
+			terminations = terminationsInput;
+		}
+	} else if (terminationsInput !== "") {
+		// Said precisely, because "1-2 adjective" and "3rd-declension noun" are
+		// wrong here for two different reasons and the editor should know which.
+		fields.terminations =
+			partOfSpeech === "adjective"
+				? `Terminations are counted for 3rd-declension adjectives only, and this one is ${declensionInput === "" ? "not yet given a declension" : `“${declensionInput}”`}.`
+				: `Only an adjective is filed by its terminations, and this is ${aWord(partOfSpeech)}.`;
+	}
+
 	// --- gender ------------------------------------------------------------
 	// A noun's third filing fact, and nothing else has one: an adjective
 	// inflects for every gender rather than having one of its own.
@@ -274,21 +350,23 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 	const principalPartsInput = latin(raw.principalParts);
 	let principalParts: string | null = null;
 
-	if (hasPrincipalParts(partOfSpeech)) {
+	if (hasPrincipalParts(partOfSpeech, declensionInput)) {
 		const suspectPart = suspectCharacter(principalPartsInput);
 
 		if (principalPartsInput === "") {
-			fields.principalParts =
-				partOfSpeech === "verb"
-					? "A verb is filed by its principal parts, separated by commas."
-					: "A noun is filed with its genitive.";
+			fields.principalParts = EMPTY_FILING[partOfSpeech];
 		} else if (suspectPart) {
 			fields.principalParts = suspectPart;
 		} else {
 			principalParts = principalPartsInput;
 		}
 	} else if (asks !== undefined && principalPartsInput !== "") {
-		fields.principalParts = `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
+		// An indeclinable adjective lands here, and "the lemma is the whole filing
+		// for an adjective" would be a lie about adjectives in general.
+		fields.principalParts =
+			partOfSpeech === "adjective"
+				? "An indeclinable adjective never changes shape, so it has no other terminations to file."
+				: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
 	}
 
 	// --- senses ------------------------------------------------------------
@@ -348,6 +426,7 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		principalParts,
 		gender,
 		declension,
+		terminations,
 		conjugation,
 		notes: text(raw.notes) || null,
 		// The empty case threw above; this cast is what tells the type that.

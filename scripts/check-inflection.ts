@@ -14,11 +14,22 @@ import { entries } from "../src/db/schema";
 import {
 	CONJUGATIONS,
 	DECLENSIONS,
+	hasPrincipalParts,
+	hasTerminations,
 	INFLECTS,
 	isConjugation,
 	isDeclension,
 	isPartOfSpeech,
+	isTerminations,
+	TERMINATIONS,
 } from "#/utils/entries/rules";
+
+/** What is missing, in the word's own terms. Keyed by what hasPrincipalParts admits. */
+const FILING: Record<"noun" | "verb" | "adjective", string> = {
+	verb: "a verb is filed by its four principal parts",
+	noun: "a noun is filed with its genitive",
+	adjective: "an adjective is filed with its other terminations",
+};
 
 const rows = await db.select().from(entries);
 const problems: Array<string> = [];
@@ -72,6 +83,41 @@ for (const r of rows) {
 	if (asks !== "conjugation" && r.conjugation !== null) {
 		problems.push(
 			`${where}: conjugation is "${r.conjugation}" — this part of speech does not conjugate, so it must be NULL`,
+		);
+	}
+
+	// The same two rules again, one question further down: a 3rd-declension
+	// adjective has to say how many terminations it files with, and nothing else
+	// may carry the answer. Counting the forms in principal_parts cannot stand in
+	// for it — "fortis, forte" and "vetus, veteris" are both two.
+	if (hasTerminations(r.partOfSpeech, r.declension ?? "")) {
+		if (r.terminations === null) {
+			problems.push(
+				`${where}: terminations is NULL — a 3rd-declension adjective files with one, two or three (${TERMINATIONS.join(" | ")})`,
+			);
+		} else if (!isTerminations(r.terminations)) {
+			problems.push(
+				`${where}: terminations is "${r.terminations}", not one of ${TERMINATIONS.join(" | ")}`,
+			);
+		}
+	} else if (r.terminations !== null) {
+		problems.push(
+			`${where}: terminations is "${r.terminations}" — only a 3rd-declension adjective is asked, so it must be NULL`,
+		);
+	}
+
+	// And the filing itself, which the same NULL rule governs: an adjective that
+	// declines prints its other terminations, and one that never changes shape
+	// has nothing to print.
+	if (hasPrincipalParts(r.partOfSpeech, r.declension ?? "")) {
+		if (r.principalParts === null) {
+			problems.push(
+				`${where}: principal_parts is NULL — ${FILING[r.partOfSpeech]}`,
+			);
+		}
+	} else if (r.principalParts !== null) {
+		problems.push(
+			`${where}: principal_parts is "${r.principalParts}" — the lemma is the whole filing for this word, so it must be NULL`,
 		);
 	}
 }
