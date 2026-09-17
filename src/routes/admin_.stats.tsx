@@ -136,13 +136,14 @@ function Stats() {
 				<PeriodPicker current={days} />
 			</div>
 
+			<div className="grid gap-3 sm:grid-cols-3">
+				<Figure value={wordsAdded.total} label="words added" />
+				<Figure value={searches.total} label="searches" />
+				<Figure value={views.total} label="words read" />
+			</div>
+
 			<section className="space-y-4">
 				<PanelHeading la="Verba addita" en="words added" />
-				<div className="grid gap-3 sm:grid-cols-3">
-					<Figure value={wordsAdded.total} label={`added in ${days} days`} />
-					<Figure value={searches.total} label="searches" />
-					<Figure value={views.total} label="words read" />
-				</div>
 
 				<TopTable
 					label="Part of speech"
