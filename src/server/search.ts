@@ -3,6 +3,7 @@ import { count, eq, like, sql } from "drizzle-orm";
 
 import { db } from "#/db";
 import { type EntryWithSenses, entries } from "#/db/schema";
+import { recordSearch } from "#/server/recording";
 import {
 	MAX_RESULTS,
 	MIN_QUERY_LENGTH,
@@ -18,7 +19,7 @@ export const searchEntries = createServerFn({ method: "GET" })
 			return [];
 		}
 
-		return db.query.entries.findMany({
+		const results = await db.query.entries.findMany({
 			where: like(entries.lemmaPlain, `%${key}%`),
 			// Words that start with the query are what the user almost always
 			// wants, so rank those above the ones that merely contain it.
@@ -30,6 +31,24 @@ export const searchEntries = createServerFn({ method: "GET" })
 			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
 			limit: MAX_RESULTS,
 		});
+
+		// Recorded below the length guard, so only searches that were actually run
+		// are counted — a single letter never reaches the database 
+		// `key` rather than `q` for the same reason lemma_plain exists: "Vīlla "
+		// and "villa" are one search.
+		//
+		// No preload guard is needed here, unlike the detail page. defaultPreload
+		// is "intent", so hovering a link does run a loader — but the only
+		// <Link to="/"> in the app (the header wordmark) carries no q, and an
+		// empty query is already dropped by the guard above. A search arrives by
+		// form submit into navigate(), which is never a preload.
+		//
+		// Awaited rather than left floating: the only asynchronous part is
+		// decrypting the session cookie, the insert itself is synchronous, and a
+		// floating promise here would be an unhandled rejection waiting to happen.
+		await recordSearch(key, results.length);
+
+		return results;
 	});
 
 /**

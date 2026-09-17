@@ -75,6 +75,12 @@ Run it as often as you like, extend it, rerun it; no duplicates. A caveat:
 
 `meaning_en` used to live here. It moved to `senses` and the column was dropped — see `[senses](#senses)`.
 
+### `created_at`
+
+Nullable unix seconds, added after the app went live. NULLs mean "filed before this dictionary started keeping a date". Nothing was backfilled, because there is no real date to backfill _with_ — see [analytics.md](./analytics.md#created_at-and-why-the-old-words-are-null), which also explains why the column has no DDL default and could not have one.
+
+The two event tables that arrived with it, `search_events` and `view_events`, are documented there rather than here. They are not part of the dictionary: nothing relates to them, and losing them would cost a chart, not a word.
+
 ## The inflection vocabulary
 
 Making `declension` text rather than an integer was a bet on outliers, and _septem_ collected it.

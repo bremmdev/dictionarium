@@ -1,0 +1,7 @@
+# The dictionary itself is meant to be found — /verbum/ pages stay crawlable on
+# purpose, because a Latin word is exactly the thing someone searches the web
+# for. What is closed off is the desk: the editor and the login form have
+# nothing to offer a reader and no business in an index.
+User-agent: *
+Disallow: /admin
+Disallow: /login

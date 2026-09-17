@@ -19,6 +19,7 @@ import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
 import { grammarFacts } from "#/components/search/EntryCard";
 import type { Entry, EntryWithSenses } from "#/db/schema";
+import { recordEntryView } from "#/server/analytics";
 import { getEntryByLemma } from "#/server/search";
 
 export const Route = createFileRoute("/verbum/$lemma")({
@@ -28,11 +29,18 @@ export const Route = createFileRoute("/verbum/$lemma")({
 		const q = typeof search.q === "string" ? search.q.trim() : "";
 		return q === "" ? {} : { q };
 	},
-	loader: async ({ params: { lemma } }) => {
+	loader: async ({ params: { lemma }, cause }) => {
 		const entry = await getEntryByLemma({ data: lemma });
 
 		if (!entry) {
 			throw notFound();
+		}
+
+		// cause === "enter" is the entire visitor filter, we do not want to track preloads
+		// Recording lives here rather than inside getEntryByLemma precisely
+		// because that function has other callers
+		if (cause === "enter") {
+			recordEntryView({ data: entry.lemma }).catch(() => {});
 		}
 
 		return entry;

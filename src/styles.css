@@ -120,7 +120,7 @@ header nav {
     padding-block-end: 0.5rem;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 1024px) {
     grid-template-columns: 1fr auto auto;
     grid-template-areas: "logo resources admin";
 

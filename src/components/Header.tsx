@@ -1,6 +1,6 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { ChartNoAxesColumn, Plus } from "lucide-react";
 import { useState } from "react";
 import mosaic from "#/assets/mosaic-bold.svg";
 import { logout } from "#/server/auth";
@@ -59,6 +59,19 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 							scrībe
 							<span className="sr-only" lang="en">
 								{" (add a word)"}
+							</span>
+						</Button>
+						<Button
+							as={Link}
+							to="/admin/stats"
+							variant="secondary"
+							lang="la"
+							className="uppercase"
+						>
+							<ChartNoAxesColumn className="h-3.5 w-3.5" aria-hidden="true" />
+							ratiōnēs
+							<span className="sr-only" lang="en">
+								{" (statistics)"}
 							</span>
 						</Button>
 						<Button

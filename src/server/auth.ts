@@ -56,9 +56,3 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(
 		return next();
 	},
 );
-
-export const adminStats = createServerFn({ method: "GET" })
-	.middleware([authMiddleware])
-	.handler(async () => {
-		return { secret: "only an admin sees this" };
-	});

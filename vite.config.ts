@@ -17,7 +17,7 @@ const config = defineConfig({
 			// itself is bundled into an SSR chunk that only loads on the first rendered
 			// request, so without this the backup schedule would start on first traffic
 			// rather than on boot — see vault/db.md.
-			plugins: ["./src/nitro/backups.ts"],
+			plugins: ["./src/nitro/backups.ts", "./src/nitro/retention.ts"],
 		}),
 		tailwindcss(),
 		tanstackStart(),

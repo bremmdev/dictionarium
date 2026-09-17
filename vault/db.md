@@ -121,6 +121,8 @@ Restoring is a file copy with the process stopped, and it is worth confirming wh
 sqlite3 backups/dictionarium-....db 'pragma quick_check;'
 ```
 
+**The dumps now carry analytics too.** `search_events` and `view_events` are in the same file, so every `VACUUM INTO` copies them and the retention window keeps seven of those copies — on the same volume, and in every manual offsite download. The event log is the only table here that grows on its own, so what bounds the backups is `ANALYTICS_RETENTION_DAYS` rather than anything in this file. See [analytics.md](./analytics.md#retention).
+
 **What this still is not.** The dumps sit on the same volume as the database. They cover a bad migration, a botched bulk edit, a corrupted live file — every failure short of losing the volume, which they do not cover at all, because they go with it. Nothing automated ships a copy anywhere else. That step is deliberately a habit rather than code: see [Keeping an offsite copy](#keeping-an-offsite-copy).
 
 ### Keeping an offsite copy

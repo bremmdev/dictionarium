@@ -35,7 +35,8 @@ const suffix = ".db";
 // older copy from the retention window.
 const minDelayMs = 60_000;
 
-function envNumber(name: string, fallback: number): number {
+/** Exported so the retention schedule reads its interval the same way this one does. */
+export function envNumber(name: string, fallback: number): number {
 	const raw = process.env[name];
 	if (raw === undefined || raw === "") return fallback;
 	const value = Number(raw);
