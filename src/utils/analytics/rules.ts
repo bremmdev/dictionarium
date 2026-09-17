@@ -50,7 +50,7 @@ export const TOP_N = 10;
  * This is needed because counting happens on the server, which is what lets a
  * shared link, an SSR first paint and a reader without JavaScript all count —
  * and means a crawler counts too.
- * 
+ *
  * A user-agent string is self-reported, so this is a heuristic and nothing more
  * — it catches the honest majority and misses anything that would rather not be
  * caught. The numbers this feature reports are page views, never people.

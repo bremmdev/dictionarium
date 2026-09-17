@@ -125,11 +125,8 @@ function Stats() {
 	return (
 		<section className="mx-auto max-w-4xl space-y-12 px-8 py-12 md:py-16">
 			<div className="space-y-4">
-				<Heading variant="h2" as="h1" lang="la">
-					Ratiōnēs
-					<span className="sr-only" lang="en">
-						{" (the reckoning)"}
-					</span>
+				<Heading variant="h2" as="h1">
+					Stats
 				</Heading>
 				<p className="text-ink-500">
 					Counted in this dictionary&rsquo;s own database, nowhere else. The

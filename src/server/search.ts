@@ -33,7 +33,7 @@ export const searchEntries = createServerFn({ method: "GET" })
 		});
 
 		// Recorded below the length guard, so only searches that were actually run
-		// are counted — a single letter never reaches the database 
+		// are counted — a single letter never reaches the database
 		// `key` rather than `q` for the same reason lemma_plain exists: "Vīlla "
 		// and "villa" are one search.
 		//

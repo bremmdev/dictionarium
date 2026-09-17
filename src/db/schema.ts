@@ -86,7 +86,7 @@ export const searchEvents = sqliteTable(
 		id: integer("id").primaryKey({ autoIncrement: true }),
 		createdAt: integer("created_at").notNull().$defaultFn(nowSeconds),
 		/**
-		 * The normalized key, not what was typed. "Vīlla " and "villa" are one search, 
+		 * The normalized key, not what was typed. "Vīlla " and "villa" are one search,
 		 */
 		query: text("query").notNull(),
 		/** 0 is the interesting value: a word someone wanted and we do not have. */
@@ -103,7 +103,7 @@ export const viewEvents = sqliteTable(
 		/**
 		 * The macronned lemma — the URL key — as text, deliberately not a foreign
 		 * key to entries.id. A view records which page was visited, and that fact
-		 * does not stop being true when the word is deleted; 
+		 * does not stop being true when the word is deleted;
 		 * History should not change when the dictionary does.
 		 */
 		lemma: text("lemma").notNull(),

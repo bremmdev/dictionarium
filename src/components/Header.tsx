@@ -65,14 +65,10 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 							as={Link}
 							to="/admin/stats"
 							variant="secondary"
-							lang="la"
 							className="uppercase"
 						>
 							<ChartNoAxesColumn className="h-3.5 w-3.5" aria-hidden="true" />
-							ratiōnēs
-							<span className="sr-only" lang="en">
-								{" (statistics)"}
-							</span>
+							stats
 						</Button>
 						<Button
 							variant="secondary"
