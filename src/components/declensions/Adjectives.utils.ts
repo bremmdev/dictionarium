@@ -80,6 +80,12 @@ export const ADJECTIVE_FILING = [
 	},
 ];
 
+export const EXAMPLE_COLUMNS = [
+	{ key: "phrase", label: "Phrase" },
+	{ key: "english", label: "Reads as" },
+	{ key: "agreeing", label: "What is agreeing" },
+];
+
 export const FIRST_SECOND: AdjectiveParadigm[] = [
 	{
 		lemma: "bonus, bona, bonum",
@@ -162,7 +168,7 @@ export const THIRD: AdjectiveParadigm[] = [
 	},
 	{
 		lemma: "fēlīx, fēlīcis",
-		english: "lucky, fruitful",
+		english: "lucky, fortunate",
 		label: "one termination",
 		singular: {
 			nominative: { m: "fēlīx", f: "fēlīx", n: "fēlīx" },

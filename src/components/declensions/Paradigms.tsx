@@ -54,8 +54,7 @@ const BLURBS: Record<string, React.ReactNode> = {
 			The smallest declension, feminine except for <LatinWord>diēs</LatinWord>,
 			which is usually masculine. Most of its nouns are seldom met in the plural
 			at all. Only <LatinWord>rēs</LatinWord> and <LatinWord>diēs</LatinWord>{" "}
-			are common words, and <LatinWord>rēs</LatinWord> carries an enormous range
-			of meanings — thing, matter, affair, property, the state.
+			are common words in the plural.
 		</>
 	),
 };

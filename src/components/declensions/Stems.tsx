@@ -125,6 +125,7 @@ export function Stems() {
 				caption="Every noun is filed by its genitive singular, and the stem falls out of the same form."
 				columns={GENITIVE_COLUMNS}
 				rows={GENITIVE_ROWS}
+				nowrap
 				className="mx-auto max-w-4xl"
 			/>
 			<p>So declining any noun is two steps:</p>

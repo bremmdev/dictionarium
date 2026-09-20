@@ -23,6 +23,14 @@ type TableProps = {
 	 * ink rather than body colour. Turn off for a grid of plain values.
 	 */
 	rowHeader?: boolean;
+	/**
+	 * Whether a cell holds a single form rather than prose. A hyphen is a break
+	 * opportunity, so -ibus and -um / -ium split across two lines the moment the
+	 * column is tight — which is exactly when the table is hardest to read. Set
+	 * it for a grid of endings or forms; leave it off wherever a cell holds a
+	 * sentence, which has to be free to wrap.
+	 */
+	nowrap?: boolean;
 	/** Lands on the scroll container — width and margins belong to the page. */
 	className?: string;
 };
@@ -34,8 +42,10 @@ export function Table({
 	rows,
 	caption,
 	rowHeader = true,
+	nowrap = false,
 	className,
 }: TableProps) {
+	const cell = nowrap ? `${CELL} whitespace-nowrap` : CELL;
 	return (
 		// A table is the one block that cannot reflow, so it scrolls inside its
 		// own box rather than pushing the page sideways on a phone. The border
@@ -59,7 +69,7 @@ export function Table({
 							<th
 								key={column.key}
 								scope="col"
-								className={`${CELL} font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] md:text-sm`}
+								className={`${cell} font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] md:text-sm`}
 							>
 								{column.label}
 							</th>
@@ -78,12 +88,12 @@ export function Table({
 									<th
 										key={column.key}
 										scope="row"
-										className={`${CELL} font-bold text-ink-900`}
+										className={`${cell} font-bold text-ink-900`}
 									>
 										{row.cells[column.key]}
 									</th>
 								) : (
-									<td key={column.key} className={`${CELL} text-ink-700`}>
+									<td key={column.key} className={`${cell} text-ink-700`}>
 										{row.cells[column.key]}
 									</td>
 								),

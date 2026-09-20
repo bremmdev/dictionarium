@@ -61,17 +61,26 @@ export function Endings() {
 			    automatic layout each table sizes its columns to its own contents
 			    and the 1st-declension column lands in a different place in the
 			    plural than in the singular. Six equal columns also keep the
-			    endings in a straight line down the page. */}
-			<div className="mx-auto max-w-5xl space-y-10 [&_table]:table-fixed">
+			    endings in a straight line down the page.
+
+			    Only from md up, though. Fixed layout divides the width it is
+			    given no matter how little that is, and six columns of a phone
+			    screen are narrower than the word "accusative" — the cells do not
+			    scroll or wrap, they overlap. Below md the tables size to their
+			    contents and the box they sit in scrolls instead, which is what
+			    the two grids losing their shared column positions buys. */}
+			<div className="mx-auto max-w-5xl space-y-10 md:[&_table]:table-fixed">
 				<Table
 					caption="Singular endings, by case and declension."
 					columns={ENDING_COLUMNS}
 					rows={SINGULAR_ROWS}
+					nowrap
 				/>
 				<Table
 					caption="Plural endings, by case and declension."
 					columns={ENDING_COLUMNS}
 					rows={PLURAL_ROWS}
+					nowrap
 				/>
 			</div>
 			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-500 leading-relaxed">

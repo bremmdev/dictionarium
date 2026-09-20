@@ -122,7 +122,7 @@ export const GENDER_RULES = [
 	{
 		declension: "4th",
 		usually: "masculine",
-		examples: "cantus, exercitus, adventus",
+		examples: "cantus, adventus",
 		exception: "two common feminines, and two neuters you will actually meet",
 		exceptionExamples: "manus, domus; genū, cornū",
 	},

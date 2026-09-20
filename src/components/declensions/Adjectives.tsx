@@ -6,6 +6,7 @@ import {
 	ADJECTIVE_COLUMNS,
 	ADJECTIVE_FILING,
 	type AdjectiveParadigm,
+	EXAMPLE_COLUMNS,
 	FILING_COLUMNS,
 	FIRST_SECOND,
 	THIRD,
@@ -57,7 +58,7 @@ const NOTES: Record<string, React.ReactNode> = {
 	),
 	"fortis, forte": (
 		<>
-			The commonest of the three classes. One form does masculine and feminine
+			Most common of the three classes. One form does masculine and feminine
 			throughout — <LatinWord>fortis</LatinWord>, <LatinWord>fortem</LatinWord>,{" "}
 			<LatinWord>fortēs</LatinWord> — and the neuter differs in the nominative
 			and accusative only, as every neuter does.
@@ -69,9 +70,8 @@ const NOTES: Record<string, React.ReactNode> = {
 			dictionary prints the genitive as the second form: nothing in{" "}
 			<LatinWord>fēlīx</LatinWord> shows the stem <LatinWord>fēlīc-</LatinWord>.
 			A handful of one-termination adjectives are consonant stems rather than
-			i-stems — <LatinWord>vetus, veteris</LatinWord>,{" "}
-			<LatinWord>pauper</LatinWord>, <LatinWord>dīves</LatinWord> — and those
-			decline with <LatinWord>-e</LatinWord> in the ablative singular,{" "}
+			i-stems like <LatinWord>vetus, veteris</LatinWord> and those decline with{" "}
+			<LatinWord>-e</LatinWord> in the ablative singular,{" "}
 			<LatinWord>-um</LatinWord> in the genitive plural and{" "}
 			<LatinWord>-a</LatinWord> in the neuter plural:{" "}
 			<LatinWord>vetere</LatinWord>, <LatinWord>veterum</LatinWord>,{" "}
@@ -79,6 +79,67 @@ const NOTES: Record<string, React.ReactNode> = {
 		</>
 	),
 };
+
+/**
+ * Four phrases where the agreement is visible and the endings are not. The
+ * explanation is JSX for the usual reason — every line of it names a Latin
+ * form, and vault/a11y.md wants lang="la" on each.
+ */
+const EXAMPLES = [
+	{
+		phrase: "agricola bonus",
+		english: "a good farmer",
+		agreeing: (
+			<>
+				Nominative singular masculine. <LatinWord>agricola</LatinWord> is first
+				declension but it is a man, so it takes a masculine adjective:{" "}
+				<LatinWord>bonus</LatinWord>, never <LatinWord>bona</LatinWord>.
+			</>
+		),
+	},
+	{
+		phrase: "gladiātōrēs bonī",
+		english: "good gladiators",
+		agreeing: (
+			<>
+				Nominative plural masculine on both words, spelled nothing alike:{" "}
+				<LatinWord>gladiātor</LatinWord> is third declension,{" "}
+				<LatinWord>bonus</LatinWord> first and second.
+			</>
+		),
+	},
+	{
+		phrase: "manūs bonās",
+		english: "good hands",
+		agreeing: (
+			<>
+				Accusative plural feminine. <LatinWord>manūs</LatinWord> on its own
+				could be four different forms; <LatinWord>bonās</LatinWord> is what pins
+				it down.
+			</>
+		),
+	},
+	{
+		phrase: "virī veterēs",
+		english: "old men",
+		agreeing: (
+			<>
+				The other way round — a second-declension noun with a third-declension
+				adjective, <LatinWord>vetus, veteris</LatinWord>, the one-termination
+				consonant stem.
+			</>
+		),
+	},
+];
+
+const EXAMPLE_ROWS = EXAMPLES.map(({ phrase, english, agreeing }) => ({
+	id: phrase,
+	cells: {
+		phrase: <LatinWord>{phrase}</LatinWord>,
+		english,
+		agreeing,
+	},
+}));
 
 function Paradigm({ paradigm }: { paradigm: AdjectiveParadigm }) {
 	const { lemma, english, label, singular, plural } = paradigm;
@@ -172,7 +233,7 @@ export function Adjectives() {
 			>
 				First and second declension{" "}
 				<span className="font-normal text-ink-500 normal-case">
-					(the 2-1-2 adjectives)
+					(the 1-2 adjectives)
 				</span>
 			</Heading>
 			<p className="mx-auto max-w-3xl text-center">
@@ -209,11 +270,26 @@ export function Adjectives() {
 				The vocative is not printed above because it is the nominative again in
 				every cell but one: the masculine singular of the{" "}
 				<LatinWord>bonus</LatinWord> type, which is <LatinWord>bone</LatinWord>{" "}
-				— and <LatinWord>meus</LatinWord> is <LatinWord>mī</LatinWord>. The
-				accusative plural of an i-stem is also found as{" "}
-				<LatinWord>-īs</LatinWord> — <LatinWord>fortīs</LatinWord>,{" "}
-				<LatinWord>ācrīs</LatinWord> — mostly in verse.
+				— and <LatinWord>meus</LatinWord> is <LatinWord>mī</LatinWord>.
 			</p>
+
+			<Heading
+				variant="h4"
+				as="h3"
+				className="mx-auto pt-4 text-center uppercase tracking-wide"
+			>
+				Agreement in practice
+			</Heading>
+			<p className="mx-auto max-w-3xl text-center">
+				Case, number and gender are what the two words share. The ending almost
+				never is.
+			</p>
+			<Table
+				caption="Four phrases, and what the adjective is agreeing with."
+				columns={EXAMPLE_COLUMNS}
+				rows={EXAMPLE_ROWS}
+				className="mx-auto max-w-5xl"
+			/>
 		</section>
 	);
 }
