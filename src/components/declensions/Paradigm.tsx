@@ -18,7 +18,7 @@ function Cell({ form, alt }: { form: string; alt?: string }) {
 		<>
 			<LatinWord>{form}</LatinWord>
 			{alt && (
-				<span className="text-base text-ink-500">
+				<span className="text-ink-500 text-sm md:text-base">
 					{" or "}
 					<span lang="la">{alt}</span>
 				</span>
@@ -55,7 +55,7 @@ export function Paradigm({ paradigm, note, className }: ParadigmProps) {
 			<Table
 				caption={
 					<>
-						<LatinWord className="text-lg">{lemma}</LatinWord>
+						<LatinWord className="text-base md:text-lg">{lemma}</LatinWord>
 						{", "}
 						<span lang="la">{genitive}</span>
 						{`, ${gender} — ${english}`}

@@ -206,12 +206,12 @@ export function Adjectives() {
 			))}
 
 			<p className="mx-auto max-w-4xl text-base text-ink-500 leading-relaxed">
-				Three footnotes for all five. The vocative is not printed above because
-				it is the nominative again in every cell but one: the masculine singular
-				of the <LatinWord>bonus</LatinWord> type, which is{" "}
-				<LatinWord>bone</LatinWord> — and <LatinWord>meus</LatinWord> is{" "}
-				<LatinWord>mī</LatinWord>. The accusative plural of an i-stem is also
-				found as <LatinWord>-īs</LatinWord> — <LatinWord>fortīs</LatinWord>,{" "}
+				The vocative is not printed above because it is the nominative again in
+				every cell but one: the masculine singular of the{" "}
+				<LatinWord>bonus</LatinWord> type, which is <LatinWord>bone</LatinWord>{" "}
+				— and <LatinWord>meus</LatinWord> is <LatinWord>mī</LatinWord>. The
+				accusative plural of an i-stem is also found as{" "}
+				<LatinWord>-īs</LatinWord> — <LatinWord>fortīs</LatinWord>,{" "}
 				<LatinWord>ācrīs</LatinWord> — mostly in verse.
 			</p>
 		</section>

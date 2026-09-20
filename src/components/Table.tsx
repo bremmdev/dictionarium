@@ -42,9 +42,13 @@ export function Table({
 		// sits on the table rather than on that box so the caption reads as a
 		// lead-in above the frame instead of being boxed in with the headers.
 		<div className={`overflow-x-auto ${className ?? ""}`}>
-			<table className="w-full border-collapse border border-parchment-200">
+			{/* One size for the whole table, stepped down below md: the cells
+			    inherit it, so a paradigm on a phone fits its column instead of
+			    scrolling inside it. The header row and the caption take the same
+			    step so their relative weight does not flip on a small screen. */}
+			<table className="w-full border-collapse border border-parchment-200 text-base md:text-lg">
 				{caption && (
-					<caption className="pb-3 text-left text-ink-500 text-sm italic">
+					<caption className="pb-3 text-left text-ink-500 text-xs italic md:text-sm">
 						{caption}
 					</caption>
 				)}
@@ -55,7 +59,7 @@ export function Table({
 							<th
 								key={column.key}
 								scope="col"
-								className={`${CELL} font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]`}
+								className={`${CELL} font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] md:text-sm`}
 							>
 								{column.label}
 							</th>
