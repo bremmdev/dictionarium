@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DeclensionsRouteImport } from './routes/declensions'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as AdminStatsRouteImport } from './routes/admin_.stats'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeclensionsRoute = DeclensionsRouteImport.update({
+  id: '/declensions',
+  path: '/declensions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -50,6 +56,7 @@ const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/admin_/stats': typeof AdminStatsRoute
@@ -75,13 +84,27 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/admin' | '/login' | '/numbers' | '/admin/stats' | '/verbum/$lemma'
+    | '/'
+    | '/admin'
+    | '/declensions'
+    | '/login'
+    | '/numbers'
+    | '/admin/stats'
+    | '/verbum/$lemma'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/login' | '/numbers' | '/admin/stats' | '/verbum/$lemma'
+  to:
+    | '/'
+    | '/admin'
+    | '/declensions'
+    | '/login'
+    | '/numbers'
+    | '/admin/stats'
+    | '/verbum/$lemma'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/declensions'
     | '/login'
     | '/numbers'
     | '/admin_/stats'
@@ -91,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  DeclensionsRoute: typeof DeclensionsRoute
   LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
   AdminStatsRoute: typeof AdminStatsRoute
@@ -111,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/declensions': {
+      id: '/declensions'
+      path: '/declensions'
+      fullPath: '/declensions'
+      preLoaderRoute: typeof DeclensionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -147,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  DeclensionsRoute: DeclensionsRoute,
   LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
   AdminStatsRoute: AdminStatsRoute,

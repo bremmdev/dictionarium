@@ -25,7 +25,10 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 
 	return (
 		<header className="bg-parchment-50 font-display">
-			<nav className="border-parchment-200 border-b uppercase max-w-page-width mx-auto w-full px-8">
+			<nav
+				aria-label="Main"
+				className="border-parchment-200 border-b uppercase max-w-page-width mx-auto w-full px-8"
+			>
 				<div className="flex h-14 w-full items-center logo">
 					<Link
 						to="/"
