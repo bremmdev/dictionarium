@@ -16,11 +16,22 @@ let cachedTotal: { promise: Promise<number>; at: number } | undefined;
 
 function getTotal() {
 	if (!cachedTotal || Date.now() - cachedTotal.at > TOTAL_TTL) {
-		const promise = getEntryCount().catch((error) => {
-			// Don't let a failed fetch occupy the cache for the whole TTL.
-			cachedTotal = undefined;
-			throw error;
-		});
+		const promise = getEntryCount()
+			.then((count) => {
+				// A server function resolves to undefined rather than throwing when
+				// its response carries no result so a server that dies
+				// mid-response arrives here as undefined, and caching that would
+				// poison the hint for the rest of the TTL.
+				if (typeof count !== "number") {
+					throw new Error("The word count came back without a value.");
+				}
+				return count;
+			})
+			.catch((error) => {
+				// Don't let a failed fetch occupy the cache for the whole TTL.
+				cachedTotal = undefined;
+				throw error;
+			});
 		cachedTotal = { promise, at: Date.now() };
 	}
 	return cachedTotal.promise;
@@ -43,6 +54,17 @@ export const Route = createFileRoute("/")({
 			searchEntries({ data: q }),
 			getTotal(),
 		]);
+
+		// searchEntries always returns an array — as long as it actually ran. A
+		// server function whose response carries no result resolves to undefined
+		// instead of throwing, so a server that dies mid-response lands here as
+		// undefined and takes the render down on `results.length`.
+		if (!Array.isArray(results)) {
+			throw new Error(
+				`The server did not answer the search for "${q}". It may be restarting — try again in a moment.`,
+			);
+		}
+
 		return { results, total };
 	},
 	// Cache helps when users click back/forward in their browser or refresh the page.
