@@ -156,6 +156,27 @@ Which is why one lesson's worth of numbers produces four different rows:
 | _ūnus_   | `numeral`        | `1-2` (with the pronominal genitive _ūnīus_, dative _ūnī_)                        |
 | _quot_   | `adjective`      | `indeclinable`                                                                    |
 
+### `determiner` is not one of them
+
+Wiktionary files _alius_, _ūllus_, _nūllus_ and _tōtus_ as **determiners**. This dictionary files them as adjectives, and `determiner` is deliberately absent from `INFLECTS`.
+
+The label is not wrong, it is from another inventory. Wiktionary applies one part-of-speech list across every language it covers, and modern treebanks tag these words `DET` for the same reason: it is a syntactic category that earns its keep when you are comparing Latin with English. The Latin grammars do not use it. A&G [§113](https://dcc.dickinson.edu/grammar/latin/1st-and-2nd-declension-adjectives-genitive-%C4%ABus-dative-%C4%AB) files them under _1st and 2nd Declension Adjectives_ and opens "the following **nine adjectives** with their compounds have the Genitive Singular in **-īus** and the Dative in **-ī** in all genders" — an adjective heading, with the irregularity as the sentence under it. That is exactly the split this schema wants: the label is the class, the oddity is a note. `part_of_speech` is what a reader sees on the card — the same argument `numeral` makes one section up — and a reader who meets _ūllus_ in a sentence is looking up an adjective.
+
+Three things would break if it were added:
+
+1. **The declensions page already teaches them as adjectives.** `Adjectives.tsx` carries all nine as a footnote under _bonus, bona, bonum_: "Nine adjectives break the genitive and dative singular — _ūnus, sōlus, tōtus, nūllus, ūllus, alius, alter, uter_ and _neuter_". A `/verbum/alius` card reading "determiner" would make the dictionary disagree with its own worked example.
+2. **The filing rules are written in terms of `adjective`.** `hasPrincipalParts` admits `noun | verb | adjective`, so a determiner's lemma would be its whole filing — and `check-inflection.ts` would report _alius, alia, aliud_ as principal parts that should be NULL. The repair is to widen `hasPrincipalParts` and `hasTerminations` to admit `determiner`, at which point it is `adjective` under a second name, which is the drift the guard exists to catch.
+3. **The set does not line up with anything.** What actually distinguishes these words is the **pronominal declension** — genitive singular _-īus_, dative singular _-ī_, in all three genders — and that cuts straight across the filing labels: _ūnus_ is a `numeral` here, _uter_ is a pronoun on Wiktionary, _tōtus_ an adjective. No part of speech selects the nine.
+
+So they file as `adjective`, `1-2`, with the irregularity in `notes` — the same shape as the _ūnus_ row above:
+
+| Lemma   | `principal_parts`    | `notes`                                                        |
+| ------- | -------------------- | -------------------------------------------------------------- |
+| _ūllus_ | _ūllus, ūlla, ūllum_ | pronominal genitive _ūllīus_, dative _ūllī_                    |
+| _alius_ | _alius, alia, aliud_ | neuter _aliud_; _alterīus_ is used for the genitive (A&G §113) |
+
+**What is parked.** When paradigm generation ships it will have to emit _-īus_ / _-ī_ for these words, and `notes` is prose the generator cannot read. The fact belongs in `declension` then — a pronominal value beside `1-2`, the way `indeclinable` is a value rather than a boolean — or in a flag. It does not belong in `part_of_speech`, for reason 3: a generator keyed on the part of speech would miss _ūnus_.
+
 ### The invariant this creates
 
 rNULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.

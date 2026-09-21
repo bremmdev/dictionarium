@@ -10,8 +10,10 @@ import acanthus from "#/assets/acanthus-sketch.svg";
 import aqueduct from "#/assets/aqueduct-sketch.svg";
 import arch from "#/assets/arch-sketch.svg";
 import bust from "#/assets/bust-sketch.svg";
+import coin from "#/assets/coin-sketch.svg";
 import column from "#/assets/column-sketch.svg";
 import lamp from "#/assets/lamp-sketch.svg";
+import lyre from "#/assets/lyre-sketch.svg";
 import scroll from "#/assets/scroll-sketch.svg";
 import sundial from "#/assets/sundial-sketch.svg";
 import temple from "#/assets/temple-sketch.svg";
@@ -54,14 +56,18 @@ export const Route = createFileRoute("/verbum/$lemma")({
  * the page has something to carry when the entry itself is three lines long.
  * The pairings are meant rather than decorative: an arch joins two piers the
  * way a conjunction joins two clauses, an aqueduct carries across, acanthus
- * ornaments what it grows on, a sundial marks the time a verb is tensed for.
+ * ornaments what it grows on, a sundial marks the time a verb is tensed for, a
+ * coin is small and never changes shape and still decides what everything
+ * around it is worth, and a lyre sounds rather than says.
  */
 const ILLUSTRATIONS: Record<string, string> = {
 	adjective: acanthus,
 	adverb: lamp,
 	conjunction: arch,
+	interjection: lyre,
 	noun: column,
 	numeral: abacus,
+	particle: coin,
 	preposition: aqueduct,
 	pronoun: bust,
 	"proper noun": temple,
@@ -77,8 +83,10 @@ const LATIN_PART_OF_SPEECH: Record<string, string> = {
 	adjective: "adiectīvum",
 	adverb: "adverbium",
 	conjunction: "coniūnctiō",
+	interjection: "interiectiō",
 	noun: "nōmen",
 	numeral: "numerus",
+	particle: "particula",
 	preposition: "praepositiō",
 	pronoun: "prōnōmen",
 	"proper noun": "nōmen proprium",
