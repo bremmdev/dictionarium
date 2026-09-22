@@ -34,7 +34,7 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 			</p>
 
 			{trimmed === "" && (
-				<p className="text-center text-ink-500 text-lg">
+				<p className="text-center text-ink-600 text-lg">
 					Search{" "}
 					<span className="font-semibold text-ink-900">
 						{total.toLocaleString()} {total === 1 ? "word" : "words"}
@@ -45,7 +45,7 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 			)}
 
 			{isTooShort && (
-				<p className="text-center text-ink-500 text-lg">
+				<p className="text-center text-ink-600 text-lg">
 					Keep going — at least {MIN_QUERY_LENGTH} letters are needed to search.
 				</p>
 			)}
@@ -55,7 +55,7 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 					<span className="font-bold text-accent" lang="la">
 						Nihil inventum.
 					</span>{" "}
-					<span className="text-ink-500">
+					<span className="text-ink-600">
 						No entries match &ldquo;{trimmed}&rdquo;.
 					</span>
 				</p>

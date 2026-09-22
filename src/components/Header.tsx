@@ -3,6 +3,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { ChartNoAxesColumn, Plus } from "lucide-react";
 import { useState } from "react";
 import mosaic from "#/assets/mosaic-bold.svg";
+import { ResourcesMenu } from "#/components/ResourcesMenu";
 import { logout } from "#/server/auth";
 
 export function Header({ isAdmin }: { isAdmin: boolean }) {
@@ -39,14 +40,6 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 						<img src={mosaic} alt="" aria-hidden="true" className="h-8 w-8" />
 						<span className="text-ink-900">Dictionarium</span>{" "}
 						<span className="text-gold-600 max-sm:hidden">Latinum</span>
-					</Link>
-				</div>
-				<div className="flex items-center gap-6 resources">
-					<Link to="/numbers" lang="la" className="nav-link focus-ring">
-						numerī{" "}
-						<span className="sr-only" lang="en">
-							{" (numbers)"}
-						</span>
 					</Link>
 				</div>
 				{isAdmin && (
@@ -87,6 +80,7 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 						</Button>
 					</div>
 				)}
+				<ResourcesMenu />
 			</nav>
 		</header>
 	);

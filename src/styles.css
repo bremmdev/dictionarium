@@ -37,7 +37,8 @@
      foreground-inverse on button-accent ............... 6.8, 5.5 on hover (/90)
      foreground-inverse on foreground .................. 11.5
      accent on bg-accent/5 (secondary button) .......... 6.3
-     neutral as a border on surface / subtle ........... 3.7 / 3.3 */
+     neutral as a border on surface / subtle ........... 3.7 / 3.3
+     ink-600 as muted text on surface / subtle ......... 5.4 / 4.8 */
 @theme {
   --color-parchment-50: #fbf7ef;
   --color-parchment-100: #f3eada;
@@ -51,6 +52,7 @@
   --color-gold-600: #8a6a2b;
 
   --color-ink-500: #8a7e69;
+  --color-ink-600: #6f6555;
   --color-ink-700: #5b5348;
   --color-ink-900: #3a342c;
 
@@ -122,7 +124,7 @@ header nav {
 
   @media (min-width: 1024px) {
     grid-template-columns: 1fr auto auto;
-    grid-template-areas: "logo resources admin";
+    grid-template-areas: "logo admin resources";
 
     .admin-controls {
       justify-self: end;

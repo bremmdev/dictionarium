@@ -15,7 +15,7 @@ const cell = (ending: string | null) =>
 	) : (
 		// Hidden content rather than an aria-label — vault/a11y.md: a label that
 		// has to say something the dash cannot is content, not an attribute.
-		<span className="text-ink-500">
+		<span className="text-ink-600">
 			<span aria-hidden="true">—</span>
 			<span className="sr-only">no fixed ending</span>
 		</span>
@@ -83,7 +83,7 @@ export function Endings() {
 					nowrap
 				/>
 			</div>
-			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-500 leading-relaxed">
+			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-600 leading-relaxed">
 				<p>
 					<strong className="font-semibold text-ink-900">
 						The third declension nominative singular

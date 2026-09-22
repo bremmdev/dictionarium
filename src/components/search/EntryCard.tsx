@@ -119,7 +119,7 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 				<p className="text-ink-900">
 					{core.meaningEn}
 					{rest > 0 && (
-						<span className="ml-2 whitespace-nowrap text-ink-500 text-sm">
+						<span className="ml-2 whitespace-nowrap text-ink-600 text-sm">
 							+{rest} more {rest === 1 ? "meaning" : "meanings"}
 						</span>
 					)}

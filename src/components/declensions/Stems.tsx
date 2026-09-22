@@ -33,7 +33,7 @@ const GENDER_ROWS = GENDER_RULES.map(
 					<LatinWord>{exceptionExamples}</LatinWord>
 				</>
 			) : (
-				<span className="text-ink-500">—</span>
+				<span className="text-ink-600">—</span>
 			),
 		},
 	}),

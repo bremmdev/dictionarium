@@ -335,7 +335,7 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 						<div>
 							<p className="text-ink-900 text-xl">
 								{sense.usage && (
-									<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-500 text-xs uppercase tracking-[0.18em]">
+									<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-600 text-xs uppercase tracking-[0.18em]">
 										{sense.usage}
 									</span>
 								)}
@@ -348,7 +348,7 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 								</p>
 							)}
 							{sense.exampleEn && (
-								<p className="text-ink-500">&ldquo;{sense.exampleEn}&rdquo;</p>
+								<p className="text-ink-600">&ldquo;{sense.exampleEn}&rdquo;</p>
 							)}
 						</div>
 					</li>
@@ -402,7 +402,7 @@ function NotFound() {
 			>
 				Nihil inventum.
 			</Heading>
-			<p className="text-ink-500 text-lg">
+			<p className="text-ink-600 text-lg">
 				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo;.
 			</p>
 			<Link to="/" search={{}} className="focus-ring inline-block text-accent">

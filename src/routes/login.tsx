@@ -62,7 +62,7 @@ function RouteComponent() {
 					</span>
 				</Heading>
 
-				<p className="text-ink-500 text-lg">
+				<p className="text-ink-600 text-lg">
 					Beyond here is the editor&rsquo;s desk.
 				</p>
 			</div>
@@ -133,7 +133,7 @@ function RouteComponent() {
 						<span className="font-bold text-accent" lang="la">
 							Nōn licet.
 						</span>{" "}
-						<span className="text-ink-500">{error}</span>
+						<span className="text-ink-600">{error}</span>
 					</p>
 				)}
 

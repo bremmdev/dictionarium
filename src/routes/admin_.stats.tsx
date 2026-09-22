@@ -76,7 +76,7 @@ function TopTable({
 	lang?: string;
 }) {
 	if (rows.length === 0) {
-		return <p className="text-ink-500 italic">{empty}</p>;
+		return <p className="text-ink-600 italic">{empty}</p>;
 	}
 
 	return (
@@ -128,7 +128,7 @@ function Stats() {
 				<Heading variant="h2" as="h1">
 					Stats
 				</Heading>
-				<p className="text-ink-500">
+				<p className="text-ink-600">
 					Counted in this dictionary&rsquo;s own database, nowhere else. The
 					window is the last {days} days, rolling — not calendar days, so no
 					timezone is involved.
@@ -155,7 +155,7 @@ function Stats() {
 				/>
 
 				{untimedWords > 0 && (
-					<p className="text-ink-500 text-sm">
+					<p className="text-ink-600 text-sm">
 						{untimedWords.toLocaleString()} older{" "}
 						{untimedWords === 1 ? "word carries" : "words carry"} no filing date
 						and {untimedWords === 1 ? "is" : "are"} never counted here — they
@@ -166,7 +166,7 @@ function Stats() {
 
 			<section className="space-y-4">
 				<PanelHeading la="Quaesīta" en="what was searched for" />
-				<p className="text-ink-500 text-sm">
+				<p className="text-ink-600 text-sm">
 					{searches.total.toLocaleString()} searches over{" "}
 					{searches.distinct.toLocaleString()} distinct terms. A repeat of the
 					same search within a minute is served from the router&rsquo;s cache
@@ -182,7 +182,7 @@ function Stats() {
 
 			<section className="space-y-4">
 				<PanelHeading la="Verba dēsīderāta" en="words wanted but missing" />
-				<p className="text-ink-500 text-sm">
+				<p className="text-ink-600 text-sm">
 					Searches that came back empty — a list of words to file, in the order
 					people asked for them.
 				</p>
@@ -204,7 +204,7 @@ function Stats() {
 				/>
 			</section>
 
-			<p className="text-ink-500 text-sm">
+			<p className="text-ink-600 text-sm">
 				Your own visits are not counted while you are logged in, and requests
 				that name themselves as crawlers are dropped. A user agent is
 				self-reported, so these are page views, never people.

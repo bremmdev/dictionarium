@@ -166,7 +166,7 @@ function Group({ title, stem, paradigms }: DeclensionGroup) {
 				className="mx-auto text-center uppercase tracking-wide"
 			>
 				{title}{" "}
-				<span className="font-normal text-ink-500 normal-case">({stem})</span>
+				<span className="font-normal text-ink-600 normal-case">({stem})</span>
 			</Heading>
 			<p className="mx-auto max-w-3xl text-center">{BLURBS[title]}</p>
 			{/* A lone paradigm is a column of its own width; a set of them sits in

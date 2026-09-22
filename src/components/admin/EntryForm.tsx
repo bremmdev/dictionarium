@@ -108,7 +108,7 @@ function ChipGroup({
 	return (
 		<fieldset aria-describedby={error ? errorId : undefined}>
 			<legend className={LABEL}>{legend}</legend>
-			{hint && <p className="mt-1 text-ink-500 text-sm">{hint}</p>}
+			{hint && <p className="mt-1 text-ink-600 text-sm">{hint}</p>}
 
 			<div className="mt-2 flex flex-wrap gap-2">
 				{options.map((option) => (
@@ -333,7 +333,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						>
 							{status.lemma}
 						</Link>{" "}
-						<span className="text-ink-500">
+						<span className="text-ink-600">
 							{status.created
 								? "is in the dictionary."
 								: "is filed as it now reads."}
@@ -396,7 +396,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				<label htmlFor={`${fieldId}-lemma`} className={LABEL}>
 					Lemma
 				</label>
-				<p className="text-ink-500 text-sm">
+				<p className="text-ink-600 text-sm">
 					The headword with its macrons: the first principal part of a verb, the
 					nominative of a noun, the word itself otherwise. Quaere fills the rest
 					of the form from Wiktionary, replacing whatever is in it.
@@ -447,7 +447,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				{/* lemma_plain is derived, never typed — showing it is the cheapest way
 				    to say so, and it is the key every search actually matches on. */}
 				{searchKey !== "" && errors.lemma === undefined && (
-					<p id={`${fieldId}-lemma-key`} className="text-ink-500 text-sm">
+					<p id={`${fieldId}-lemma-key`} className="text-ink-600 text-sm">
 						Searchable as <span className="font-bold">{searchKey}</span>
 					</p>
 				)}
@@ -466,7 +466,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			/>
 
 			{draft.partOfSpeech === "" ? (
-				<p className="text-ink-500">
+				<p className="text-ink-600">
 					Pick a part of speech and the fields it has to answer appear here.
 				</p>
 			) : (
@@ -528,7 +528,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							<label htmlFor={`${fieldId}-principal-parts`} className={LABEL}>
 								{FILING[draft.partOfSpeech].legend}
 							</label>
-							<p className="text-ink-500 text-sm">
+							<p className="text-ink-600 text-sm">
 								{FILING[draft.partOfSpeech].hint}
 							</p>
 							<input
@@ -565,7 +565,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 			<fieldset className="space-y-4">
 				<legend className={LABEL}>Senses</legend>
-				<p className="text-ink-500 text-sm">
+				<p className="text-ink-600 text-sm">
 					One row per genuinely distinct meaning, the first being the core one.
 					Commas within a sense, rows between senses.
 					{editing &&
@@ -753,7 +753,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 												id: sense.id,
 											})
 										}
-										className="focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-500 text-xs uppercase tracking-[0.18em] hover:text-accent"
+										className="focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-600 text-xs uppercase tracking-[0.18em] hover:text-accent"
 									>
 										{sense.showExamples ? (
 											<X className="h-3 w-3" aria-hidden="true" />
@@ -771,7 +771,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 									<button
 										type="button"
 										onClick={() => removeSense(sense.id)}
-										className="focus-ring mt-1 h-8 w-8 shrink-0 rounded-full text-ink-500 hover:bg-parchment-200 hover:text-accent"
+										className="focus-ring mt-1 h-8 w-8 shrink-0 rounded-full text-ink-600 hover:bg-parchment-200 hover:text-accent"
 									>
 										<X className="mx-auto h-4 w-4" aria-hidden="true" />
 										<span className="sr-only">Remove sense {i + 1}</span>
@@ -795,9 +795,9 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 			<div className="space-y-2">
 				<label htmlFor={`${fieldId}-notes`} className={LABEL}>
-					Notes <span className="text-ink-500 lowercase">(optional)</span>
+					Notes <span className="text-ink-600 lowercase">(optional)</span>
 				</label>
-				<p className="text-ink-500 text-sm">
+				<p className="text-ink-600 text-sm">
 					Anything the columns cannot hold as an enum — “suppletive”, or the
 					grammar behind a filing decision.
 				</p>

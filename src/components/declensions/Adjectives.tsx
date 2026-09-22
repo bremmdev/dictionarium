@@ -162,7 +162,7 @@ function Paradigm({ paradigm }: { paradigm: AdjectiveParadigm }) {
 				className="mx-auto text-center uppercase tracking-wide"
 			>
 				<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
-				<span className="font-normal text-ink-500 normal-case">
+				<span className="font-normal text-ink-600 normal-case">
 					({label}) — {english}
 				</span>
 			</Heading>
@@ -182,7 +182,7 @@ function Paradigm({ paradigm }: { paradigm: AdjectiveParadigm }) {
 					rows={rows(plural)}
 				/>
 			</div>
-			<p className="mx-auto max-w-4xl text-base text-ink-500 leading-relaxed">
+			<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
 				{NOTES[lemma]}
 			</p>
 		</div>
@@ -232,7 +232,7 @@ export function Adjectives() {
 				className="mx-auto pt-4 text-center uppercase tracking-wide"
 			>
 				First and second declension{" "}
-				<span className="font-normal text-ink-500 normal-case">
+				<span className="font-normal text-ink-600 normal-case">
 					(the 1-2 adjectives)
 				</span>
 			</Heading>
@@ -251,7 +251,7 @@ export function Adjectives() {
 				className="mx-auto pt-4 text-center uppercase tracking-wide"
 			>
 				Third declension{" "}
-				<span className="font-normal text-ink-500 normal-case">
+				<span className="font-normal text-ink-600 normal-case">
 					(one, two or three terminations)
 				</span>
 			</Heading>
@@ -266,7 +266,7 @@ export function Adjectives() {
 				<Paradigm key={paradigm.lemma} paradigm={paradigm} />
 			))}
 
-			<p className="mx-auto max-w-4xl text-base text-ink-500 leading-relaxed">
+			<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
 				The vocative is not printed above because it is the nominative again in
 				every cell but one: the masculine singular of the{" "}
 				<LatinWord>bonus</LatinWord> type, which is <LatinWord>bone</LatinWord>{" "}

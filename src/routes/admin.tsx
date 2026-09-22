@@ -64,7 +64,7 @@ function RouteComponent() {
 				</Heading>
 
 				{entry && (
-					<p className="text-ink-500">
+					<p className="text-ink-600">
 						Editing{" "}
 						<Link
 							to="/verbum/$lemma"
@@ -102,7 +102,7 @@ function NotFound() {
 			>
 				Nihil inventum.
 			</Heading>
-			<p className="text-ink-500 text-lg">
+			<p className="text-ink-600 text-lg">
 				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo; to edit.
 			</p>
 			<Link

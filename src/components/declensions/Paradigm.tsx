@@ -18,7 +18,7 @@ function Cell({ form, alt }: { form: string; alt?: string }) {
 		<>
 			<LatinWord>{form}</LatinWord>
 			{alt && (
-				<span className="text-ink-500 text-sm md:text-base">
+				<span className="text-ink-600 text-sm md:text-base">
 					{" or "}
 					<span lang="la">{alt}</span>
 				</span>
@@ -64,7 +64,7 @@ export function Paradigm({ paradigm, note, className }: ParadigmProps) {
 				columns={PARADIGM_COLUMNS}
 				rows={rows}
 			/>
-			{note && <p className="text-base text-ink-500 leading-relaxed">{note}</p>}
+			{note && <p className="text-base text-ink-600 leading-relaxed">{note}</p>}
 		</div>
 	);
 }
