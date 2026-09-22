@@ -54,7 +54,7 @@ function RouteComponent() {
 	const { entry } = Route.useLoaderData();
 
 	return (
-		<section className="mx-auto max-w-3xl space-y-10 px-8 py-12 md:py-16">
+		<section className="mx-auto max-w-3xl space-y-10 px-4 sm:px-8 py-12 md:py-16">
 			<div className="space-y-3">
 				<Heading variant="h2" as="h1" lang="la">
 					{entry ? "Verbum ēmendandum" : "Verbum novum"}
@@ -93,7 +93,7 @@ function NotFound() {
 	const { lemma } = Route.useSearch();
 
 	return (
-		<div className="mx-auto max-w-3xl space-y-4 px-8 py-16 text-center md:py-24">
+		<div className="mx-auto max-w-3xl space-y-4 px-4 sm:px-8 py-16 text-center md:py-24">
 			<Heading
 				variant="h3"
 				as="h1"

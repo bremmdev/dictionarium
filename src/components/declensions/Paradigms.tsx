@@ -201,7 +201,7 @@ export function Paradigms() {
 		<section
 			id="declensions"
 			aria-labelledby="declensions-heading"
-			className="scroll-mt-8 mx-auto max-w-page-width space-y-12 px-8"
+			className="scroll-mt-8 mx-auto max-w-page-width space-y-12 px-4 sm:px-8"
 		>
 			<Heading
 				id="declensions-heading"

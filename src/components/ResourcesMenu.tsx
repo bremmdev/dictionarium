@@ -114,11 +114,11 @@ export function ResourcesMenu() {
 	};
 
 	return (
-		<div ref={containerRef} className="resources relative ms-6">
+		<div ref={containerRef} className="resources relative ms-3 sm:ms-6">
 			<Button
 				ref={buttonRef}
 				variant="secondary"
-				className="border-transparent uppercase aria-expanded:bg-accent/10"
+				className="border-transparent uppercase max-sm:text-sm aria-expanded:bg-accent/10"
 				aria-expanded={isOpen}
 				aria-controls={panelId}
 				onClick={() => (isOpen ? close(false) : open())}

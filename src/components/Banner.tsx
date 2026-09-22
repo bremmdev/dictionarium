@@ -21,7 +21,7 @@ const DEFAULT_ILLUSTRATION = [
 export function Banner({ content, illustrations }: BannerProps) {
 	return (
 		<div className="overflow-hidden border-parchment-200 border-b bg-linear-to-b from-parchment-50 to-parchment-100">
-			<div className="mx-auto grid max-w-page-width grid-cols-1 items-center gap-12 px-8 py-12 md:grid-cols-3 md:gap-10 md:py-16">
+			<div className="mx-auto grid max-w-page-width grid-cols-1 items-center gap-12 px-4 sm:px-8 py-12 md:grid-cols-3 md:gap-10 md:py-16">
 				<div className="text-center md:col-span-2 md:text-left *:first-child:mt-0 *:last-child:mb-0">
 					{content}
 				</div>

@@ -28,14 +28,14 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 		<header className="bg-parchment-50 font-display">
 			<nav
 				aria-label="Main"
-				className="border-parchment-200 border-b uppercase max-w-page-width mx-auto w-full px-8"
+				className="border-parchment-200 border-b uppercase max-w-page-width mx-auto w-full px-4 sm:px-8"
 			>
 				<div className="flex h-14 w-full items-center logo">
 					<Link
 						to="/"
 						search={{}}
 						lang="la"
-						className="text-lg font-bold tracking-wide flex items-center gap-2 focus-ring"
+						className="text-lg max-sm:text-base font-bold tracking-wide flex items-center gap-2 focus-ring"
 					>
 						<img src={mosaic} alt="" aria-hidden="true" className="h-8 w-8" />
 						<span className="text-ink-900">Dictionarium</span>{" "}
@@ -49,7 +49,7 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 							to="/admin"
 							variant="secondary"
 							lang="la"
-							className="uppercase"
+							className="uppercase max-sm:text-sm"
 						>
 							<Plus className="h-3.5 w-3.5" aria-hidden="true" />
 							scrībe
@@ -61,7 +61,7 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 							as={Link}
 							to="/admin/stats"
 							variant="secondary"
-							className="uppercase"
+							className="uppercase max-sm:text-sm"
 						>
 							<ChartNoAxesColumn className="h-3.5 w-3.5" aria-hidden="true" />
 							stats
@@ -69,7 +69,7 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 						<Button
 							variant="secondary"
 							lang="la"
-							className="uppercase"
+							className="uppercase max-sm:text-sm"
 							onClick={handleLogout}
 							isLoading={isLoggingOut}
 						>

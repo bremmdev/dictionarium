@@ -194,7 +194,7 @@ export function Adjectives() {
 		<section
 			id="adjectives"
 			aria-labelledby="adjectives-heading"
-			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-8"
+			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-4 sm:px-8"
 		>
 			<Heading
 				id="adjectives-heading"

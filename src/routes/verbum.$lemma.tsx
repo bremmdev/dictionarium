@@ -368,7 +368,7 @@ function WordDetail() {
 			{/* The outer container matches the banner's, so the body starts on the
 			    same left edge as the lemma; the inner one keeps prose to a measure
 			    rather than letting it run the full 90rem. */}
-			<div className="mx-auto max-w-page-width px-8 py-12 md:py-16">
+			<div className="mx-auto max-w-page-width px-4 sm:px-8 py-12 md:py-16">
 				<div className="max-w-4xl space-y-10">
 					<PrincipalParts entry={entry} />
 					<Meanings entry={entry} />
@@ -393,7 +393,7 @@ function NotFound() {
 	const { lemma } = Route.useParams();
 
 	return (
-		<div className="mx-auto max-w-3xl px-8 py-16 md:py-24 space-y-4 text-center">
+		<div className="mx-auto max-w-3xl px-4 sm:px-8 py-16 md:py-24 space-y-4 text-center">
 			<Heading
 				variant="h3"
 				as="h1"

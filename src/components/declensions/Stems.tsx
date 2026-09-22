@@ -86,7 +86,7 @@ export function Stems() {
 		<section
 			id="filing"
 			aria-labelledby="filing-heading"
-			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-8"
+			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-4 sm:px-8"
 		>
 			<Heading
 				id="filing-heading"

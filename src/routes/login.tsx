@@ -46,7 +46,7 @@ function RouteComponent() {
 	};
 
 	return (
-		<section className="mx-auto max-w-xl space-y-8 px-8 py-16 md:py-24">
+		<section className="mx-auto max-w-xl space-y-8 px-4 sm:px-8 py-16 md:py-24">
 			<div className="space-y-6 text-center">
 				<img
 					src={scutum}

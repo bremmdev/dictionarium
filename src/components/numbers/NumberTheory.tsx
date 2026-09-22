@@ -35,7 +35,7 @@ const SUBTRACTIVE_WORD_ROWS = SUBTRACTIVE_WORDS.map(
 
 export function NumberTheory() {
 	return (
-		<section className="mx-auto max-w-page-width space-y-8 px-8">
+		<section className="mx-auto max-w-page-width space-y-8 px-4 sm:px-8">
 			<Heading
 				variant="h2"
 				className="mx-auto text-center uppercase tracking-wide"

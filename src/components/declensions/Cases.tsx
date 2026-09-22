@@ -13,7 +13,7 @@ export function Cases() {
 		<section
 			id="cases"
 			aria-labelledby="cases-heading"
-			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-8"
+			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-4 sm:px-8"
 		>
 			<Heading
 				id="cases-heading"

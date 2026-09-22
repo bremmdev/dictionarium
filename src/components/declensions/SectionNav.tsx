@@ -23,7 +23,7 @@ export function SectionNav() {
 			aria-label="On this page"
 			className="border-parchment-200 border-b bg-parchment-50 font-display"
 		>
-			<ul className="mx-auto flex max-w-page-width flex-wrap items-center justify-center gap-x-8 gap-y-2 px-8 py-4 text-base uppercase">
+			<ul className="mx-auto flex max-w-page-width flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 sm:px-8 py-4 text-base uppercase">
 				{SECTIONS.map(({ id, label, gloss }) => (
 					<li key={id}>
 						<a

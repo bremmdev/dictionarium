@@ -6,7 +6,7 @@ import { LatinWord } from "#/components/LatinWord";
 
 export function Abacus() {
 	return (
-		<section className="mx-auto max-w-page-width px-8 space-y-8">
+		<section className="mx-auto max-w-page-width px-4 sm:px-8 space-y-8">
 			<Heading
 				variant="h2"
 				className="mx-auto text-center uppercase tracking-wide"

@@ -42,7 +42,7 @@ export function Endings() {
 		<section
 			id="endings"
 			aria-labelledby="endings-heading"
-			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-8"
+			className="scroll-mt-8 mx-auto max-w-page-width space-y-8 px-4 sm:px-8"
 		>
 			<Heading
 				id="endings-heading"

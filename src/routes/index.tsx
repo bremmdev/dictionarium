@@ -123,7 +123,7 @@ function Home() {
 		<>
 			<HomeBanner />
 
-			<section className="mx-auto max-w-5xl px-8 py-16 md:py-24 space-y-8">
+			<section className="mx-auto max-w-5xl px-4 sm:px-8 py-16 md:py-24 space-y-8">
 				<Heading
 					variant="h2"
 					className="mx-auto text-center uppercase tracking-wide"

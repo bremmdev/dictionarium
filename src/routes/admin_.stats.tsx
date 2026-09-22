@@ -123,7 +123,7 @@ function Stats() {
 	const { wordsAdded, searches, views, untimedWords, days } = summary;
 
 	return (
-		<section className="mx-auto max-w-4xl space-y-12 px-8 py-12 md:py-16">
+		<section className="mx-auto max-w-4xl space-y-12 px-4 sm:px-8 py-12 md:py-16">
 			<div className="space-y-4">
 				<Heading variant="h2" as="h1">
 					Stats
