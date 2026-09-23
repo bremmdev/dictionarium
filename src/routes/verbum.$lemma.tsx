@@ -19,7 +19,9 @@ import sundial from "#/assets/sundial-sketch.svg";
 import temple from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
+import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarFacts } from "#/components/search/EntryCard";
+import { SenseList } from "#/components/SenseList";
 import type { Entry, EntryWithSenses } from "#/db/schema";
 import { recordEntryView } from "#/server/analytics";
 import { getEntryByLemma } from "#/server/search";
@@ -203,86 +205,17 @@ function WordBanner({ entry }: { entry: EntryWithSenses }) {
 	);
 }
 
-/** The four verb parts in the order every dictionary files them. */
-const VERB_PART_LABELS = ["present", "infinitive", "perfect", "supine"];
-
-/**
- * The three genders, and the two ways an adjective files with fewer than three
- * forms. A two-termination adjective's first form is not its masculine — it is
- * masculine and feminine together, which is the whole reason there are two forms
- * and not three. A one-termination adjective's second form is not a gender at
- * all: it is the genitive, because the nominative hides the stem.
- */
-const ADJECTIVE_PART_LABELS: Record<string, Array<string>> = {
-	"3": ["masculine", "feminine", "neuter"],
-	"2": ["masc. & fem.", "neuter"],
-	"1": ["nominative", "genitive"],
-};
-
-/**
- * principal_parts is one string because that is how a dictionary prints it, but
- * the pieces are separate facts and worth labelling. Only the shapes we can
- * name are split; anything else is shown whole rather than mislabelled.
- */
-function partLabels(entry: Entry, count: number) {
-	if (entry.partOfSpeech === "verb" && count === 4) {
-		return VERB_PART_LABELS;
-	}
-
-	if (entry.partOfSpeech.endsWith("noun") && count === 1) {
-		return ["genitive"];
-	}
-
-	if (entry.partOfSpeech === "adjective") {
-		// `1-2` never had a terminations answer because it did not need one: its
-		// three forms are one per gender by construction.
-		const labels =
-			entry.declension === "1-2"
-				? ADJECTIVE_PART_LABELS["3"]
-				: entry.terminations === null
-					? null
-					: ADJECTIVE_PART_LABELS[entry.terminations];
-
-		// An unlabelled count is a row that disagrees with its own terminations,
-		// and a mislabelled form is worse than an unlabelled one.
-		return labels?.length === count ? labels : null;
-	}
-
-	return null;
-}
-
 function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 	if (!entry.principalParts) {
 		return null;
 	}
 
-	const split = entry.principalParts
-		.split(",")
-		.map((part) => part.trim())
-		.filter(Boolean);
-
-	const labels = partLabels(entry, split.length);
-	const parts = labels ? split : [entry.principalParts];
-
 	return (
 		<section>
 			<Heading variant="h2">Principal parts</Heading>
-
-			<ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-6">
-				{parts.map((part, i) => (
-					<li
-						key={part}
-						className="rounded-lg border border-parchment-200 bg-parchment-100 px-4 py-3"
-					>
-						<p className="font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
-							{labels?.[i] ?? "form"}
-						</p>
-						<p className="mt-1 text-ink-900 text-xl italic" lang="la">
-							{part}
-						</p>
-					</li>
-				))}
-			</ol>
+			<div className="mt-6">
+				<PrincipalPartList entry={entry} />
+			</div>
 		</section>
 	);
 }
@@ -301,11 +234,6 @@ function saysMoreThanTheBanner(sense: EntryWithSenses["senses"][number]) {
  * as well, the way a dictionary prints the headword gloss and then numbers the
  * senses underneath — a word with a single, bare sense has nothing to add here,
  * so the section is skipped rather than repeating that one line.
- *
- * Each row shows its own rank rather than leaning on a list marker, so the
- * numbering matches the senses table and a gap in it shows up as a gap instead
- * of being silently renumbered. That number is content, not decoration: it is
- * how a dictionary refers to a sense, so it stays readable to a screen reader.
  */
 function Meanings({ entry }: { entry: EntryWithSenses }) {
 	const senses = entry.senses;
@@ -322,38 +250,9 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 		<section>
 			<Heading variant="h2">Meanings</Heading>
 
-			<ol className="space-y-3 mt-6">
-				{senses.map((sense) => (
-					<li
-						key={sense.id}
-						className="flex gap-4 rounded-lg border border-parchment-200 bg-parchment-100 p-4"
-					>
-						<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-300 font-bold text-ink-900 text-sm tabular-nums">
-							{sense.rank}
-						</span>
-
-						<div>
-							<p className="text-ink-900 text-xl">
-								{sense.usage && (
-									<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-600 text-xs uppercase tracking-[0.18em]">
-										{sense.usage}
-									</span>
-								)}
-								{sense.meaningEn}
-							</p>
-
-							{sense.exampleLa && (
-								<p className="mt-2 text-ink-700 italic" lang="la">
-									{sense.exampleLa}
-								</p>
-							)}
-							{sense.exampleEn && (
-								<p className="text-ink-600">&ldquo;{sense.exampleEn}&rdquo;</p>
-							)}
-						</div>
-					</li>
-				))}
-			</ol>
+			<div className="mt-6">
+				<SenseList senses={senses} />
+			</div>
 		</section>
 	);
 }

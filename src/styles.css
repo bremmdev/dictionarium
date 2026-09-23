@@ -38,7 +38,8 @@
      foreground-inverse on foreground .................. 11.5
      accent on bg-accent/5 (secondary button) .......... 6.3
      neutral as a border on surface / subtle ........... 3.7 / 3.3
-     ink-600 as muted text on surface / subtle ......... 5.4 / 4.8 */
+     ink-600 as muted text on surface / subtle ......... 5.4 / 4.8
+     gold-600 as text on surface / subtle / muted ...... 6.4 / 5.7 / 5.0 */
 @theme {
   --color-parchment-50: #fbf7ef;
   --color-parchment-100: #f3eada;
@@ -49,7 +50,7 @@
   --color-gold-300: #e8c97a;
   --color-gold-400: #d9a441;
   --color-gold-500: #b08a4a;
-  --color-gold-600: #8a6a2b;
+  --color-gold-600: #72561f;
 
   --color-ink-500: #8a7e69;
   --color-ink-600: #6f6555;

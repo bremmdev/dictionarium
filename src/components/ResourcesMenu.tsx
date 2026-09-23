@@ -1,6 +1,6 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, Hash, Table2 } from "lucide-react";
+import { ChevronDown, Hash, ListFilter, Table2 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const RESOURCES = [
@@ -15,6 +15,12 @@ const RESOURCES = [
 		label: "Numbers",
 		description: "Numerals and counting",
 		Icon: Hash,
+	},
+	{
+		to: "/word-list",
+		label: "Word lists",
+		description: "Build your own list of words",
+		Icon: ListFilter,
 	},
 ] as const;
 
