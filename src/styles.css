@@ -77,7 +77,27 @@
   --color-foreground: var(--color-ink-900);
   --color-foreground-inverse: var(--color-parchment-50);
 
-  --font-display: "EB Garamond", ui-serif, serif;
+  /* A new word list landing */
+  --animate-list-updated: list-updated 1200ms ease-out;
+  --animate-count-pop: count-pop 400ms ease-out;
+
+  @keyframes list-updated {
+    from {
+      border-color: color-mix(in oklab,
+          var(--color-accent) 50%,
+          var(--color-parchment-200));
+    }
+  }
+
+  @keyframes count-pop {
+    40% {
+      transform: scale(1.08);
+    }
+  }
+
+  --font-display: "EB Garamond",
+  ui-serif,
+  serif;
   --container-page-width: 90rem;
 }
 

@@ -112,39 +112,84 @@ function describe(search: WordListSearch, count: number) {
 	};
 }
 
-function Summary({ search, count }: { search: WordListSearch; count: number }) {
+function Summary({
+	search,
+	count,
+	version,
+	ref,
+}: {
+	search: WordListSearch;
+	count: number;
+	/** How many new lists have landed since the page loaded. */
+	version: number;
+	ref: React.Ref<HTMLDivElement>;
+}) {
 	const { noun, qualifier } = describe(search, count);
+
+	// The first list is the page itself, not news, so only later ones flash.
+	const isNew = version > 0;
 
 	return (
 		// The live region is the summary itself. It only changes when a new list
 		// has landed — the loader data swaps in one go — so it never announces
-		// an in-between state.
-		<div
-			aria-live="polite"
-			className="flex items-center gap-4 rounded-sm border border-parchment-200 bg-linear-to-r from-parchment-100 to-parchment-50 px-4 py-4 sm:px-6"
-		>
-			<span
-				aria-hidden="true"
-				className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-parchment-50 shadow-sm"
+		// an in-between state. It stays mounted; only the bar inside is keyed,
+		// because a live region that is replaced rather than changed goes quiet.
+		<div ref={ref} aria-live="polite" className="scroll-mt-4">
+			<div
+				// A new key remounts the bar, which is what replays the animation.
+				key={version}
+				className={`flex items-center gap-4 rounded-sm border border-parchment-200 bg-linear-to-r from-parchment-100 to-parchment-50 px-4 py-4 sm:px-6 ${
+					isNew ? "animate-list-updated" : ""
+				}`}
 			>
-				<ScrollText className="h-6 w-6" />
-			</span>
-			<p className="flex flex-wrap items-baseline gap-x-3">
-				<span className="font-bold text-3xl text-accent tabular-nums leading-none">
-					{count.toLocaleString()}
-				</span>{" "}
-				<span className="font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]">
-					{noun}
+				<span
+					aria-hidden="true"
+					className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-parchment-50 shadow-sm"
+				>
+					<ScrollText className="h-6 w-6" />
 				</span>
-				{qualifier && (
-					<>
-						{" "}
-						<span className="mt-1 basis-full text-ink-700">{qualifier}</span>
-					</>
-				)}
-			</p>
+				<p className="flex flex-wrap items-baseline gap-x-3">
+					<span
+						className={`inline-block font-bold text-3xl text-accent tabular-nums leading-none ${
+							isNew ? "motion-safe:animate-count-pop" : ""
+						}`}
+					>
+						{count.toLocaleString()}
+					</span>{" "}
+					<span className="font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]">
+						{noun}
+					</span>
+					{qualifier && (
+						<>
+							{" "}
+							<span className="mt-1 basis-full text-ink-700">{qualifier}</span>
+						</>
+					)}
+				</p>
+			</div>
 		</div>
 	);
+}
+
+/**
+ * Brings a freshly built list into view — on a phone the form fills the
+ * screen, and a list that changed below the fold looks like nothing happened.
+ * Leaves the page alone when the summary is already fully visible, so a
+ * desktop that shows both does not lurch.
+ */
+function reveal(element: HTMLElement | null) {
+	if (!element) return;
+
+	const { top, bottom } = element.getBoundingClientRect();
+	if (top >= 0 && bottom <= window.innerHeight) return;
+
+	const reduceMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	element.scrollIntoView({
+		behavior: reduceMotion ? "auto" : "smooth",
+		block: "start",
+	});
 }
 
 function ChipGroup<T extends string>({
@@ -192,16 +237,20 @@ export function WordListBuilder() {
 
 	const fieldId = useId();
 	const lettersRef = useRef<HTMLInputElement>(null);
+	const summaryRef = useRef<HTMLDivElement>(null);
 
 	// The draft is what the form shows; the URL is the list that was built.
 	const [draft, setDraft] = useState(() => draftFrom(search));
 	const [error, setError] = useState<string>();
 
-	// Re-sync the form when the URL changes from outside (back/forward, a link).
+	// Re-sync the form when the URL changes from outside (back/forward, a link),
+	// and count every new list so the summary can mark its arrival.
 	const searchKey = JSON.stringify(search);
 	const [syncedKey, setSyncedKey] = useState(searchKey);
+	const [listVersion, setListVersion] = useState(0);
 	if (searchKey !== syncedKey) {
 		setSyncedKey(searchKey);
+		setListVersion((v) => v + 1);
 		setDraft(draftFrom(search));
 		setError(undefined);
 	}
@@ -209,7 +258,7 @@ export function WordListBuilder() {
 	const update = (patch: Partial<Draft>) =>
 		setDraft((prev) => ({ ...prev, ...patch }));
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
 		const letters = draft.letters.trim();
@@ -223,7 +272,11 @@ export function WordListBuilder() {
 		}
 
 		setError(undefined);
-		navigate({ search: searchFrom(draft), resetScroll: false });
+		// Scroll once the new list is on screen, not before: navigate resolves
+		// after the loader has run. Only a submit scrolls — back/forward has the
+		// browser's own scroll restoration.
+		await navigate({ search: searchFrom(draft), resetScroll: false });
+		reveal(summaryRef.current);
 	};
 
 	return (
@@ -315,7 +368,12 @@ export function WordListBuilder() {
 					Word list
 				</Heading>
 
-				<Summary search={search} count={entries.length} />
+				<Summary
+					ref={summaryRef}
+					search={search}
+					count={entries.length}
+					version={listVersion}
+				/>
 
 				{truncated && (
 					<p className="text-center text-ink-600">
