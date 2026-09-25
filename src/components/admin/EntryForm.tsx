@@ -12,7 +12,7 @@ import {
 } from "#/utils/entries/form";
 import {
 	CONJUGATIONS,
-	DECLENSIONS,
+	declensionsFor,
 	EntryValidationError,
 	GENDERS,
 	hasPrincipalParts,
@@ -169,6 +169,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const exampleRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
 	const summaryRef = useRef<HTMLDivElement>(null);
+	/** Numbers each Quaere press, so the reducer can tell a late answer from the awaited one. */
+	const lookupRequest = useRef(0);
 
 	/**
 	 * Which word the form is currently showing, as opposed to which one the
@@ -224,16 +226,18 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const handleLookup = async () => {
 		if (lookup.kind === "pending" || draft.lemma.trim() === "") return;
 
-		dispatch({ type: "lookup-started" });
+		const request = ++lookupRequest.current;
+		dispatch({ type: "lookup-started", request });
 
 		try {
 			const suggestion = await suggestEntry({
 				data: { lemma: draft.lemma, partOfSpeech: draft.partOfSpeech },
 			});
-			dispatch({ type: "lookup-filled", suggestion });
+			dispatch({ type: "lookup-filled", request, suggestion });
 		} catch (err) {
 			dispatch({
 				type: "lookup-failed",
+				request,
 				message:
 					err instanceof Error ? err.message : "Wiktionary could not be read.",
 			});
@@ -476,7 +480,9 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							legend="Declension"
 							hint="How the word inflects. indeclinable is an answer, not an absence."
 							name={`${fieldId}-declension`}
-							options={DECLENSIONS}
+							// Only the declensions this part of speech files under: a noun
+							// is never offered `1-2`, an adjective never `4`.
+							options={declensionsFor(draft.partOfSpeech)}
 							value={draft.declension}
 							error={errors.declension}
 							onChange={setField("declension")}

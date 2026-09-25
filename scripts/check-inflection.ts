@@ -14,11 +14,13 @@ import { entries } from "../src/db/schema";
 import {
 	CONJUGATIONS,
 	DECLENSIONS,
+	declensionsFor,
 	hasPrincipalParts,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
 	isDeclension,
+	isDeclensionFor,
 	isPartOfSpeech,
 	isTerminations,
 	TERMINATIONS,
@@ -52,11 +54,15 @@ for (const r of rows) {
 	if (asks === "declension") {
 		if (r.declension === null) {
 			problems.push(
-				`${where}: declension is NULL — this word inflects, so say how (${DECLENSIONS.join(" | ")})`,
+				`${where}: declension is NULL — this word inflects, so say how (${declensionsFor(r.partOfSpeech).join(" | ")})`,
 			);
 		} else if (!isDeclension(r.declension)) {
 			problems.push(
 				`${where}: declension is "${r.declension}", not one of ${DECLENSIONS.join(" | ")}`,
+			);
+		} else if (!isDeclensionFor(r.partOfSpeech, r.declension)) {
+			problems.push(
+				`${where}: declension is "${r.declension}", which a ${r.partOfSpeech} does not file under (${declensionsFor(r.partOfSpeech).join(" | ")})`,
 			);
 		}
 	}

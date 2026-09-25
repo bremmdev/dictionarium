@@ -14,6 +14,7 @@ import {
 	hasPrincipalParts,
 	hasTerminations,
 	INFLECTS,
+	isDeclensionFor,
 	isPartOfSpeech,
 } from "#/utils/entries/rules";
 
@@ -88,7 +89,13 @@ export type EntrySuggestion = {
 /** Where the last lookup got to. Separate from the submit: they can overlap. */
 export type LookupStatus =
 	| { kind: "idle" }
-	| { kind: "pending" }
+	/**
+	 * `request` says which press this is waiting on. A lookup is a network round
+	 * trip, and the desk can move on underneath it — a save empties it, an edit
+	 * link loads another word into it — so an answer is only let in if the desk
+	 * is still waiting for that very request.
+	 */
+	| { kind: "pending"; request: number }
 	| { kind: "filled"; warnings: Array<string> }
 	| { kind: "failed"; message: string };
 
@@ -123,9 +130,9 @@ export type FormAction =
 	| { type: "submit-invalid"; fields: Record<string, string> }
 	| { type: "submit-succeeded"; lemma: string }
 	| { type: "submit-failed"; message: string }
-	| { type: "lookup-started" }
-	| { type: "lookup-filled"; suggestion: EntrySuggestion }
-	| { type: "lookup-failed"; message: string };
+	| { type: "lookup-started"; request: number }
+	| { type: "lookup-filled"; request: number; suggestion: EntrySuggestion }
+	| { type: "lookup-failed"; request: number; message: string };
 
 const EMPTY_SENSE = {
 	meaningEn: "",
@@ -220,7 +227,12 @@ function clearInapplicable(draft: DraftFields): DraftFields {
 		? INFLECTS[partOfSpeech]
 		: undefined;
 
-	const declension = asks === "declension" ? draft.declension : "";
+	// Kept only if the new part of speech files under it too: a noun's `2`
+	// carried onto an adjective would be an answer no adjective can give.
+	const declension =
+		asks === "declension" && isDeclensionFor(partOfSpeech, draft.declension)
+			? draft.declension
+			: "";
 
 	return {
 		...draft,
@@ -257,6 +269,15 @@ function cleared(state: FormState): FormState {
 		senses: [{ id: state.nextSenseId, ...EMPTY_SENSE }],
 		nextSenseId: state.nextSenseId + 1,
 	};
+}
+
+/**
+ * Whether an answer is for the lookup this desk is still waiting on. Anything
+ * else is late: filling the form with it would put one word's Wiktionary page
+ * over another word's filing — and in an edit, save it over that word's row.
+ */
+function isAwaited(state: FormState, request: number) {
+	return state.lookup.kind === "pending" && state.lookup.request === request;
 }
 
 /** The fields whose value decides which other fields still have a question. */
@@ -368,9 +389,14 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 			return { ...state, status: { kind: "failed", message: action.message } };
 
 		case "lookup-started":
-			return { ...state, lookup: { kind: "pending" } };
+			return {
+				...state,
+				lookup: { kind: "pending", request: action.request },
+			};
 
 		case "lookup-filled": {
+			if (!isAwaited(state, action.request)) return state;
+
 			const { draft, senses, warnings } = action.suggestion;
 			// A word Wiktionary had no definitions for is still a word to file, and
 			// the form needs a row to type the meaning into either way.
@@ -397,6 +423,8 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 		}
 
 		case "lookup-failed":
+			if (!isAwaited(state, action.request)) return state;
+
 			return { ...state, lookup: { kind: "failed", message: action.message } };
 	}
 }

@@ -20,12 +20,12 @@
 import type { DraftFields, EntrySuggestion } from "#/utils/entries/form";
 import {
 	CONJUGATIONS,
-	DECLENSIONS,
+	declensionsFor,
 	GENDERS,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
-	isDeclension,
+	isDeclensionFor,
 	isGender,
 	isPartOfSpeech,
 	isTerminations,
@@ -147,12 +147,17 @@ function removeTag(html: string, tag: string) {
 
 /* ------------------------------------------------------------- wiktionary */
 
-let lastRequest = 0;
+/** When the most recently booked request leaves, whether or not it has yet. */
+let nextSlot = 0;
 
 async function callApi(params: Record<string, string>) {
-	const wait = lastRequest + THROTTLE_MS - Date.now();
+	// Book the slot before waiting, not after. Stamping the time once the wait
+	// is over lets every caller that arrives during one wait read the same stale
+	// stamp, sleep the same second, and leave together.
+	const slot = Math.max(Date.now(), nextSlot + THROTTLE_MS);
+	nextSlot = slot;
+	const wait = slot - Date.now();
 	if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-	lastRequest = Date.now();
 
 	const query = new URLSearchParams({
 		format: "json",
@@ -189,7 +194,7 @@ async function callApi(params: Record<string, string>) {
 async function fetchLatinSection(lemma: string) {
 	const plain = normalizeLemma(lemma);
 	const titles = [plain, plain.charAt(0).toUpperCase() + plain.slice(1)];
-	let lastError: unknown;
+	const errors: Array<unknown> = [];
 
 	for (const title of titles) {
 		try {
@@ -202,8 +207,13 @@ async function fetchLatinSection(lemma: string) {
 				(s: { line: string; toclevel: number }) =>
 					s.line === "Latin" && s.toclevel === 1,
 			);
-			if (!latin)
-				throw new Error(`"${title}" has no Latin section on Wiktionary`);
+			if (!latin) {
+				// The cause is what the check below reads, the same way MediaWiki's
+				// own codes travel.
+				throw new Error(`"${title}" has no Latin section on Wiktionary`, {
+					cause: "nolatin",
+				});
+			}
 
 			const section = await callApi({
 				action: "parse",
@@ -213,20 +223,25 @@ async function fetchLatinSection(lemma: string) {
 			});
 			return section.text as string;
 		} catch (error) {
-			lastError = error;
+			errors.push(error);
 		}
 	}
 
 	// Both spellings missed. A page that is not there and a page with no Latin
 	// on it are the same answer to the person who typed the word; anything else
-	// — a network failure, a 500 from Wikimedia — is not, and travels as it is.
-	if (
-		lastError instanceof Error &&
-		(lastError.cause === "missingtitle" || lastError.cause === "nolatin")
-	) {
-		throw new Error(`Wiktionary has no Latin entry for “${lemma}”.`);
+	// — a network failure, a 500 from Wikimedia — is not, and travels as it is,
+	// even when the other spelling came back as a plain miss.
+	const failure = errors.find(
+		(error) =>
+			!(
+				error instanceof Error &&
+				(error.cause === "missingtitle" || error.cause === "nolatin")
+			),
+	);
+	if (failure !== undefined) {
+		throw failure;
 	}
-	throw lastError;
+	throw new Error(`Wiktionary has no Latin entry for “${lemma}”.`);
 }
 
 /* ---------------------------------------------------------------- parsing */
@@ -849,7 +864,11 @@ export async function suggestFromWiktionary(
 		partOfSpeech,
 		principalParts: row.principalParts ?? "",
 		gender: isGender(read.gender) ? read.gender : "",
-		declension: isDeclension(read.declension) ? read.declension : "",
+		// Checked against the part of speech, not just the column: Wiktionary
+		// can call a noun "first/second-declension", and `1-2` is not a noun's.
+		declension: isDeclensionFor(partOfSpeech, read.declension)
+			? read.declension
+			: "",
 		terminations: isTerminations(read.terminations) ? read.terminations : "",
 		conjugation: isConjugation(read.conjugation) ? read.conjugation : "",
 		notes: row.notes ?? "",
@@ -860,7 +879,7 @@ export async function suggestFromWiktionary(
 	// the editor wondering where it came from.
 	for (const [field, vocabulary] of [
 		["gender", GENDERS],
-		["declension", DECLENSIONS],
+		["declension", declensionsFor(partOfSpeech)],
 		["terminations", TERMINATIONS],
 		["conjugation", CONJUGATIONS],
 	] as const) {
