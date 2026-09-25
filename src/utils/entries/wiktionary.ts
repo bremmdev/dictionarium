@@ -311,36 +311,80 @@ function findForm(forms: Map<string, string>, label: RegExp) {
 	return undefined;
 }
 
+type Definition = {
+	/** The definition's own markup, with its quotations and sub-senses cut away. */
+	html: string;
+	/** Usage labels of the headings it is filed under: "(figurative):" gives "figurative". */
+	labels: Array<string>;
+};
+
+/**
+ * Most entries list their senses flat, but some file them under headings that
+ * are not senses themselves: magnus puts "great, large, big" under
+ * "(literally):" and "noble, lofty" under "(figurative):", and sub puts each
+ * meaning under the case it takes. A heading is an item with a list under it
+ * and nothing of its own to say: a bare label, or a lead-in that ends in a
+ * colon ("especially:", "absolute uses:"). Its senses are read in its place and
+ * carry its label down with them. Any other list under an item is sub-senses,
+ * and stays out — including under a gloss that goes on to narrow itself: diēs
+ * is "A day, particularly:", and "a day" is the sense.
+ */
+function readDefinitions(
+	list: string,
+	partOfSpeech: string,
+	labels: Array<string> = [],
+): Array<Definition> {
+	const definitions: Array<Definition> = [];
+
+	for (
+		let cut = extractTag(list, "li");
+		cut;
+		cut = extractTag(list, "li", cut.end)
+	) {
+		// Quotations, synonyms and sub-senses hang off the definition in nested lists.
+		const html = ["dl", "ul", "ol"].reduce(removeTag, cut.inner);
+		const text = toText(html);
+		const isBareLabel = tidyGloss(text, partOfSpeech) === "";
+		const isLeadIn = text.endsWith(":") && !COMMENTARY.test(text);
+		// Quotations are lists too, and may hold one of their own.
+		const nested = extractTag(["dl", "ul"].reduce(removeTag, cut.inner), "ol");
+
+		if (nested && (isBareLabel || isLeadIn)) {
+			// A lead-in says what follows, not where it is used.
+			const heading = isBareLabel ? readUsage(text) : [];
+			definitions.push(
+				...readDefinitions(nested.inner, partOfSpeech, [...labels, ...heading]),
+			);
+		} else if (text) {
+			definitions.push({ html, labels });
+		}
+	}
+	return definitions;
+}
+
 /**
  * The definitions are an <ol>, one <li> per sense, printed in the order a
  * dictionary would give them — which is what senses.rank means, so the list
- * order carries straight across. Nested lists under an <li> are quotations and
- * sub-senses, not senses of their own, so depth counting keeps them out.
+ * order carries straight across. Headings are read through (readDefinitions),
+ * so a grouped entry comes out in the same order, just flat.
  */
 function readSenses(block: string, partOfSpeech: string) {
 	const list = extractTag(block, "ol");
 	if (!list) return { senses: [], isInflectedForm: false, senseCount: 0 };
 
-	const items: Array<string> = [];
-	for (
-		let cut = extractTag(list.inner, "li");
-		cut;
-		cut = extractTag(list.inner, "li", cut.end)
-	) {
-		items.push(cut.inner);
-	}
+	const definitions = readDefinitions(list.inner, partOfSpeech);
 
 	// Only the first definition says whether this is a headword section at all:
 	// "ablative singular of quisque" is a signpost, and has no second sense.
 	const isInflectedForm =
-		items.length > 0 && /class="[^"]*form-of-definition/.test(items[0]);
+		definitions.length > 0 &&
+		/class="[^"]*form-of-definition/.test(definitions[0].html);
 
 	const senses: Array<WiktionarySense> = [];
 	const seen = new Set<string>();
 
-	for (const item of items) {
-		// Quotations, synonyms and sub-senses hang off the definition in nested lists.
-		let definition = ["dl", "ul", "ol"].reduce(removeTag, item);
+	for (const { html, labels } of definitions) {
+		let definition = html;
 
 		// "(female parent)" style clarifiers are marked up, so they come off
 		// cleanly — but held on to, because two senses of one word can tidy down
@@ -372,11 +416,15 @@ function readSenses(block: string, partOfSpeech: string) {
 		seen.add(meaningEn.toLowerCase());
 		seen.add(distinct.toLowerCase());
 
-		senses.push({ meaningEn: distinct, usage: readUsage(text) });
+		const usage = [...new Set([...labels, ...readUsage(text)])];
+		senses.push({
+			meaningEn: distinct,
+			usage: usage.length > 0 ? usage.join(", ") : undefined,
+		});
 		if (senses.length === MAX_SENSES) break;
 	}
 
-	return { senses, isInflectedForm, senseCount: items.length };
+	return { senses, isInflectedForm, senseCount: definitions.length };
 }
 
 function parseCandidates(sectionHtml: string) {
@@ -603,24 +651,40 @@ const GRAMMAR_LABELS = new Set([
 ]);
 
 /**
+ * Qualifiers that say how far a sense reaches, not where it is used: magnus is
+ * "(in general) great, noble" and then "(in particular) advanced in years".
+ */
+const SCOPE_LABELS = new Set([
+	"especially",
+	"generally",
+	"in general",
+	"in particular",
+	"particularly",
+	"specifically",
+]);
+
+/**
  * A definition can open with a label: "(transitive, poetic) to love". What is
  * left once the grammar is dropped is this sense's usage — and for most senses
  * that is nothing at all, which is the normal answer.
  */
 function readUsage(gloss: string) {
 	const label = gloss.match(/^\(([^()]*)\)/);
-	if (!label) return undefined;
+	if (!label) return [];
 
-	const kept = label[1]
-		.split(/\s*(?:,|;|\bor\b|\band\b)\s*/)
-		.map((part) => part.trim().toLowerCase())
-		// "with the accusative" is the same grammar note in a longer coat.
-		.filter(
-			(part) =>
-				part && !GRAMMAR_LABELS.has(part) && !/^(?:with|takes|\+)\b/.test(part),
-		);
-
-	return kept.length > 0 ? kept.join(", ") : undefined;
+	return (
+		label[1]
+			.split(/\s*(?:,|;|\bor\b|\band\b)\s*/)
+			.map((part) => part.trim().toLowerCase())
+			// "with the accusative" is the same grammar note in a longer coat.
+			.filter(
+				(part) =>
+					part &&
+					!GRAMMAR_LABELS.has(part) &&
+					!SCOPE_LABELS.has(part) &&
+					!/^(?:with|takes|\+)\b/.test(part),
+			)
+	);
 }
 
 function toRow(candidate: Candidate): WiktionaryRow {

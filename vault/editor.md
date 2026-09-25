@@ -131,6 +131,7 @@ What the parser makes of a page:
 | deponency, `+ ablative`, `m or f`   | `notes`, where a sentence is allowed                                   |
 | the definition list, in order       | senses — its first becomes rank 1, capped at eight                     |
 | a definition's leading `(poetic)`   | that sense's `usage`, once grammar labels like `(transitive)` are dropped |
+| a heading over definitions — `(figurative):`, `especially:` | read through: its senses are listed in its place, and a label like `figurative` joins each one's `usage` |
 | quotations under a definition       | **nothing** — examples are written by a person, never filled              |
 
 **A value this dictionary has no vocabulary for is dropped and said out loud**, never passed through. An unrecognised declension would only be rejected by `parseEntryDraft` a moment later, with the editor wondering where it came from.
