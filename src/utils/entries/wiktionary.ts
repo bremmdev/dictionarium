@@ -20,12 +20,12 @@
 import type { DraftFields, EntrySuggestion } from "#/utils/entries/form";
 import {
 	CONJUGATIONS,
-	DECLENSIONS,
+	declensionsFor,
 	GENDERS,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
-	isDeclension,
+	isDeclensionFor,
 	isGender,
 	isPartOfSpeech,
 	isTerminations,
@@ -864,7 +864,11 @@ export async function suggestFromWiktionary(
 		partOfSpeech,
 		principalParts: row.principalParts ?? "",
 		gender: isGender(read.gender) ? read.gender : "",
-		declension: isDeclension(read.declension) ? read.declension : "",
+		// Checked against the part of speech, not just the column: Wiktionary
+		// can call a noun "first/second-declension", and `1-2` is not a noun's.
+		declension: isDeclensionFor(partOfSpeech, read.declension)
+			? read.declension
+			: "",
 		terminations: isTerminations(read.terminations) ? read.terminations : "",
 		conjugation: isConjugation(read.conjugation) ? read.conjugation : "",
 		notes: row.notes ?? "",
@@ -875,7 +879,7 @@ export async function suggestFromWiktionary(
 	// the editor wondering where it came from.
 	for (const [field, vocabulary] of [
 		["gender", GENDERS],
-		["declension", DECLENSIONS],
+		["declension", declensionsFor(partOfSpeech)],
 		["terminations", TERMINATIONS],
 		["conjugation", CONJUGATIONS],
 	] as const) {

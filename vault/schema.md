@@ -103,6 +103,17 @@ So the fix is a **value, not a column**. No `indeclinable` boolean sitting besid
 | `indeclinable`        | the word never changes shape                                                                        |
 | NULL                  | the question does not apply to this part of speech                                                  |
 
+Not every value answers for every part of speech. `DECLENSIONS_BY_PART_OF_SPEECH` in `src/utils/entries/rules.ts` narrows the list, and the form's chips, `parseEntryDraft`, the Wiktionary fill and `check-inflection.ts` all read it:
+
+| Part of speech | Files under                        |
+| -------------- | ---------------------------------- |
+| `noun`         | `1` … `5`, `indeclinable`          |
+| `adjective`    | `1-2`, `3`, `indeclinable`         |
+| `numeral`      | `1-2`, `3`, `indeclinable`         |
+| `pronoun`      | any — no value fits their system yet |
+
+A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns keep the whole list until the column grows a value for the pronominal declension (see below); narrowing them now would be guessing.
+
 The column's question was never "which numbered table?" — it is **how does this word inflect?**, and _indeclinable_ is a perfectly good answer to that, where NULL is not an answer at all. `conjugation` already worked this way: `irregular` is the same move, made earlier.
 
 It is not a numeral problem, either. The grammar has a named class for it: "A few adjectives are indeclinable: _damnās, frūgī, nēquam, necesse, tot, quot, aliquot, totidem, potis_" ([A&G §122](https://dcc.dickinson.edu/grammar/latin/indeclinable-adjectives)).

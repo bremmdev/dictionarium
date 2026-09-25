@@ -60,6 +60,53 @@ export type Conjugation = (typeof CONJUGATIONS)[number];
 export type Gender = (typeof GENDERS)[number];
 export type Terminations = (typeof TERMINATIONS)[number];
 
+/** The parts of speech INFLECTS asks a declension of. */
+export type DeclinedPartOfSpeech = {
+	[K in PartOfSpeech]: (typeof INFLECTS)[K] extends "declension" ? K : never;
+}[PartOfSpeech];
+
+/**
+ * Which declensions each declining part of speech can file under. The column's
+ * vocabulary is one list, but not every value is an answer for every word: `1-2`
+ * names an adjective pattern, so a noun filed under it is a typo, and an
+ * adjective only ever declines as `1-2` or `3` — a bare `2` or `4` would put it
+ * in a class no adjective list could find it in.
+ *
+ * Numerals are adjectives in the grammar's eyes (vault/schema.md): prīmus and
+ * ūnus are `1-2`, trēs is `3`, septem is `indeclinable`. Pronouns keep the whole
+ * vocabulary, because their declension is its own irregular system and the
+ * column has no value for it yet; narrowing them would be guessing.
+ */
+export const DECLENSIONS_BY_PART_OF_SPEECH = {
+	noun: ["1", "2", "3", "4", "5", "indeclinable"],
+	adjective: ["1-2", "3", "indeclinable"],
+	numeral: ["1-2", "3", "indeclinable"],
+	pronoun: DECLENSIONS,
+} as const satisfies Record<DeclinedPartOfSpeech, ReadonlyArray<Declension>>;
+
+/**
+ * The declensions a part of speech can answer with. Empty for one that is not
+ * asked a declension at all, so "is this value allowed" has one answer for
+ * every caller rather than a special case for the parts that do not decline.
+ */
+export function declensionsFor(
+	partOfSpeech: string,
+): ReadonlyArray<Declension> {
+	return Object.hasOwn(DECLENSIONS_BY_PART_OF_SPEECH, partOfSpeech)
+		? DECLENSIONS_BY_PART_OF_SPEECH[partOfSpeech as DeclinedPartOfSpeech]
+		: [];
+}
+
+/** Whether `declension` is one this part of speech can file under. */
+export function isDeclensionFor(
+	partOfSpeech: string,
+	declension: string,
+): declension is Declension {
+	return (declensionsFor(partOfSpeech) as ReadonlyArray<string>).includes(
+		declension,
+	);
+}
+
 /** Insertion order, so the form's buttons read noun, adjective, numeral, … */
 export const PARTS_OF_SPEECH = Object.keys(INFLECTS) as Array<PartOfSpeech>;
 
@@ -277,9 +324,11 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 
 	if (asks === "declension") {
 		if (declensionInput === "") {
-			fields.declension = `${opens(aWord(partOfSpeech))} inflects, so say how (${DECLENSIONS.join(" | ")}).`;
+			fields.declension = `${opens(aWord(partOfSpeech))} inflects, so say how (${declensionsFor(partOfSpeech).join(" | ")}).`;
 		} else if (!isDeclension(declensionInput)) {
 			fields.declension = `“${declensionInput}” is not one of ${DECLENSIONS.join(" | ")}.`;
+		} else if (!isDeclensionFor(partOfSpeech, declensionInput)) {
+			fields.declension = `“${declensionInput}” is not a declension ${aWord(partOfSpeech)} files under — use ${declensionsFor(partOfSpeech).join(" | ")}.`;
 		} else {
 			declension = declensionInput;
 		}

@@ -14,6 +14,7 @@ import {
 	hasPrincipalParts,
 	hasTerminations,
 	INFLECTS,
+	isDeclensionFor,
 	isPartOfSpeech,
 } from "#/utils/entries/rules";
 
@@ -226,7 +227,12 @@ function clearInapplicable(draft: DraftFields): DraftFields {
 		? INFLECTS[partOfSpeech]
 		: undefined;
 
-	const declension = asks === "declension" ? draft.declension : "";
+	// Kept only if the new part of speech files under it too: a noun's `2`
+	// carried onto an adjective would be an answer no adjective can give.
+	const declension =
+		asks === "declension" && isDeclensionFor(partOfSpeech, draft.declension)
+			? draft.declension
+			: "";
 
 	return {
 		...draft,

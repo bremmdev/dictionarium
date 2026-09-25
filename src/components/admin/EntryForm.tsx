@@ -12,7 +12,7 @@ import {
 } from "#/utils/entries/form";
 import {
 	CONJUGATIONS,
-	DECLENSIONS,
+	declensionsFor,
 	EntryValidationError,
 	GENDERS,
 	hasPrincipalParts,
@@ -480,7 +480,9 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							legend="Declension"
 							hint="How the word inflects. indeclinable is an answer, not an absence."
 							name={`${fieldId}-declension`}
-							options={DECLENSIONS}
+							// Only the declensions this part of speech files under: a noun
+							// is never offered `1-2`, an adjective never `4`.
+							options={declensionsFor(draft.partOfSpeech)}
 							value={draft.declension}
 							error={errors.declension}
 							onChange={setField("declension")}
