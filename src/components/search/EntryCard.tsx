@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { CaseTag } from "#/components/CaseTag";
 import { Heading } from "#/components/Heading";
 import type { Entry, EntryWithSenses } from "#/db/schema";
+import { caseLabel } from "#/utils/entries/rules";
 
 const ORDINALS: Record<string, string> = {
 	"1": "1st",
@@ -29,6 +31,13 @@ const GENDERS: Record<string, string> = {
  */
 export function grammarFacts(entry: Entry) {
 	const parts = [entry.partOfSpeech];
+
+	// A preposition's case is the first thing a dictionary says after the word
+	// class: "in, prep. + acc./abl.". One fact, because the set is alternatives.
+	const governs = caseLabel(entry.governs);
+	if (governs) {
+		parts.push(governs);
+	}
 
 	if (entry.declension) {
 		if (entry.declension === "indeclinable") {
@@ -117,6 +126,9 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 
 			{core && (
 				<p className="text-ink-900">
+					{/* noceō is learned as "noceō + dat.", so the core sense's case
+					    travels with it onto the card. */}
+					<CaseTag governs={core.governs} />
 					{core.meaningEn}
 					{rest > 0 && (
 						<span className="ml-2 whitespace-nowrap text-ink-600 text-sm">

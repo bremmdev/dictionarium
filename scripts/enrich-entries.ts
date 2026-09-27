@@ -42,6 +42,7 @@ const COLUMN_ORDER: Array<
     "declension",
     "terminations",
     "conjugation",
+    "governs",
     "notes",
 ];
 
@@ -54,6 +55,7 @@ function formatRow(row: WiktionaryRow) {
     const senses = row.senses.map((sense) => {
         const fields = [`meaningEn: ${JSON.stringify(sense.meaningEn)}`];
         if (sense.usage) fields.push(`usage: ${JSON.stringify(sense.usage)}`);
+        if (sense.governs) fields.push(`governs: ${JSON.stringify(sense.governs)}`);
         return `    { ${fields.join(", ")} },`;
     });
 

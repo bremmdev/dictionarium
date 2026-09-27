@@ -14,13 +14,19 @@ import {
 	CONJUGATIONS,
 	DECLENSIONS,
 	EntryValidationError,
+	formatCases,
 	GENDERS,
+	GOVERNED_CASES,
+	hasGoverns,
 	hasPrincipalParts,
 	hasTerminations,
 	INFLECTS,
 	isPartOfSpeech,
+	offeredCases,
 	PARTS_OF_SPEECH,
 	parseEntryDraft,
+	readCases,
+	senseGoverns,
 	TERMINATIONS,
 } from "#/utils/entries/rules";
 import { normalizeLemma } from "#/utils/search/rules";
@@ -39,6 +45,10 @@ const INPUT =
  */
 const CHIP =
 	"cursor-pointer rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] hover:border-gold-400 has-[:checked]:border-accent has-[:checked]:bg-accent has-[:checked]:text-parchment-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-2";
+
+/** The small per-sense buttons that reveal an optional pair of fields. */
+const TOGGLE =
+	"focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-600 text-xs uppercase tracking-[0.18em] hover:text-accent";
 
 /**
  * What the principal-parts input is called and what goes in it, per part of
@@ -132,6 +142,82 @@ function ChipGroup({
 }
 
 /**
+ * Checkboxes wearing the same pill, for the one answer on this form that is a
+ * set: in takes the accusative *or* the ablative, and a radio can only say one.
+ * The value is the canonical string parseEntryDraft keeps, so the draft never
+ * holds a spelling the gate would have to rewrite.
+ *
+ * `compact` is the per-sense size: a small caps legend in the row's own voice
+ * rather than a section heading.
+ */
+function CaseChips({
+	legend,
+	hint,
+	name,
+	options,
+	value,
+	error,
+	compact = false,
+	firstRef,
+	onChange,
+}: {
+	legend: React.ReactNode;
+	hint?: string;
+	name: string;
+	options: ReadonlyArray<string>;
+	value: string;
+	error?: string;
+	compact?: boolean;
+	/** The first chip, for the button that reveals these to leave focus in. */
+	firstRef?: (node: HTMLInputElement | null) => void;
+	onChange: (value: string) => void;
+}) {
+	const errorId = `${name}-error`;
+	const checked = new Set<string>(readCases(value).cases);
+
+	const toggle = (option: string) => {
+		const next = new Set(checked);
+		if (next.has(option)) next.delete(option);
+		else next.add(option);
+		onChange(formatCases(next));
+	};
+
+	return (
+		<fieldset aria-describedby={error ? errorId : undefined}>
+			<legend
+				className={
+					compact
+						? "font-semibold text-ink-600 text-xs uppercase tracking-[0.18em]"
+						: LABEL
+				}
+			>
+				{legend}
+			</legend>
+			{hint && <p className="mt-1 text-ink-600 text-sm">{hint}</p>}
+
+			<div className={`${compact ? "mt-1" : "mt-2"} flex flex-wrap gap-2`}>
+				{options.map((option, i) => (
+					<label key={option} className={CHIP}>
+						<input
+							type="checkbox"
+							className="sr-only"
+							name={name}
+							value={option}
+							checked={checked.has(option)}
+							ref={i === 0 ? firstRef : undefined}
+							onChange={() => toggle(option)}
+						/>
+						{option}
+					</label>
+				))}
+			</div>
+
+			{error && <FieldError id={errorId}>{error}</FieldError>}
+		</fieldset>
+	);
+}
+
+/**
  * The editor's desk: one word, the way `scripts/seed.ts` used to spell it out.
  *
  * Nothing here decides what is valid. parseEntryDraft does, and this form calls
@@ -167,6 +253,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 	const meaningRefs = useRef(new Map<number, HTMLInputElement>());
 	const exampleRefs = useRef(new Map<number, HTMLInputElement>());
+	const caseRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
 	const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -201,9 +288,20 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		dispatch({ type: "example-focus-handled" });
 	}, [state.focusExample]);
 
+	useEffect(() => {
+		if (state.focusCase === null) return;
+		caseRefs.current.get(state.focusCase)?.focus();
+		dispatch({ type: "case-focus-handled" });
+	}, [state.focusCase]);
+
 	const asks = isPartOfSpeech(draft.partOfSpeech)
 		? INFLECTS[draft.partOfSpeech]
 		: undefined;
+
+	// What each sense is asked about its case, and which chips it may pick from.
+	// The same for every row, because it turns on the entry, not the sense.
+	const caseAsked = senseGoverns(draft.partOfSpeech, draft.governs);
+	const caseOptions = offeredCases(draft.partOfSpeech, draft.governs);
 
 	const setField = (name: keyof DraftFields) => (value: string) =>
 		dispatch({ type: "field", name, value });
@@ -253,12 +351,15 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// bookkeeping and have no business crossing to the server. Anything a
 			// sense actually carries has to be listed here — a column added to the
 			// row and forgotten in this line is a column that silently saves empty.
-			senses: senses.map(({ meaningEn, usage, exampleLa, exampleEn }) => ({
-				meaningEn,
-				usage,
-				exampleLa,
-				exampleEn,
-			})),
+			senses: senses.map(
+				({ meaningEn, usage, governs, exampleLa, exampleEn }) => ({
+					meaningEn,
+					usage,
+					governs,
+					exampleLa,
+					exampleEn,
+				}),
+			),
 		};
 
 		try {
@@ -560,6 +661,20 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							)}
 						</div>
 					)}
+					{/* A preposition's filing is its case, the way a noun's includes
+					    its gender. Ticking a second one is what makes each sense
+					    below say which of the two it takes. */}
+					{hasGoverns(draft.partOfSpeech) && (
+						<CaseChips
+							legend="Governs"
+							hint="The case or cases it takes: ad the accusative; in the accusative (motion into) or the ablative (place in)."
+							name={`${fieldId}-governs`}
+							options={GOVERNED_CASES}
+							value={draft.governs}
+							error={errors.governs}
+							onChange={setField("governs")}
+						/>
+					)}
 				</div>
 			)}
 
@@ -568,6 +683,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				<p className="text-ink-600 text-sm">
 					One row per genuinely distinct meaning, the first being the core one.
 					Commas within a sense, rows between senses.
+					{caseAsked === "required" &&
+						" This preposition takes more than one case, so each sense says which."}
 					{editing &&
 						" Saving replaces every sense this word has with the rows below, so position here is the rank it is filed under."}
 				</p>
@@ -577,6 +694,13 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						const meaningError = errors[`senses.${i}.meaningEn`];
 						const exampleLaError = errors[`senses.${i}.exampleLa`];
 						const exampleEnError = errors[`senses.${i}.exampleEn`];
+						const governsError = errors[`senses.${i}.governs`];
+
+						// Required chips are always on screen; optional ones only once
+						// revealed, the way the examples are.
+						const showCase =
+							caseAsked === "required" ||
+							(caseAsked === "optional" && sense.showCase);
 
 						return (
 							<li
@@ -654,6 +778,39 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 											/>
 										</div>
 									</div>
+
+									{/* Offers only what this sense may pick: the entry's own
+									    cases for a preposition, all four for a verb. Unticking
+									    a case on the entry takes it off here in the same pass. */}
+									{showCase && (
+										<CaseChips
+											compact
+											legend={
+												<>
+													Takes
+													<span className="sr-only">
+														{" "}
+														(the case sense {i + 1} takes)
+													</span>
+												</>
+											}
+											name={`${fieldId}-governs-${sense.id}`}
+											options={caseOptions}
+											value={sense.governs}
+											error={governsError}
+											firstRef={(node) => {
+												if (node) caseRefs.current.set(sense.id, node);
+												else caseRefs.current.delete(sense.id);
+											}}
+											onChange={(governs) =>
+												dispatch({
+													type: "sense-changed",
+													id: sense.id,
+													patch: { governs },
+												})
+											}
+										/>
+									)}
 
 									{sense.showExamples && (
 										<div className="grid gap-3 sm:grid-cols-2">
@@ -739,30 +896,59 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 										</div>
 									)}
 
-									{/* Off by default and revealed per sense: most senses carry
-									    no example, and two empty inputs on every row is a wall.
-									    Hiding clears, so what is off screen is never also
-									    on its way to the database. */}
-									<button
-										type="button"
-										onClick={() =>
-											dispatch({
-												type: sense.showExamples
-													? "sense-examples-hidden"
-													: "sense-examples-shown",
-												id: sense.id,
-											})
-										}
-										className="focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-600 text-xs uppercase tracking-[0.18em] hover:text-accent"
-									>
-										{sense.showExamples ? (
-											<X className="h-3 w-3" aria-hidden="true" />
-										) : (
-											<Plus className="h-3 w-3" aria-hidden="true" />
+									<div className="flex flex-wrap gap-x-6 gap-y-2">
+										{/* Off by default and revealed per sense: most senses carry
+										    no example, and two empty inputs on every row is a wall.
+										    Hiding clears, so what is off screen is never also
+										    on its way to the database. */}
+										<button
+											type="button"
+											onClick={() =>
+												dispatch({
+													type: sense.showExamples
+														? "sense-examples-hidden"
+														: "sense-examples-shown",
+													id: sense.id,
+												})
+											}
+											className={TOGGLE}
+										>
+											{sense.showExamples ? (
+												<X className="h-3 w-3" aria-hidden="true" />
+											) : (
+												<Plus className="h-3 w-3" aria-hidden="true" />
+											)}
+											{sense.showExamples ? "Remove example" : "Add example"}
+											<span className="sr-only"> for sense {i + 1}</span>
+										</button>
+
+										{/* The same bargain for a verb's case: most senses take
+										    none worth marking, so the chips wait to be asked for,
+										    and closing them clears the answer. A preposition that
+										    asks every sense has no toggle — its chips never hide. */}
+										{caseAsked === "optional" && (
+											<button
+												type="button"
+												onClick={() =>
+													dispatch({
+														type: sense.showCase
+															? "sense-case-hidden"
+															: "sense-case-shown",
+														id: sense.id,
+													})
+												}
+												className={TOGGLE}
+											>
+												{sense.showCase ? (
+													<X className="h-3 w-3" aria-hidden="true" />
+												) : (
+													<Plus className="h-3 w-3" aria-hidden="true" />
+												)}
+												{sense.showCase ? "Remove case" : "Add case"}
+												<span className="sr-only"> for sense {i + 1}</span>
+											</button>
 										)}
-										{sense.showExamples ? "Remove example" : "Add example"}
-										<span className="sr-only"> for sense {i + 1}</span>
-									</button>
+									</div>
 								</div>
 
 								{/* An entry needs at least one sense, so the last row has

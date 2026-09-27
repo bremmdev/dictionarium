@@ -221,12 +221,15 @@ function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
 }
 
 /**
- * The banner prints the core sense as a bare gloss: no usage label, no example.
- * A lone sense that carries either of those still has something to say, so the
- * section is only skipped when repeating it would add nothing.
+ * The banner prints the core sense as a bare gloss: no usage label, no case, no
+ * example. A lone sense that carries any of those still has something to say —
+ * noceō's one sense is nothing without its dative — so the section is only
+ * skipped when repeating it would add nothing.
  */
 function saysMoreThanTheBanner(sense: EntryWithSenses["senses"][number]) {
-	return Boolean(sense.usage || sense.exampleLa || sense.exampleEn);
+	return Boolean(
+		sense.usage || sense.governs || sense.exampleLa || sense.exampleEn,
+	);
 }
 
 /**

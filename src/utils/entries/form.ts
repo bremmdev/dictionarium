@@ -11,10 +11,15 @@
  */
 import type { EntryWithSenses } from "#/db/schema";
 import {
+	formatCases,
+	hasGoverns,
 	hasPrincipalParts,
 	hasTerminations,
 	INFLECTS,
 	isPartOfSpeech,
+	offeredCases,
+	readCases,
+	senseGoverns,
 } from "#/utils/entries/rules";
 
 /** The id is the React key and the ref key; it is never rendered. Position is the rank. */
@@ -22,6 +27,8 @@ export type SenseRow = {
 	id: number;
 	meaningEn: string;
 	usage: string;
+	/** The case this sense takes, canonical — "dative", "accusative,ablative". */
+	governs: string;
 	exampleLa: string;
 	exampleEn: string;
 	/**
@@ -30,14 +37,26 @@ export type SenseRow = {
 	 * The fields are off by default and revealed per sense
 	 */
 	showExamples: boolean;
+	/**
+	 * Whether this row's case chips are on screen, where the case is optional
+	 * (a verb's, an adjective's). The same bargain as the examples: off unless
+	 * there is one. A preposition that asks every sense ignores it and always
+	 * shows them.
+	 */
+	showCase: boolean;
 };
 
 /**
  * A sense as a lookup hands it over. Deliberately not `Omit<SenseRow, "id">`:
  * Wiktionary fills meanings, never examples, and this is where that is said
- * once rather than remembered at each call site.
+ * once rather than remembered at each call site. It does fill the case, which is
+ * grammar Wiktionary states rather than a sentence someone has to write.
  */
-export type SuggestedSense = { meaningEn: string; usage: string };
+export type SuggestedSense = {
+	meaningEn: string;
+	usage: string;
+	governs: string;
+};
 
 /** Every answer the form collects, as typed — strings until parseEntryDraft has had it. */
 export type DraftFields = {
@@ -49,6 +68,8 @@ export type DraftFields = {
 	/** 3rd-declension adjectives only: '1' | '2' | '3'. See hasTerminations. */
 	terminations: string;
 	conjugation: string;
+	/** Prepositions only: the cases it takes, canonical. See hasGoverns. */
+	governs: string;
 	notes: string;
 };
 
@@ -102,6 +123,8 @@ export type FormState = {
 	focusSense: number | null;
 	/** The row whose Latin example should take focus once it has rendered. */
 	focusExample: number | null;
+	/** The row whose first case chip should take focus once it has rendered. */
+	focusCase: number | null;
 	/** Keyed the way parseEntryDraft keys them: by field, and by position within senses. */
 	errors: Record<string, string>;
 	status: SubmitStatus;
@@ -115,8 +138,11 @@ export type FormAction =
 	| { type: "sense-removed"; id: number }
 	| { type: "sense-examples-shown"; id: number }
 	| { type: "sense-examples-hidden"; id: number }
+	| { type: "sense-case-shown"; id: number }
+	| { type: "sense-case-hidden"; id: number }
 	| { type: "focus-handled" }
 	| { type: "example-focus-handled" }
+	| { type: "case-focus-handled" }
 	/** The route loaded a different word to work on, or none. */
 	| { type: "entry-loaded"; entry: EntryWithSenses | null }
 	| { type: "submit-started" }
@@ -130,9 +156,11 @@ export type FormAction =
 const EMPTY_SENSE = {
 	meaningEn: "",
 	usage: "",
+	governs: "",
 	exampleLa: "",
 	exampleEn: "",
 	showExamples: false,
+	showCase: false,
 };
 
 const EMPTY_DRAFT: DraftFields = {
@@ -143,6 +171,7 @@ const EMPTY_DRAFT: DraftFields = {
 	declension: "",
 	terminations: "",
 	conjugation: "",
+	governs: "",
 	notes: "",
 };
 
@@ -153,6 +182,7 @@ export const initialFormState: FormState = {
 	nextSenseId: 1,
 	focusSense: null,
 	focusExample: null,
+	focusCase: null,
 	errors: {},
 	status: { kind: "idle" },
 	lookup: { kind: "idle" },
@@ -179,6 +209,7 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 			declension: entry.declension ?? "",
 			terminations: entry.terminations ?? "",
 			conjugation: entry.conjugation ?? "",
+			governs: entry.governs ?? "",
 			notes: entry.notes ?? "",
 		},
 		// A filed entry always has one, but the form has to have a row to type in
@@ -189,12 +220,15 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 						id: i,
 						meaningEn: sense.meaningEn,
 						usage: sense.usage ?? "",
+						governs: sense.governs ?? "",
 						exampleLa: sense.exampleLa ?? "",
 						exampleEn: sense.exampleEn ?? "",
 						// Shown exactly where there is something to show. An editor
 						// opening a filed word sees the examples it has and no empty
 						// pair on the senses that never had one.
 						showExamples: Boolean(sense.exampleLa || sense.exampleEn),
+						// The same rule for the case: open on the senses that take one.
+						showCase: Boolean(sense.governs),
 					}))
 				: [{ id: 0, ...EMPTY_SENSE }],
 		nextSenseId: Math.max(entry.senses.length, 1),
@@ -233,7 +267,40 @@ function clearInapplicable(draft: DraftFields): DraftFields {
 		principalParts: hasPrincipalParts(partOfSpeech, declension)
 			? draft.principalParts
 			: "",
+		governs: hasGoverns(partOfSpeech) ? draft.governs : "",
 	};
+}
+
+/**
+ * The same rule one level down: a sense's case has to stay empty where its
+ * question does not apply, and can only name a case its chips still offer.
+ *
+ * Run against the draft *after* clearInapplicable, because the entry's cases
+ * are what a preposition's senses are asked about. Unticking the accusative on
+ * in has to take it off every sense in the same pass — those chips stop
+ * rendering, and a value nobody can see would still be submitted. Hidden always
+ * means empty, here exactly as for the examples.
+ */
+function clearInapplicableSenses(
+	senses: Array<SenseRow>,
+	draft: DraftFields,
+): Array<SenseRow> {
+	const asked = senseGoverns(draft.partOfSpeech, draft.governs);
+	const offered = offeredCases(draft.partOfSpeech, draft.governs);
+
+	return senses.map((row) => {
+		if (asked === "inapplicable") {
+			return { ...row, governs: "", showCase: false };
+		}
+
+		const governs = formatCases(
+			readCases(row.governs).cases.filter((c) => offered.includes(c)),
+		);
+
+		// A value that survives is shown: a verb's dative carried over from a
+		// fill, or a case left from when this was a preposition.
+		return { ...row, governs, showCase: row.showCase || governs !== "" };
+	});
 }
 
 /** The messages from the last submit stop describing the rows they sit next to. */
@@ -263,23 +330,31 @@ function cleared(state: FormState): FormState {
 const STRANDS_ANSWERS = new Set<keyof DraftFields>([
 	"partOfSpeech",
 	"declension",
+	"governs",
 ]);
 
 export function formReducer(state: FormState, action: FormAction): FormState {
 	switch (action.type) {
 		case "field": {
-			const draft = { ...state.draft, [action.name]: action.value };
+			const typed = { ...state.draft, [action.name]: action.value };
+
+			// Three fields can strand an answer, and a lemma cannot. The part of
+			// speech is the obvious one. The declension joined it when adjectives
+			// started being filed by it: moving one off `3` leaves a terminations
+			// answer that no longer has a question, and moving one onto
+			// `indeclinable` leaves a filing that no longer has forms. The cases a
+			// preposition governs are the third, and they strand answers on the
+			// senses rather than on the entry.
+			if (!STRANDS_ANSWERS.has(action.name)) {
+				return { ...state, draft: typed };
+			}
+
+			const draft = clearInapplicable(typed);
 
 			return {
 				...state,
-				// Two fields can strand an answer, and a lemma cannot. The part of
-				// speech is the obvious one. The declension joined it when adjectives
-				// started being filed by it: moving one off `3` leaves a terminations
-				// answer that no longer has a question, and moving one onto
-				// `indeclinable` leaves a filing that no longer has forms.
-				draft: STRANDS_ANSWERS.has(action.name)
-					? clearInapplicable(draft)
-					: draft,
+				draft,
+				senses: clearInapplicableSenses(state.senses, draft),
 			};
 		}
 
@@ -334,11 +409,33 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				errors: withoutSenseErrors(state.errors),
 			};
 
+		case "sense-case-shown":
+			return {
+				...state,
+				senses: state.senses.map((row) =>
+					row.id === action.id ? { ...row, showCase: true } : row,
+				),
+				focusCase: action.id,
+			};
+
+		case "sense-case-hidden":
+			return {
+				...state,
+				// Cleared as it closes, for the reason the examples are.
+				senses: state.senses.map((row) =>
+					row.id === action.id ? { ...row, governs: "", showCase: false } : row,
+				),
+				errors: withoutSenseErrors(state.errors),
+			};
+
 		case "focus-handled":
 			return { ...state, focusSense: null };
 
 		case "example-focus-handled":
 			return { ...state, focusExample: null };
+
+		case "case-focus-handled":
+			return { ...state, focusCase: null };
 
 		// A wholesale replacement, the way a lookup is: what is on screen
 		// afterwards is one word's filing, never two halves of different ones.
@@ -371,22 +468,30 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 			return { ...state, lookup: { kind: "pending" } };
 
 		case "lookup-filled": {
-			const { draft, senses, warnings } = action.suggestion;
+			const { senses, warnings } = action.suggestion;
+			const draft = clearInapplicable(action.suggestion.draft);
 			// A word Wiktionary had no definitions for is still a word to file, and
 			// the form needs a row to type the meaning into either way.
 			const rows: Array<SuggestedSense> =
-				senses.length > 0 ? senses : [{ meaningEn: "", usage: "" }];
+				senses.length > 0
+					? senses
+					: [{ meaningEn: "", usage: "", governs: "" }];
 
 			return {
 				...state,
-				draft: clearInapplicable(draft),
+				draft,
 				// EMPTY_SENSE first, so a fill lands on closed, empty example fields:
-				// a lookup suggests meanings and never an example.
-				senses: rows.map((sense, i) => ({
-					...EMPTY_SENSE,
-					...sense,
-					id: state.nextSenseId + i,
-				})),
+				// a lookup suggests meanings and never an example. The cases go
+				// through the same clearing as a typed change, which also opens the
+				// case chips on the senses that came back with one.
+				senses: clearInapplicableSenses(
+					rows.map((sense, i) => ({
+						...EMPTY_SENSE,
+						...sense,
+						id: state.nextSenseId + i,
+					})),
+					draft,
+				),
 				nextSenseId: state.nextSenseId + rows.length,
 				focusSense: null,
 				// They were written about the draft that has just been replaced.

@@ -21,7 +21,10 @@ import type { DraftFields, EntrySuggestion } from "#/utils/entries/form";
 import {
 	CONJUGATIONS,
 	DECLENSIONS,
+	formatCases,
 	GENDERS,
+	GOVERNED_CASES,
+	hasGoverns,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
@@ -29,7 +32,10 @@ import {
 	isGender,
 	isPartOfSpeech,
 	isTerminations,
+	readCases,
+	senseGoverns,
 	TERMINATIONS,
+	theCases,
 } from "#/utils/entries/rules";
 import { normalizeLemma } from "#/utils/search/rules";
 
@@ -44,6 +50,8 @@ export type WiktionarySense = {
 	meaningEn: string;
 	/** 'medical', 'military', 'poetic' — a label on this sense only. */
 	usage?: string;
+	/** The case this sense takes, canonical: noceō's "dative", in's "accusative". */
+	governs?: string;
 };
 
 export type WiktionaryRow = {
@@ -55,6 +63,8 @@ export type WiktionaryRow = {
 	declension?: string;
 	terminations?: string;
 	conjugation?: string;
+	/** Prepositions only: the cases the headword line lists, canonical. */
+	governs?: string;
 	notes?: string;
 	/** Position is the rank, so Wiktionary's own order is the dictionary order. */
 	senses: Array<WiktionarySense>;
@@ -242,12 +252,36 @@ const WIKTIONARY_PARTS_OF_SPEECH = new Set([
 	"numeral",
 	"particle",
 	"phrase",
+	// tenus, and dē placed after its noun. Filed here as a preposition — see
+	// suggestFromWiktionary and vault/schema.md.
+	"postposition",
 	"preposition",
 	"pronoun",
 	"proper noun",
 	"proverb",
 	"verb",
 ]);
+
+/**
+ * One statement about case, however Wiktionary phrased it: "(with accusative
+ * or ablative)", "[with genitive or dative]", "(+ accusative, ablative)".
+ */
+type CasePhrase = {
+	/** Every case word named, in the order named: may include ones this dictionary does not file. */
+	cases: Array<string>;
+	/**
+	 * Joined by "and" rather than "or". For a preposition that is still a
+	 * choice — tenus "with genitive and ablative" takes either — but for a verb
+	 * it is two objects at once: doceō "with accusative 'someone' and
+	 * accusative 'something'".
+	 */
+	both: boolean;
+	/** The phrase as Wiktionary wrote it, for a warning to quote. */
+	source: string;
+};
+
+/** A sense as read, before toRow decides what its case phrase files as. */
+type ReadSense = WiktionarySense & { phrase: CasePhrase | null };
 
 type Candidate = {
 	partOfSpeech: string;
@@ -256,9 +290,11 @@ type Candidate = {
 	/** "genitive" -> "mātris", "present infinitive" -> "ambulāre", ... */
 	forms: Map<string, string>;
 	gender?: string;
-	/** The whole headword line as text: where "third conjugation, deponent" lives. */
+	/** Every headword line as text: where "third conjugation, deponent" lives. */
 	grammar: string;
-	senses: Array<WiktionarySense>;
+	/** The case words of every "(+ …)" on the headword lines — a preposition's governs, unfiltered. */
+	governs: Array<string>;
+	senses: Array<ReadSense>;
 	/** How many definitions Wiktionary listed, before MAX_SENSES cut them down. */
 	senseCount: number;
 	/** True for sections that only point at another lemma ("ablative singular of quisque"). */
@@ -278,6 +314,123 @@ function splitByHeading(html: string) {
 			found[i + 1]?.index ?? html.length,
 		),
 	}));
+}
+
+/**
+ * One slice per headword line, each running to the next. Nearly every section
+ * has one. in has two — "in (+ ablative)" over one list of senses and "in (+
+ * accusative)" over another — and reading only the first lost every sense of
+ * the second without a word, since nothing counted what it never saw.
+ */
+function splitByHeadwordLine(html: string) {
+	const lines: Array<{ start: number; inner: string }> = [];
+
+	for (let p = extractTag(html, "p"); p; p = extractTag(html, "p", p.end)) {
+		if (p.inner.includes('<span class="headword-line"')) lines.push(p);
+	}
+
+	return lines.map((line, i) => ({
+		paragraph: line.inner,
+		html: html.slice(line.start, lines[i + 1]?.start ?? html.length),
+	}));
+}
+
+/**
+ * Every case name Wiktionary might print, including the ones this dictionary
+ * does not file (GOVERNED_CASES), so that "with locative" is recognised as a
+ * statement about case and reported, rather than mistaken for a usage label.
+ */
+const CASE_NAME =
+	"nominative|genitive|dative|accusative|ablative|vocative|locative";
+
+/**
+ * "with accusative or ablative", "+ accusative, ablative", "takes the dative".
+ * The words after the first case may only be more cases, so "with ablative, of
+ * a process" stops at "ablative" and leaves "of a process" to be a label.
+ */
+const CASE_PHRASE = new RegExp(
+	`(?:\\b(?:with|takes)\\s+|\\+\\s*)(?:the\\s+)?(?:${CASE_NAME})\\b(?:\\s*(?:,|\\bor\\b|\\band\\b)\\s*(?:the\\s+)?(?:${CASE_NAME})\\b)*`,
+	"i",
+);
+
+const CASE_WORD = new RegExp(`\\b(${CASE_NAME})\\b`, "gi");
+
+/**
+ * Reads one case phrase out of a fragment of a label or a bracket. What the
+ * phrase says about *who* — similis "(mostly Republican) genitive", doceō
+ * "accusative ‘someone’" — is set aside first: it qualifies a case, it is not
+ * one.
+ */
+function readCasePhrase(fragment: string): CasePhrase | null {
+	const cleaned = fragment
+		.replace(/‘[^’]*’/g, " ")
+		.replace(/\([^()]*\)/g, " ")
+		.replace(/\s+/g, " ");
+	const match = cleaned.match(CASE_PHRASE);
+	if (!match) return null;
+
+	return {
+		cases: [
+			...new Set(
+				[...match[0].matchAll(CASE_WORD)].map((m) => m[1].toLowerCase()),
+			),
+		],
+		both: /\band\b/i.test(match[0]),
+		source: fragment.trim(),
+	};
+}
+
+/**
+ * The case a definition says it takes, in either of the two places Wiktionary
+ * puts it: a leading label, "(with dative) to obey", or a bracket after the
+ * gloss, "in, at, on [with ablative]". A bracket without a case in it, super's
+ * "[of place]", is not one.
+ */
+function readOwnPhrase(text: string) {
+	const label = text.match(/^\(([^()]*)\)/)?.[1];
+	const fromLabel = label === undefined ? null : readCasePhrase(label);
+	if (fromLabel) return fromLabel;
+
+	for (const bracket of text.matchAll(/\[([^\]]*)\]/g)) {
+		const phrase = readCasePhrase(bracket[1]);
+		if (phrase) return phrase;
+	}
+	return null;
+}
+
+/**
+ * The case a headword line hands down to every sense under it: in's "(+
+ * ablative)" when it names exactly one, or a bracket on the line itself —
+ * meminī files "[with genitive or accusative]" there, once, for all its senses.
+ * sub's "(+ accusative, ablative)" names two, so it hands nothing down: its
+ * senses say which one each.
+ */
+function readLinePhrase(paragraph: string) {
+	const text = toText(paragraph);
+	const plus = text.match(/\(\+\s*([^)]*)\)/);
+	const listed = plus ? readCasePhrase(`+ ${plus[1]}`) : null;
+	if (listed?.cases.length === 1) return listed;
+
+	for (const bracket of text.matchAll(/\[([^\]]*)\]/g)) {
+		const phrase = readCasePhrase(bracket[1]);
+		if (phrase) return phrase;
+	}
+	return null;
+}
+
+/**
+ * The cases a preposition's headword lines list: "(+ accusative, ablative)".
+ * Every line, because in prints one per case.
+ */
+function readGoverns(grammar: string) {
+	const cases = new Set<string>();
+
+	for (const match of grammar.matchAll(/\(\+\s*([^)]*)\)/g)) {
+		for (const c of readCasePhrase(`+ ${match[1]}`)?.cases ?? []) {
+			cases.add(c);
+		}
+	}
+	return [...cases];
 }
 
 /**
@@ -316,6 +469,8 @@ type Definition = {
 	html: string;
 	/** Usage labels of the headings it is filed under: "(figurative):" gives "figurative". */
 	labels: Array<string>;
+	/** Its case: its own, else its heading's, else its headword line's. */
+	phrase: CasePhrase | null;
 };
 
 /**
@@ -325,14 +480,16 @@ type Definition = {
  * meaning under the case it takes. A heading is an item with a list under it
  * and nothing of its own to say: a bare label, or a lead-in that ends in a
  * colon ("especially:", "absolute uses:"). Its senses are read in its place and
- * carry its label down with them. Any other list under an item is sub-senses,
- * and stays out — including under a gloss that goes on to narrow itself: diēs
- * is "A day, particularly:", and "a day" is the sense.
+ * carry its label down with them — and its case, which is how sub's "(with
+ * ablative)" reaches "under, beneath". Any other list under an item is
+ * sub-senses, and stays out — including under a gloss that goes on to narrow
+ * itself: diēs is "A day, particularly:", and "a day" is the sense.
  */
 function readDefinitions(
 	list: string,
 	partOfSpeech: string,
 	labels: Array<string> = [],
+	inherited: CasePhrase | null = null,
 ): Array<Definition> {
 	const definitions: Array<Definition> = [];
 
@@ -348,15 +505,21 @@ function readDefinitions(
 		const isLeadIn = text.endsWith(":") && !COMMENTARY.test(text);
 		// Quotations are lists too, and may hold one of their own.
 		const nested = extractTag(["dl", "ul"].reduce(removeTag, cut.inner), "ol");
+		const phrase = readOwnPhrase(text) ?? inherited;
 
 		if (nested && (isBareLabel || isLeadIn)) {
 			// A lead-in says what follows, not where it is used.
 			const heading = isBareLabel ? readUsage(text) : [];
 			definitions.push(
-				...readDefinitions(nested.inner, partOfSpeech, [...labels, ...heading]),
+				...readDefinitions(
+					nested.inner,
+					partOfSpeech,
+					[...labels, ...heading],
+					phrase,
+				),
 			);
 		} else if (text) {
-			definitions.push({ html, labels });
+			definitions.push({ html, labels, phrase });
 		}
 	}
 	return definitions;
@@ -366,13 +529,18 @@ function readDefinitions(
  * The definitions are an <ol>, one <li> per sense, printed in the order a
  * dictionary would give them — which is what senses.rank means, so the list
  * order carries straight across. Headings are read through (readDefinitions),
- * so a grouped entry comes out in the same order, just flat.
+ * so a grouped entry comes out in the same order, just flat. So are headword
+ * lines: in's ablative senses come first, as Wiktionary prints them, then its
+ * accusative ones, each carrying the case of the line it sat under.
  */
-function readSenses(block: string, partOfSpeech: string) {
-	const list = extractTag(block, "ol");
-	if (!list) return { senses: [], isInflectedForm: false, senseCount: 0 };
-
-	const definitions = readDefinitions(list.inner, partOfSpeech);
+function readSenses(
+	segments: Array<{ html: string; phrase: CasePhrase | null }>,
+	partOfSpeech: string,
+) {
+	const definitions = segments.flatMap(({ html, phrase }) => {
+		const list = extractTag(html, "ol");
+		return list ? readDefinitions(list.inner, partOfSpeech, [], phrase) : [];
+	});
 
 	// Only the first definition says whether this is a headword section at all:
 	// "ablative singular of quisque" is a signpost, and has no second sense.
@@ -380,10 +548,10 @@ function readSenses(block: string, partOfSpeech: string) {
 		definitions.length > 0 &&
 		/class="[^"]*form-of-definition/.test(definitions[0].html);
 
-	const senses: Array<WiktionarySense> = [];
+	const senses: Array<ReadSense> = [];
 	const seen = new Set<string>();
 
-	for (const { html, labels } of definitions) {
+	for (const { html, labels, phrase } of definitions) {
 		let definition = html;
 
 		// "(female parent)" style clarifiers are marked up, so they come off
@@ -420,6 +588,7 @@ function readSenses(block: string, partOfSpeech: string) {
 		senses.push({
 			meaningEn: distinct,
 			usage: usage.length > 0 ? usage.join(", ") : undefined,
+			phrase,
 		});
 		if (senses.length === MAX_SENSES) break;
 	}
@@ -435,11 +604,17 @@ function parseCandidates(sectionHtml: string) {
 		const partOfSpeech = block.title.replace(/\s+\d+$/, "");
 		if (!WIKTIONARY_PARTS_OF_SPEECH.has(partOfSpeech)) continue;
 
-		const paragraph = extractTag(block.html, "p");
-		const lineStart = block.html.indexOf('<span class="headword-line"');
-		if (!paragraph || lineStart < 0) continue;
+		const segments = splitByHeadwordLine(block.html);
+		const [first] = segments;
+		if (!first) continue;
 
-		const line = extractTag(block.html, "span", lineStart);
+		// The headword, its forms and its gender come off the first line; a
+		// second line is the same word again, filed under another case.
+		const line = extractTag(
+			first.paragraph,
+			"span",
+			first.paragraph.indexOf('<span class="headword-line"'),
+		);
 		if (!line) continue;
 
 		const headword = line.inner.match(
@@ -451,13 +626,22 @@ function parseCandidates(sectionHtml: string) {
 			/<span class="gender"[^>]*>([\s\S]*?)<\/span>/,
 		);
 
+		const grammar = segments.map((s) => toText(s.paragraph)).join(" ");
+
 		candidates.push({
 			partOfSpeech,
 			headword: toText(headword[1]),
 			forms: readForms(line.inner),
 			gender: gender ? toText(gender[1]) : undefined,
-			grammar: toText(paragraph.inner),
-			...readSenses(block.html, partOfSpeech),
+			grammar,
+			governs: readGoverns(grammar),
+			...readSenses(
+				segments.map((s) => ({
+					html: s.html,
+					phrase: readLinePhrase(s.paragraph),
+				})),
+				partOfSpeech,
+			),
 		});
 	}
 	return candidates;
@@ -509,7 +693,11 @@ function readConjugation(grammar: string) {
 
 /**
  * Everything Wiktionary says about the word that the columns have nowhere to
- * put — deponency, indeclinability, the case a preposition governs.
+ * put — deponency, indeclinability, that tenus follows its noun.
+ *
+ * The case a preposition governs used to be written here, as "takes the
+ * ablative". It has a column now, and a note saying the same thing would be a
+ * second copy free to disagree with it.
  */
 function readNotes(candidate: Candidate) {
 	const flags = new Set<string>();
@@ -519,11 +707,10 @@ function readNotes(candidate: Candidate) {
 		/\b(semi-deponent|deponent|indeclinable|impersonal(?: in the passive)?|defective|suppletive|no passive|no supine|not comparable)\b/g;
 	for (const match of candidate.grammar.matchAll(phrases)) flags.add(match[1]);
 
-	for (const match of candidate.grammar.matchAll(
-		/\+ (ablative|accusative|dative|genitive)/g,
-	)) {
-		flags.add(`takes the ${match[1]}`);
-	}
+	// Filed as a preposition, so where it stands has to be said in words:
+	// pectore tenus, "as far as the chest".
+	if (candidate.partOfSpeech === "postposition") flags.add("follows its noun");
+
 	// The gender column holds one letter; "m or f" has to be said in words.
 	if (candidate.gender?.includes("or"))
 		flags.add(`gender: ${candidate.gender}`);
@@ -597,6 +784,9 @@ function tidyGloss(gloss: string, partOfSpeech: string) {
 		tidied = tidied
 			// A leading "(intransitive)" or "(poetic)" is a label, not the meaning.
 			.replace(/^\((?:[^()]|\([^()]*\))*\)\s*/, "")
+			// Nor is a leading "[of place]": super is "(with accusative) [of
+			// place] above; beyond", and the gloss is "above; beyond".
+			.replace(/^\[[^\]]*\]\s*/, "")
 			// A trailing parenthesis is a clarification the gloss can live without.
 			.replace(/\s*\((?:[^()]|\([^()]*\))*\)$/, "")
 			.replace(/\s*\[[^\]]*\]$/, "")
@@ -674,6 +864,10 @@ function readUsage(gloss: string) {
 
 	return (
 		label[1]
+			// "with accusative or ablative" is one statement about case, and case
+			// has its own column. Split on "or" as it stands, it would leave
+			// "ablative" behind looking like a usage label.
+			.replace(new RegExp(CASE_PHRASE.source, "gi"), "")
 			.split(/\s*(?:,|;|\bor\b|\band\b)\s*/)
 			.map((part) => part.trim().toLowerCase())
 			// "with the accusative" is the same grammar note in a longer coat.
@@ -682,12 +876,131 @@ function readUsage(gloss: string) {
 					part &&
 					!GRAMMAR_LABELS.has(part) &&
 					!SCOPE_LABELS.has(part) &&
-					!/^(?:with|takes|\+)\b/.test(part),
+					!/^(?:with|takes|\+)\b/.test(part) &&
+					// A case on its own, however it got here, is still not a usage.
+					!new RegExp(`^(?:${CASE_NAME})$`).test(part),
 			)
 	);
 }
 
-function toRow(candidate: Candidate): WiktionaryRow {
+/**
+ * What the case phrases come to, under the rules in rules.ts: the preposition's
+ * own list on the entry, and on each sense whatever senseGoverns says that
+ * sense is asked — which is where a verb and a preposition part ways.
+ */
+function readGovernance(
+	candidate: Candidate,
+	warn: (message: string) => void,
+): { governs?: string; senses: Array<WiktionarySense> } {
+	// Wiktionary's postposition is filed here as a preposition, so it is asked
+	// what a preposition is asked.
+	const isAdposition =
+		candidate.partOfSpeech === "preposition" ||
+		candidate.partOfSpeech === "postposition";
+
+	const listed = readCases(candidate.governs.join(","));
+	if (isAdposition && listed.unknown.length > 0) {
+		warn(
+			`Wiktionary lists ${theCases(listed.unknown)}, which is not one of ${GOVERNED_CASES.join(" | ")}, so it is left out`,
+		);
+	}
+
+	const governs = isAdposition ? formatCases(listed.cases) : "";
+	const asked = senseGoverns(
+		isAdposition ? "preposition" : candidate.partOfSpeech,
+		governs,
+	);
+
+	let unanswered = 0;
+
+	const senses = candidate.senses.map(({ phrase, ...sense }, i) => {
+		if (asked === "inapplicable") return sense;
+		if (!phrase) {
+			if (asked === "required") unanswered++;
+			return sense;
+		}
+
+		const { cases, unknown } = readCases(phrase.cases.join(","));
+		if (unknown.length > 0) {
+			warn(
+				`Sense ${i + 1} is marked with ${theCases(unknown)}, which is not one of ${GOVERNED_CASES.join(" | ")}`,
+			);
+		}
+
+		if (asked === "required") {
+			// Only the cases the headword lists: the entry's list is the one
+			// the senses are held to.
+			const kept = cases.filter((c) => listed.cases.includes(c));
+			const stray = cases.filter((c) => !listed.cases.includes(c));
+
+			if (stray.length > 0) {
+				warn(
+					`Sense ${i + 1} is marked with ${theCases(stray)}, which the headword does not list, so that is left off it`,
+				);
+			}
+			if (kept.length === 0) {
+				unanswered++;
+				return sense;
+			}
+			return { ...sense, governs: formatCases(kept) };
+		}
+
+		// Optional, so a verb's or an adjective's. Two objects at once is a
+		// construction, not a choice of case.
+		if (phrase.both) {
+			warn(
+				`Sense ${i + 1} takes two objects at once (“${phrase.source}”) — that is an example or a note, not a case`,
+			);
+			return sense;
+		}
+
+		// An accusative object on its own is what a transitive verb takes
+		// anyway: doceō's "to produce [with accusative 'a play']". Marking it
+		// would put "+ acc." on half the verbs in the dictionary and say
+		// nothing. Only a case worth learning is filled.
+		if (
+			cases.length === 0 ||
+			(cases.length === 1 && cases[0] === "accusative")
+		) {
+			return sense;
+		}
+		return { ...sense, governs: formatCases(cases) };
+	});
+
+	if (unanswered > 0) {
+		warn(
+			unanswered === senses.length
+				? "Wiktionary does not say which case each sense takes, so that is for you to answer"
+				: `Wiktionary does not say which case ${unanswered} of these senses ${unanswered === 1 ? "takes" : "take"}, so that is for you to answer`,
+		);
+	}
+
+	// Every case on the headword needs a sense to show for it. Checked only
+	// when every sense has one, or this repeats the warning above.
+	if (asked === "required" && unanswered === 0) {
+		const shown = new Set(
+			senses.flatMap((s) => readCases(s.governs ?? "").cases),
+		);
+		const unshown = listed.cases.filter((c) => !shown.has(c));
+
+		if (unshown.length > 0) {
+			warn(
+				`No sense kept here takes ${theCases(unshown)}${
+					candidate.senseCount > senses.length
+						? ` — Wiktionary lists ${candidate.senseCount} definitions and ${senses.length} were kept`
+						: ""
+				}, so add one or drop it`,
+			);
+		}
+	}
+
+	return { governs: governs || undefined, senses };
+}
+
+function toRow(
+	candidate: Candidate,
+	warn: (message: string) => void,
+): WiktionaryRow {
 	const isNoun =
 		candidate.partOfSpeech === "noun" ||
 		candidate.partOfSpeech === "proper noun";
@@ -696,6 +1009,8 @@ function toRow(candidate: Candidate): WiktionaryRow {
 	const isNominal =
 		isNoun ||
 		["adjective", "numeral", "pronoun"].includes(candidate.partOfSpeech);
+
+	const { governs, senses } = readGovernance(candidate, warn);
 
 	return {
 		lemma: candidate.headword.normalize("NFC"),
@@ -712,8 +1027,9 @@ function toRow(candidate: Candidate): WiktionaryRow {
 			candidate.partOfSpeech === "verb"
 				? readConjugation(candidate.grammar)
 				: undefined,
+		governs,
 		notes: readNotes(candidate),
-		senses: candidate.senses,
+		senses,
 	};
 }
 
@@ -732,11 +1048,14 @@ function chooseCandidate(
 
 	if (spec.partOfSpeech) {
 		// This dictionary has no separate filing for proper nouns, so asking for
-		// a noun has to keep Rōma in the running.
+		// a noun has to keep Rōma in the running — nor for postpositions, so
+		// asking for a preposition keeps tenus.
 		const wanted =
 			spec.partOfSpeech === "noun"
 				? ["noun", "proper noun"]
-				: [spec.partOfSpeech];
+				: spec.partOfSpeech === "preposition"
+					? ["preposition", "postposition"]
+					: [spec.partOfSpeech];
 		const asked = pool.filter((c) => wanted.includes(c.partOfSpeech));
 
 		if (asked.length > 0) {
@@ -767,6 +1086,19 @@ function chooseCandidate(
 	const headwords = pool.filter((c) => !c.isInflectedForm);
 	if (headwords.length > 0) pool = headwords;
 
+	// dē is filed twice under one etymology, as a preposition and again as a
+	// postposition for when it follows its noun (quā dē rē). That is one word
+	// with a habit, not two words, so the second is a note and not a choice.
+	if (
+		pool.some((c) => c.partOfSpeech === "preposition") &&
+		pool.some((c) => c.partOfSpeech === "postposition")
+	) {
+		pool = pool.filter((c) => c.partOfSpeech !== "postposition");
+		warn(
+			"Wiktionary also files this as a postposition — it can follow its noun; that is a note, not a second entry",
+		);
+	}
+
 	if (pool.length > 1) {
 		const others = [...new Set(pool.slice(1).map((c) => c.partOfSpeech))].join(
 			", ",
@@ -794,7 +1126,7 @@ export async function lookupEntry(spec: LookupSpec): Promise<Lookup> {
 	const candidate = chooseCandidate(candidates, spec, (message) =>
 		warnings.push(message),
 	);
-	const row = toRow(candidate);
+	const row = toRow(candidate, (message) => warnings.push(message));
 
 	if (row.senses.length === 0) {
 		warnings.push("no definitions found, its senses need writing by hand");
@@ -830,6 +1162,13 @@ export async function suggestFromWiktionary(
 		// This dictionary has one filing for both; the reader sees "noun".
 		partOfSpeech = "noun";
 		warnings.push("Wiktionary calls this a proper noun; filed here as a noun");
+	} else if (partOfSpeech === "postposition") {
+		// The grammars list tenus with the prepositions; where it stands is a
+		// note, which readNotes has already written (vault/schema.md).
+		partOfSpeech = "preposition";
+		warnings.push(
+			"Wiktionary calls this a postposition; filed here as a preposition, with “follows its noun” in the notes",
+		);
 	} else if (!isPartOfSpeech(partOfSpeech)) {
 		warnings.push(
 			`Wiktionary calls this ${partOfSpeech ? `a ${partOfSpeech}` : "nothing this dictionary files"}, so the part of speech is for you to pick`,
@@ -852,6 +1191,8 @@ export async function suggestFromWiktionary(
 		declension: isDeclension(read.declension) ? read.declension : "",
 		terminations: isTerminations(read.terminations) ? read.terminations : "",
 		conjugation: isConjugation(read.conjugation) ? read.conjugation : "",
+		// Already filtered to the vocabulary, and warned about, in lookupEntry.
+		governs: row.governs ?? "",
 		notes: row.notes ?? "",
 	};
 
@@ -896,11 +1237,20 @@ export async function suggestFromWiktionary(
 		);
 	}
 
+	// A preposition has to say which case it takes, and a headword line
+	// without "(+ …)" leaves that unsaid.
+	if (hasGoverns(partOfSpeech) && draft.governs === "") {
+		warnings.push(
+			"Wiktionary does not say which case this preposition takes, so that is for you to answer",
+		);
+	}
+
 	return {
 		draft,
 		senses: row.senses.map((sense) => ({
 			meaningEn: sense.meaningEn,
 			usage: sense.usage ?? "",
+			governs: sense.governs ?? "",
 		})),
 		warnings,
 	};

@@ -7,7 +7,8 @@
  * One function does it, and three callers share it: the form (for the messages),
  * the createEntry RPC (as its .validator, which is the actual gate — the form is
  * reachable only through a browser, an RPC by anyone the session lets in), and
- * scripts/check-inflection.ts (for the vocabulary).
+ * the guard scripts — check-inflection.ts and check-governs.ts — for the
+ * vocabulary and the predicates that say which question applies.
  */
 import { normalizeLemma } from "#/utils/search/rules";
 
@@ -113,10 +114,144 @@ export function hasTerminations(partOfSpeech: string, declension: string) {
 	return partOfSpeech === "adjective" && declension === "3";
 }
 
+/**
+ * The cases a word can be said to govern, in the order the grammars print them.
+ * The oblique four: nothing governs a nominative or a vocative. No classical
+ * preposition takes the dative, but a verb does (noceō, crēdō, pāreō), and one
+ * vocabulary for both is simpler than two that agree about three cases.
+ */
+export const GOVERNED_CASES = [
+	"genitive",
+	"dative",
+	"accusative",
+	"ablative",
+] as const;
+
+export type GovernedCase = (typeof GOVERNED_CASES)[number];
+
+export function isGovernedCase(value: string): value is GovernedCase {
+	return (GOVERNED_CASES as ReadonlyArray<string>).includes(value);
+}
+
+const CASE_ABBREVIATIONS: Record<GovernedCase, string> = {
+	genitive: "gen.",
+	dative: "dat.",
+	accusative: "acc.",
+	ablative: "abl.",
+};
+
+/**
+ * A governs value is a set of alternatives — in takes the accusative *or* the
+ * ablative — stored as one comma-joined string. This reads it back, in grammar
+ * order and without duplicates, and hands back separately whatever is not a
+ * case, so the caller can name it rather than silently lose it.
+ */
+export function readCases(value: string) {
+	const found = new Set<string>();
+	const unknown: Array<string> = [];
+
+	for (const part of value.split(",")) {
+		const word = part.trim().toLowerCase();
+		if (word === "") continue;
+		if (isGovernedCase(word)) found.add(word);
+		else if (!unknown.includes(word)) unknown.push(word);
+	}
+
+	return {
+		cases: GOVERNED_CASES.filter((c) => found.has(c)),
+		unknown,
+	};
+}
+
+/**
+ * The one spelling of a set of cases: grammar order, no spaces. One spelling,
+ * so "every preposition that takes both" is an equality, and so
+ * check-governs.ts can hold every stored value to it.
+ */
+export function formatCases(cases: Iterable<string>) {
+	const set = new Set(cases);
+	return GOVERNED_CASES.filter((c) => set.has(c)).join(",");
+}
+
+/**
+ * "+ acc./abl.", the way a learner's dictionary prints it. One label for the
+ * set rather than one per case, because the set is alternatives and two labels
+ * side by side would read as a word taking both at once.
+ */
+export function caseLabel(governs: string | null | undefined) {
+	const { cases } = readCases(governs ?? "");
+	return cases.length === 0
+		? null
+		: `+ ${cases.map((c) => CASE_ABBREVIATIONS[c]).join("/")}`;
+}
+
+/** "the dative", "the accusative and the ablative" — cases named inside a sentence. */
+export function theCases(cases: ReadonlyArray<string>) {
+	const named = cases.map((c) => `the ${c}`);
+	return named.length <= 1
+		? named.join("")
+		: `${named.slice(0, -1).join(", ")} and ${named.at(-1)}`;
+}
+
+/**
+ * Only a preposition answers on the entry. Governing a case is what a
+ * preposition is for, so the question always applies and always has an
+ * answer. A verb's case belongs to one of its meanings instead: pāreō takes
+ * the dative when it means "obey" and nothing when it means "appear".
+ */
+export function hasGoverns(partOfSpeech: string) {
+	return partOfSpeech === "preposition";
+}
+
+/**
+ * Whether a sense says which case it takes. Three answers, because there are
+ * three kinds of word here:
+ *
+ *   - required: a preposition with more than one case. Which case goes with
+ *     which meaning is the whole point of in, so every sense has to say.
+ *   - optional: verbs and adjectives. Most of their senses take no marked case
+ *     — an ordinary object, or none — so NULL is the usual answer and means
+ *     "nothing to mark", the way an empty usage label does.
+ *   - inapplicable: everything else, and a preposition with one case. ad's
+ *     accusative is already on the entry, and saying it again on each sense
+ *     would be a second place to say it and a first place to contradict it.
+ *
+ * Takes the entry's governs because, for a preposition, the answer depends on
+ * it — the same way hasTerminations depends on the declension.
+ */
+export function senseGoverns(
+	partOfSpeech: string,
+	governs: string,
+): "required" | "optional" | "inapplicable" {
+	if (partOfSpeech === "verb" || partOfSpeech === "adjective") {
+		return "optional";
+	}
+	return hasGoverns(partOfSpeech) && readCases(governs).cases.length > 1
+		? "required"
+		: "inapplicable";
+}
+
+/** The cases a sense may pick from: the entry's, a verb's any, otherwise none. */
+export function offeredCases(
+	partOfSpeech: string,
+	governs: string,
+): ReadonlyArray<GovernedCase> {
+	switch (senseGoverns(partOfSpeech, governs)) {
+		case "optional":
+			return GOVERNED_CASES;
+		case "required":
+			return readCases(governs).cases;
+		case "inapplicable":
+			return [];
+	}
+}
+
 export type SenseDraft = {
 	meaningEn: string;
 	/** 'medical', 'military', 'poetic' — a label on this sense only. */
 	usage: string | null;
+	/** The case this sense takes, canonical — see senseGoverns. */
+	governs: string | null;
 	/** A line of Latin showing this sense in use, and its translation. */
 	exampleLa: string | null;
 	exampleEn: string | null;
@@ -132,6 +267,8 @@ export type EntryDraft = {
 	declension: Declension | null;
 	terminations: Terminations | null;
 	conjugation: Conjugation | null;
+	/** Prepositions only: the cases it takes, canonical — see hasGoverns. */
+	governs: string | null;
 	notes: string | null;
 	/** Position is the rank, so ranks running 1..n with no gaps falls out of the array. */
 	senses: [SenseDraft, ...Array<SenseDraft>];
@@ -369,6 +506,38 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 				: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
 	}
 
+	// --- governs -----------------------------------------------------------
+	// A preposition's filing is incomplete without the case it takes, the way
+	// a noun's is without its gender. Everything else leaves the entry's empty;
+	// a verb says it on the sense that takes it, if at all.
+	const governsInput = text(raw.governs);
+	const governed = readCases(governsInput);
+	let governs: string | null = null;
+
+	if (hasGoverns(partOfSpeech)) {
+		if (governed.unknown.length > 0) {
+			fields.governs = `“${governed.unknown[0]}” is not one of ${GOVERNED_CASES.join(" | ")}.`;
+		} else if (governed.cases.length === 0) {
+			fields.governs = `A preposition is filed with the case it takes (${GOVERNED_CASES.join(" | ")}) — ad the accusative; in the accusative or the ablative.`;
+		} else {
+			governs = formatCases(governed.cases);
+		}
+	} else if (asks !== undefined && governsInput !== "") {
+		fields.governs =
+			senseGoverns(partOfSpeech, "") === "optional"
+				? `${opens(aWord(partOfSpeech))} says which case it takes on the sense that takes it: pāreō takes the dative when it means “obey” and nothing when it means “appear”.`
+				: `Only a preposition governs a case, and this is ${aWord(partOfSpeech)}.`;
+	}
+
+	// Which of the three questions a sense is asked. Undefined — ask nothing —
+	// while the part of speech is unclassified or the entry's own answer is
+	// wrong: judging senses against a case list that is about to change would
+	// only produce messages that stop being true the moment it is fixed.
+	const senseAsk =
+		asks === undefined || fields.governs !== undefined
+			? undefined
+			: senseGoverns(partOfSpeech, governs ?? "");
+
 	// --- senses ------------------------------------------------------------
 	// Rank is position, so ranks run 1..n by construction. That is also why a
 	// blank meaning in the middle is an error rather than a row to skip:
@@ -381,6 +550,8 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		return {
 			meaningEn: text(row.meaningEn),
 			usage: text(row.usage) || null,
+			// Read raw here and settled below, where the entry's answer is known.
+			governs: text(row.governs) || null,
 			// The example is Latin, and the detail page renders it under lang="la"
 			// — so it answers to the same script rule the lemma does.
 			exampleLa: latin(row.exampleLa) || null,
@@ -411,7 +582,54 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 			fields[`senses.${i}.exampleEn`] =
 				`Sense ${i + 1} has a translation but no Latin example to translate.`;
 		}
+
+		// The case this sense takes, held to whichever of the three questions
+		// senseGoverns says it is being asked. Canonicalised in place, so what is
+		// written is the one spelling check-governs.ts expects.
+		const key = `senses.${i}.governs`;
+		const taken = readCases(sense.governs ?? "");
+		const answered = taken.cases.length > 0 || taken.unknown.length > 0;
+
+		if (senseAsk === undefined) return;
+
+		if (taken.unknown.length > 0 && senseAsk !== "inapplicable") {
+			fields[key] =
+				`“${taken.unknown[0]}” is not one of ${GOVERNED_CASES.join(" | ")}.`;
+		} else if (senseAsk === "required") {
+			const outside = taken.cases.filter((c) => !governed.cases.includes(c));
+
+			if (!answered) {
+				fields[key] =
+					`Sense ${i + 1} does not say which case it takes — this preposition governs ${theCases(governed.cases)}, so every sense has to say which.`;
+			} else if (outside.length > 0) {
+				fields[key] =
+					`Sense ${i + 1} takes ${theCases(outside)}, which this preposition is not filed as governing.`;
+			}
+		} else if (senseAsk === "inapplicable" && answered) {
+			fields[key] = hasGoverns(partOfSpeech)
+				? `Sense ${i + 1} says which case it takes, but this preposition only ever takes ${theCases(governed.cases)}, so its senses need not say.`
+				: `Sense ${i + 1} says which case it takes, and only the senses of a preposition, verb or adjective do.`;
+		}
+
+		sense.governs = taken.cases.length > 0 ? formatCases(taken.cases) : null;
 	});
+
+	// Every case a preposition claims needs a meaning to show for it, or the
+	// card says "+ acc./abl." above a list with no accusative in it. Checked
+	// only once each sense has answered cleanly, so one gap is one message.
+	if (
+		senseAsk === "required" &&
+		!senses.some((_, i) => fields[`senses.${i}.governs`] !== undefined)
+	) {
+		const shown = new Set(
+			senses.flatMap((sense) => readCases(sense.governs ?? "").cases),
+		);
+		const unshown = governed.cases.filter((c) => !shown.has(c));
+
+		if (unshown.length > 0) {
+			fields.governs = `Filed as taking ${theCases(unshown)}, but no sense takes it — tick it on a sense, or untick it here.`;
+		}
+	}
 
 	if (Object.keys(fields).length > 0) {
 		throw new EntryValidationError(fields);
@@ -428,6 +646,7 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		declension,
 		terminations,
 		conjugation,
+		governs,
 		notes: text(raw.notes) || null,
 		// The empty case threw above; this cast is what tells the type that.
 		senses: senses as [SenseDraft, ...Array<SenseDraft>],

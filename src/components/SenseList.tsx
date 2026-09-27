@@ -1,3 +1,4 @@
+import { CaseTag } from "#/components/CaseTag";
 import type { Sense } from "#/db/schema";
 
 type SenseListProps = {
@@ -35,6 +36,7 @@ export function SenseList({ senses, compact = false }: SenseListProps) {
 
 					<div>
 						<p className={`text-ink-900 ${compact ? "text-lg" : "text-xl"}`}>
+							<CaseTag governs={sense.governs} />
 							{sense.usage && (
 								<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-600 text-xs uppercase tracking-[0.18em]">
 									{sense.usage}

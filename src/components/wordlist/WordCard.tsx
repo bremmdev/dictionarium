@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { CaseTag } from "#/components/CaseTag";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarLabel } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
@@ -54,6 +55,7 @@ export function WordCard({ entry }: { entry: EntryWithSenses }) {
 
 				{core && (
 					<span className="block text-ink-900 group-open:hidden">
+						<CaseTag governs={core.governs} />
 						{core.meaningEn}
 						{rest > 0 && (
 							<span className="ml-2 whitespace-nowrap text-ink-600 text-sm">

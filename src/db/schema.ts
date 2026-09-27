@@ -25,6 +25,9 @@ export const entries = sqliteTable("entries", {
 	// terminations it files with. NULL wherever the question does not apply.
 	terminations: text("terminations"),
 	conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
+	// prepositions: the case or cases it takes, e.g. "accusative,ablative".
+	// NULL for every other part of speech — see hasGoverns.
+	governs: text("governs"),
 	notes: text("notes"),
 	/**
 	 * Nullable, and the NULLs are the point: NULL signifies 'added before we added analytics'
@@ -51,6 +54,12 @@ export const senses = sqliteTable(
 		meaningEn: text("meaning_en").notNull(),
 		/** 'military', 'poetic', 'vulgar' — a label on this sense only. */
 		usage: text("usage"),
+		/**
+		 * The case this sense construes with: "dative" for noceō, "accusative"
+		 * for in's "into". Alternatives, never a combination. Who is asked is
+		 * senseGoverns in src/utils/entries/rules.ts.
+		 */
+		governs: text("governs"),
 		exampleLa: text("example_la"),
 		exampleEn: text("example_en"),
 	},

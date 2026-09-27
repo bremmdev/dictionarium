@@ -19,7 +19,7 @@ Two consequences worth naming up front:
 | `src/server/entries.ts`               | `createEntry` and `updateEntry`, which write; `suggestEntry`, which does not.       |
 | `scripts/enrich-entries.ts`           | The same lookup, many words at a time, printed or written.                         |
 
-## One rulebook, four callers
+## One rulebook, five callers
 
 `parseEntryDraft(input: unknown)` takes whatever arrived and returns the row to write, or throws `EntryValidationError` carrying **every** problem it found at once, keyed by field:
 
@@ -37,6 +37,7 @@ Sense keys are keyed by **position**, because position is the rank. That is the 
 | `createEntry`, as `.validator` | **The gate.** It runs on every call, whatever the caller.              |
 | `updateEntry`, as `.validator` | **The same gate.** An edit is a filing, held to the filing rules.      |
 | `check-inflection.ts`      | For the vocabulary only — `INFLECTS`, `DECLENSIONS`, `CONJUGATIONS`.      |
+| `check-governs.ts`         | For `GOVERNED_CASES`, the one spelling, and who is asked (`senseGoverns`). |
 
 This is [auth.md](./auth.md#the-boundary-guards-are-ux-middleware-is-the-gate)'s boundary rule again in a different costume. The form is reachable only through a browser; `createEntry` and `updateEntry` are RPCs reachable by their own URL by anyone the session lets in. So the validator on the server function is the real check, and the form's copy exists so a person sees five problems at once instead of one per round trip.
 
@@ -90,11 +91,23 @@ Two rules in `parseEntryDraft`:
 - The Latin example is Latin, rendered under `lang="la"` on the detail page, so it answers to the same script check the lemma does — a Greek `α` hiding in it is refused there, not discovered later by `check:macrons`.
 - **A translation needs something to translate.** `example_en` without `example_la` is an error keyed to that sense; the reverse is fine, because a Latin line on its own is an example a reader can work at, while a translation on its own renders as a quotation of nothing.
 
+### Case: off unless there is one — or always, where it is required
+
+A sense's `governs` is a row of case chips, and whether they show follows [who is asked](./schema.md#who-is-asked):
+
+| Word                                   | The case chips on each sense                                                    |
+| -------------------------------------- | ------------------------------------------------------------------------------- |
+| a preposition with several cases (_in_) | **always shown**, offering only the cases ticked under Governs                 |
+| a verb, an adjective                   | behind **Add case**, like the examples — open where a sense has one, all four offered |
+| everything else, and _ad_              | not there                                                                       |
+
+The examples' invariant holds here too: **hidden always means empty.** "Remove case" clears as it closes, and "Add case" reopens empty. Unticking a case under Governs takes it off every sense in the same pass, because those chips stop rendering — and unticking down to one case empties them all, because a one-case preposition's senses are not asked. Ticking it again does not bring the old answers back.
+
 ## The form is a reducer
 
 One user action is one named transition, in `formReducer`. Two rules live there rather than in the event handlers that used to hold them, because a handler is a place every future caller has to remember:
 
-- **`clearInapplicable`** — a question that does not apply has to stay NULL, so picking a new part of speech empties the answers that just stopped applying. A gender typed while *noun* was selected would otherwise ride along into an adverb and be rejected by a rule no longer on screen. Wiktionary's fill runs through the same function: it hands back *bonus, bona, bonum* as principal parts for an adjective, and the reducer drops them.
+- **`clearInapplicable`** — a question that does not apply has to stay NULL, so picking a new part of speech empties the answers that just stopped applying. A gender typed while *noun* was selected would otherwise ride along into an adverb and be rejected by a rule no longer on screen. Wiktionary's fill runs through the same function: it hands back *bonus, bona, bonum* as principal parts for an adjective, and the reducer drops them. **`clearInapplicableSenses`** is the same rule one level down, run on the cleared draft: the part of speech and the cases under Governs decide what each sense may still say about its case.
 - **`withoutSenseErrors`** — adding or removing a sense renumbers every row after it, so the messages from the last submit stop describing the rows they sit beside. Both actions throw them away; no caller has to remember to.
 
 The state beyond the draft itself:
@@ -128,9 +141,14 @@ What the parser makes of a page:
 | "indeclinable"                      | `declension: "indeclinable"` — an answer, not an absence               |
 | "third (-iō variant) conjugation"   | `conjugation: "3io"`                                                   |
 | a *Proper noun* section             | `part_of_speech: "noun"`, with a warning saying so                     |
-| deponency, `+ ablative`, `m or f`   | `notes`, where a sentence is allowed                                   |
+| a *Postposition* section (*tenus*)  | `part_of_speech: "preposition"`, with a warning, and "follows its noun" in `notes` — see [schema.md](./schema.md#postposition-is-not-one-of-them-either) |
+| a preposition's `(+ accusative, ablative)` | `governs`, in the one spelling: `accusative,ablative`             |
+| a second headword line — *in (+ ablative)* … *in (+ accusative)* | read too: its senses follow the first line's, each carrying its line's case |
+| a sense's case — `(with dative)`, `[with ablative]`, a `(with ablative):` heading over senses, or a case on the headword line (*meminī*) | that sense's `governs` — see [schema.md](./schema.md#governs-the-case-a-word-takes) |
+| an accusative object on its own, or two objects at once (*doceō*) | **nothing** — an ordinary object is not worth marking, and two objects are a construction, said out loud |
+| deponency, `m or f`                 | `notes`, where a sentence is allowed                                   |
 | the definition list, in order       | senses — its first becomes rank 1, capped at eight                     |
-| a definition's leading `(poetic)`   | that sense's `usage`, once grammar labels like `(transitive)` are dropped |
+| a definition's leading `(poetic)`   | that sense's `usage`, once grammar labels like `(transitive)` and case phrases like `(with accusative or ablative)` are dropped |
 | a heading over definitions — `(figurative):`, `especially:` | read through: its senses are listed in its place, and a label like `figurative` joins each one's `usage` |
 | quotations under a definition       | **nothing** — examples are written by a person, never filled              |
 
@@ -145,7 +163,12 @@ A fill with nothing to say shows nothing. Anything else appears above the form a
 Wiktionary lists 11 definitions, kept 8
 Wiktionary calls this a proper noun; filed here as a noun
 Wiktionary does not say how this pronoun inflects, so the declension is for you to answer
+Wiktionary does not say which case each sense takes, so that is for you to answer
+Wiktionary also files this as a postposition — it can follow its noun; that is a note, not a second entry
+Sense 1 takes two objects at once (“with accusative ‘someone’ and accusative ‘something’”) — that is an example or a note, not a case
 ```
+
+The case warnings mark the one place the fill is most often short. Wiktionary marks _noceō_'s dative and _crēdō_'s, but not _ūtor_'s or _fruor_'s ablative at all — a verb that comes back with no case may simply not have been marked.
 
 Each one marks a place where the fill made a choice or fell short. Read them; they are the difference between a research assistant and an oracle.
 
@@ -190,7 +213,8 @@ Deleting an entry is not built, and neither is reordering senses by anything oth
 
 - **A new admin server function needs `.middleware([authMiddleware])` explicitly.** `suggestEntry` reaches the network on the caller's behalf; unguarded, it is an open Wikimedia proxy with this app's user agent on it.
 - **Quaere replaces the whole draft, senses included.** It is not a merge. That is deliberate — what is on screen afterwards is one word's filing rather than two halves of different ones — but it means anything typed before pressing it is gone. It works the same way inside an edit, so it will overwrite a filed word's answers with Wiktionary's.
-- **Saving an edit replaces every sense with the rows on screen**, ranked 1..n by position. That is safe only because the form now holds every column a sense has. Add a column to `senses` and it has to reach `handleSubmit`'s `filing` — the senses are mapped field by field there, and one left out of that list is one that silently saves empty on every edit.
+- **Saving an edit replaces every sense with the rows on screen**, ranked 1..n by position. That is safe only because the form now holds every column a sense has. Add a column to `senses` and it has to reach `handleSubmit`'s `filing` — the senses are mapped field by field there, and one left out of that list is one that silently saves empty on every edit. `governs` is the latest column that had to.
+- **A preposition's sense chips offer the entry's cases, not all four.** So a change under Governs is a change to the senses as well — see [Case](#case-off-unless-there-is-one--or-always-where-it-is-required).
 - **A saved edit hands the desk back as a new word's.** The form empties and `mode` drops to `create`, then the route is sent to `/admin`. Both halves matter: an emptied form still addressed to a row would file the *next* word typed into it over the one just saved.
 - **The form is not keyed by the entry.** It notices a different word arriving and replaces its own draft, because a `key` would remount it — and unmount the confirmation banner at the exact moment a saved edit sends the route back to `/admin`.
 - **The fill is capped at eight senses, and Wiktionary's order is the rank order.** Cut rows before saving rather than after: position *is* the rank, so deleting sense 2 later renumbers everything below it.

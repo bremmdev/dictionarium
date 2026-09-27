@@ -8,12 +8,13 @@ The app will be public — read-only lookup for everyone, an authenticated admin
 
 ## Filing conventions
 
-| Word type       | Filed as                       | Example                           |
-| --------------- | ------------------------------ | --------------------------------- |
-| Verb            | the four principal parts       | _currō, currere, cucurrī, cursum_ |
-| Noun            | nominative + genitive + gender | _puella, puellae, f._             |
-| Adjective       | one form per termination       | _ācer, ācris, ācre_               |
-| Everything else | the word itself                | _quoque_                          |
+| Word type       | Filed as                        | Example                           |
+| --------------- | ------------------------------- | --------------------------------- |
+| Verb            | the four principal parts        | _currō, currere, cucurrī, cursum_ |
+| Noun            | nominative + genitive + gender  | _puella, puellae, f._             |
+| Adjective       | one form per termination        | _ācer, ācris, ācre_               |
+| Preposition     | the word + the case(s) it takes | _in_ + acc./abl.                  |
+| Everything else | the word itself                 | _quoque_                          |
 
 On the row:
 
@@ -21,6 +22,7 @@ On the row:
 - **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for an adjective means only the indeclinable ones.
 - The lemma repeats inside the string wherever a dictionary prints it there. A verb's first principal part is its lemma and always was; an adjective's masculine is the same, and _bonus, bona, bonum_ is the line a reader expects. A noun is the exception, because _puella, puellae_ is filed as a nominative and a genitive rather than as one run-on line.
 - **gender** is its own column on nouns (`m` / `f` / `n`), not buried in the principal-parts string.
+- **governs** is its own column on prepositions, and on senses — see [`governs`](#governs-the-case-a-word-takes).
 
 ## Store what you query by
 
@@ -60,18 +62,19 @@ Run it as often as you like, extend it, rerun it; no duplicates. A caveat:
 
 ## `entries`
 
-| Column            | Required | Notes                                                                              |
-| ----------------- | -------- | ---------------------------------------------------------------------------------- |
-| `id`              | yes      | surrogate key                                                                      |
-| `lemma`           | yes      | display lemma, macrons kept; **unique**                                            |
-| `lemma_plain`     | yes      | macron-stripped search key                                                         |
-| `part_of_speech`  | yes      | `verb`, `noun`, `adverb`, …                                                        |
-| `principal_parts` | no       | four parts (verb), genitive (noun), or the terminations (adjective)                |
-| `gender`          | no       | nouns: `m` / `f` / `n`                                                             |
-| `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`; NULL only where the question does not apply |
-| `terminations`    | no       | 3rd-declension adjectives: `1` / `2` / `3`; same NULL rule                         |
-| `conjugation`     | no       | text — `1`…`4`, `3io`, `irregular`; same NULL rule                                 |
-| `notes`           | no       | free text                                                                          |
+| Column            | Required | Notes                                                                                                                 |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `id`              | yes      | surrogate key                                                                                                         |
+| `lemma`           | yes      | display lemma, macrons kept; **unique**                                                                               |
+| `lemma_plain`     | yes      | macron-stripped search key                                                                                            |
+| `part_of_speech`  | yes      | `verb`, `noun`, `adverb`, …                                                                                           |
+| `principal_parts` | no       | four parts (verb), genitive (noun), or the terminations (adjective)                                                   |
+| `gender`          | no       | nouns: `m` / `f` / `n`                                                                                                |
+| `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`; NULL only where the question does not apply                                    |
+| `terminations`    | no       | 3rd-declension adjectives: `1` / `2` / `3`; same NULL rule                                                            |
+| `conjugation`     | no       | text — `1`…`4`, `3io`, `irregular`; same NULL rule                                                                    |
+| `governs`         | no       | prepositions: the case(s) it takes — `accusative`, `accusative,ablative`; see [below](#governs-the-case-a-word-takes) |
+| `notes`           | no       | free text                                                                                                             |
 
 `meaning_en` used to live here. It moved to `senses` and the column was dropped — see `[senses](#senses)`.
 
@@ -206,19 +209,72 @@ Then the same shape again, one question further down, for the two columns that h
 
 The third rule is the one that earns the script. `adjective` and `pronoun` sat in the map for a long time with nothing filed under them; the day the first adjective arrived, either its declension was there or the check named the word. What cannot happen is a new word class slipping past on the reading "both columns are NULL, so presumably it does not inflect" — the script holds no opinion it was not given, and says so rather than guessing.
 
+## `governs`: the case a word takes
+
+A preposition is not filed until it says which case it takes: _ad_ + accusative, _cum_ + ablative. For a long time it said so in `notes` — "takes the ablative" — which nothing could filter on, nothing checked, and which had no way at all to file _in_, whose meanings split by case: _in_ + ablative is "in, on", _in_ + accusative is "into, against".
+
+Verbs have the same fact, one level down. _noceō_ takes the dative. _pāreō_ takes the dative when it means "obey" and nothing when it means "appear". For a verb the case belongs to a **meaning**, not to the word.
+
+So there are two columns, one on each table, and one vocabulary:
+
+| Column            | Holds                              | Example                                           |
+| ----------------- | ---------------------------------- | ------------------------------------------------- |
+| `entries.governs` | every case a **preposition** takes | _in_ `accusative,ablative`; _ad_ `accusative`     |
+| `senses.governs`  | the case **this meaning** takes    | _in_ "into" `accusative`; _noceō_ "harm" `dative` |
+
+The values are the four oblique cases, `GOVERNED_CASES` in `rules.ts` — `genitive`, `dative`, `accusative`, `ablative` — stored in **one spelling**: grammar order, comma-joined, no spaces. `formatCases` writes it, `readCases` reads it, and `check-governs.ts` holds every stored value to it, the same "stored equals derived" rule `check-lemmas` holds `lemma_plain` to. One spelling is what makes "every preposition taking both" an equality. No classical preposition takes the dative, but a verb does, and one vocabulary for both is simpler than two that agree about three cases.
+
+A card prints the set as one label, `+ acc./abl.`, and a meaning's case as a pill in front of it: _noceō_ reads "+ dat. to injure" on the search card as well as the detail page.
+
+### A list is a choice, never a combination
+
+`accusative,ablative` means **either**. _super_ "above, over" takes the accusative or the ablative; _meminī_ takes the genitive or the accusative. It never means both at once. A construction with two complements — _doceō_ with two accusatives, _crēdō alicui aliquid_ "to entrust something to someone", _pudet mē tuī_ — is not a case list. It goes in an example or in `notes`, and the case a learner would get wrong can be filed on its own: _crēdō_ "to entrust" is `dative`.
+
+### Who is asked
+
+`hasGoverns` and `senseGoverns` in `rules.ts` say it once; the form, the gate, the reducer and the guard all read them.
+
+| Row                               | `entries.governs` | `senses.governs`                                   |
+| --------------------------------- | ----------------- | -------------------------------------------------- |
+| preposition, one case (_ad_)      | **required**      | NULL — the entry already says it                   |
+| preposition, several cases (_in_) | **required**      | **required** on every sense, from the entry's list |
+| verb, adjective                   | NULL              | **optional** — NULL means no marked case           |
+| everything else                   | NULL              | NULL                                               |
+
+Three of those need a word.
+
+**_ad_'s senses stay NULL** for the reason `terminations` stays NULL on a `1-2` adjective: repeating the entry's one case on every sense would be a second place to say it and a first place to contradict it.
+
+**_in_'s senses must answer, from its own list, and every case on the list needs a sense.** Which case goes with which meaning is the whole point of _in_, so a sense with no answer is a finding. A sense claiming a case the entry does not list is one too. And an entry claiming a case no sense takes is a third, because the card would print "+ acc./abl." above a list with no accusative in it. That last rule is also what keeps the two columns from drifting: for a multi-case preposition, `entries.governs` is exactly the cases its senses take, and the gate and the guard both check it. It is stored anyway because it is what the card prints and what a query filters on — store what you query by — and it is the only answer a one-case preposition has.
+
+**A verb's NULL is the `usage` kind of NULL, not the `declension` kind.** It marks the exception. Most senses take no marked case — an ordinary accusative object, or none — so NULL is the usual answer and means "nothing to mark", the way an empty usage label does. Requiring an answer would need a `none` value on every sense of every verb. The price is stated rather than hidden: **`check-governs.ts` cannot catch a verb that should have been marked with a dative and was not.** That is the editor's, like a forgotten usage label.
+
+Verbs get no entry-level column. The case belongs to a meaning (_pāreō_), "every verb taking the dative" is an `EXISTS` over senses, and an entry copy would be derivable with nothing to police it.
+
+Adjectives are asked what verbs are asked: _dignus_ "worthy of" + ablative, _similis_ + genitive or dative.
+
+### Words that are also adverbs
+
+_ante_, _post_, _circum_, _super_, _clam_, _contrā_ are prepositions and adverbs both. This dictionary files the preposition, and the adverbial use goes in `notes`. A preposition's senses are its prepositional meanings; that is what lets every one of _super_'s say which case it takes. _cum_ the conjunction is different: a true homograph, parked with the [`homonym` column](#unique-on-lemma).
+
+### What is deliberately not here
+
+Constructions that are not cases — `+ infinitive`, _ut_ + subjunctive, accusative and infinitive. They are prose, and stay in `notes` and examples.
+
 ## `senses`
 
 One row per genuinely distinct meaning, one-to-many from `entries`. Shipped in migrations `0001`–`0003`.
 
-| Column       | Required | Notes                                                           |
-| ------------ | -------- | --------------------------------------------------------------- |
-| `id`         | yes      | surrogate key                                                   |
-| `entry_id`   | yes      | FK → `entries.id`, `ON DELETE CASCADE`                          |
-| `rank`       | yes      | 1 is the core meaning; the rest follow in dictionary order      |
-| `meaning_en` | yes      | the comma-separated glosses of this _one_ sense                 |
-| `usage`      | no       | `medical`, `military`, `poetic`, … — a label on this sense only |
-| `example_la` | no       | a quotation showing the sense                                   |
-| `example_en` | no       | its translation                                                 |
+| Column       | Required | Notes                                                                                         |
+| ------------ | -------- | --------------------------------------------------------------------------------------------- |
+| `id`         | yes      | surrogate key                                                                                 |
+| `entry_id`   | yes      | FK → `entries.id`, `ON DELETE CASCADE`                                                        |
+| `rank`       | yes      | 1 is the core meaning; the rest follow in dictionary order                                    |
+| `meaning_en` | yes      | the comma-separated glosses of this _one_ sense                                               |
+| `usage`      | no       | `medical`, `military`, `poetic`, … — a label on this sense only                               |
+| `governs`    | no       | the case this sense takes — _noceō_ `dative`; see [`governs`](#governs-the-case-a-word-takes) |
+| `example_la` | no       | a quotation showing the sense                                                                 |
+| `example_en` | no       | its translation                                                                               |
 
 Unique on **(`entry_id`, `rank`)**: one word cannot have two sense number 2s. That single index is both the curation guard and what makes sense-seeding re-runnable.
 
@@ -250,9 +306,9 @@ Inflected forms are not rows. When they arrive, they hang off a lemma — they d
 The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
 1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool. With senses in place, adding a second meaning means editing a seed file and re-running it, which is friction that will quietly stop words getting added at all.
-2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: three of the four read the database, so anything running `npm run check` has to migrate and seed before it can open the gate.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: four of the five read the database, so anything running `npm run check` has to migrate and seed before it can open the gate.
 
-Parked: the `homonym` column (above), synonym cross-references between entries, proper treatment of prepositions and the case they govern (_in_ + abl, _ad_ + acc — currently not seeded), spaced-repetition quiz mode as a separate private layer.
+Parked: the `homonym` column (above), synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
 ## Operations
 
@@ -260,7 +316,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 
 ### The check chain
 
-`npm run check` is the gate. It runs the four guards, then Biome:
+`npm run check` is the gate. It runs the five guards, then Biome:
 
 | Guard                 | Alone                      | What it holds                                                                                                                    |
 | --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -268,12 +324,14 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 | `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)                                              |
 | `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                                                              |
 | `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
+| `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
 
 Each names the rows it objects to, and exits non-zero:
 
 ```sh
 soror (noun): declension is NULL — this word inflects, so say how (1 | 2 | 3 | 4 | 5 | 1-2 | indeclinable)
 uxor (noun): conjugation is "2" — this part of speech does not conjugate, so it must be NULL
+in (preposition): governs the accusative, but no sense takes it
 māter: ranks are [1, 3, 4, 5, 6] — must run 1..5 with no gaps
 deus: no senses — a word with no meaning is not an entry
 ```
