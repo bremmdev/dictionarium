@@ -37,7 +37,7 @@ export const Route = createFileRoute("/word-list")({
 			{
 				name: "description",
 				content:
-					"Build a list of Latin words by part of speech, declension, conjugation and starting letter.",
+					"Build a list of Latin words by part of speech, declension, conjugation, case and starting letter.",
 			},
 		],
 	}),
@@ -77,8 +77,8 @@ function WordListBanner() {
 					</div>
 					<p className="mx-auto mt-6 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
 						Build your own word list. Pick a part of speech, narrow it to a
-						declension or conjugation, and choose the letters the words start
-						with.
+						declension, a conjugation or the case a preposition takes, and
+						choose the letters the words start with.
 					</p>
 				</>
 			}

@@ -3,9 +3,15 @@
  * validateSearch, the listEntries RPC's validator and the form all read the
  * same rules, so a filter the form offers is one the server accepts.
  */
+import { formatCases, readCases } from "#/utils/entries/rules";
 
 /** The parts of speech the list offers. No `pos` at all means every word. */
-export const WORD_LIST_PARTS_OF_SPEECH = ["noun", "adjective", "verb"] as const;
+export const WORD_LIST_PARTS_OF_SPEECH = [
+	"noun",
+	"adjective",
+	"verb",
+	"preposition",
+] as const;
 
 export type WordListPartOfSpeech = (typeof WORD_LIST_PARTS_OF_SPEECH)[number];
 
@@ -57,6 +63,40 @@ export function findDeclension(
 export function findConjugation(param: unknown): Option | undefined {
 	const options: ReadonlyArray<Option> = CONJUGATION_OPTIONS;
 	return options.find((o) => o.param === param);
+}
+
+/**
+ * The cases a preposition can be listed under. Three of the four in
+ * GOVERNED_CASES: no classical preposition takes the dative, so offering it
+ * would only ever produce an empty list — the reason nouns are not offered
+ * `1-2`. No param/value split either: a case name is not JSON, so the router
+ * leaves it as the string it is and the URL stays readable.
+ */
+export const WORD_LIST_CASES = ["genitive", "accusative", "ablative"] as const;
+
+export type WordListCase = (typeof WORD_LIST_CASES)[number];
+
+/**
+ * The cases in a `cases` filter, in grammar order. Several mean any of them:
+ * `accusative,ablative` lists every preposition that takes either, and in —
+ * which takes both — is on the list under each one alone as well.
+ */
+export function selectedCases(cases: unknown): Array<WordListCase> {
+	if (typeof cases !== "string") return [];
+	return readCases(cases).cases.filter((c): c is WordListCase =>
+		(WORD_LIST_CASES as ReadonlyArray<string>).includes(c),
+	);
+}
+
+/**
+ * Reads the case filter into its one spelling — "accusative,ablative", the
+ * way entries.governs spells it — or undefined when no usable case is left. A
+ * case the list does not offer is dropped rather than rejected, like every
+ * other filter here.
+ */
+function parseCases(cases: unknown) {
+	const selected = selectedCases(cases);
+	return selected.length > 0 ? formatCases(selected) : undefined;
 }
 
 /** A list is for reading, not for paging through — past this it gets cut off. */
@@ -122,6 +162,8 @@ export type WordListSearch = {
 	pos?: WordListPartOfSpeech;
 	decl?: string;
 	conj?: string;
+	/** Prepositions only: the cases to list them under, comma-joined — see selectedCases. */
+	cases?: string;
 	letters?: string;
 };
 
@@ -134,7 +176,8 @@ function isPartOfSpeech(value: unknown): value is WordListPartOfSpeech {
  * out rather than filled in, so a bare /word-list stays bare — the router would
  * otherwise redirect every visitor to a URL full of empty params. Anything that
  * does not fit is dropped rather than rejected: a declension only survives
- * beside a part of speech that has it, and a letters filter only if it parses.
+ * beside a part of speech that has it, a case only beside a preposition, and a
+ * letters filter only if it parses.
  *
  * Every key is always present, dropped ones as undefined. The router spreads
  * the result over the raw params, so a key simply left out would let the raw,
@@ -154,6 +197,7 @@ export function parseWordListSearch(search: unknown): WordListSearch {
 		pos,
 		decl: findDeclension(pos, raw.decl)?.param,
 		conj: pos === "verb" ? findConjugation(raw.conj)?.param : undefined,
+		cases: pos === "preposition" ? parseCases(raw.cases) : undefined,
 		letters: letters && parseLetters(letters).ok ? letters : undefined,
 	};
 }

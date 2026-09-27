@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 
 import { db } from "#/db";
 import { type EntryWithSenses, entries } from "#/db/schema";
@@ -9,6 +9,7 @@ import {
 	MAX_LIST_RESULTS,
 	parseLetters,
 	parseWordListSearch,
+	selectedCases,
 } from "#/utils/wordlist/rules";
 
 export type WordList = {
@@ -29,6 +30,24 @@ export const listEntries = createServerFn({ method: "GET" })
 		const conjugation = findConjugation(data.conj);
 		if (conjugation) {
 			conditions.push(eq(entries.conjugation, conjugation.value));
+		}
+
+		// A preposition is listed under every case it takes, and several cases
+		// mean any of them — so in, "accusative,ablative", is found by either.
+		// governs is one canonical comma-joined list, which makes a case a whole
+		// comma-delimited token in it: padding both ends with commas turns that
+		// into one LIKE per case, anchored so no case can match inside another.
+		// The cases come from the validator's vocabulary, never from the URL as
+		// typed, so nothing but a case name reaches the pattern.
+		const cases = selectedCases(data.cases);
+		if (cases.length > 0) {
+			conditions.push(
+				or(
+					...cases.map(
+						(c) => sql`(',' || ${entries.governs} || ',') like ${`%,${c},%`}`,
+					),
+				),
+			);
 		}
 
 		if (data.letters) {

@@ -7,6 +7,7 @@ import {
 import { ScrollText } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { Heading } from "#/components/Heading";
+import { formatCases } from "#/utils/entries/rules";
 import {
 	CONJUGATION_OPTIONS,
 	DECLENSION_OPTIONS,
@@ -14,6 +15,8 @@ import {
 	findDeclension,
 	MAX_LIST_RESULTS,
 	parseLetters,
+	selectedCases,
+	WORD_LIST_CASES,
 	type WordListPartOfSpeech,
 	type WordListSearch,
 } from "#/utils/wordlist/rules";
@@ -36,6 +39,7 @@ const POS_OPTIONS = [
 	{ value: "noun", label: "Nouns" },
 	{ value: "adjective", label: "Adjectives" },
 	{ value: "verb", label: "Verbs" },
+	{ value: "preposition", label: "Prepositions" },
 ] as const;
 
 const ANY = { value: "", label: "Any" };
@@ -50,14 +54,24 @@ const CONJUGATION_CHIPS = toChips(CONJUGATION_OPTIONS);
 
 type Pos = (typeof POS_OPTIONS)[number]["value"];
 
-/** The form's own copy of the filters: every field present, "" for "any". */
-type Draft = { pos: Pos; decl: string; conj: string; letters: string };
+/**
+ * The form's own copy of the filters: every field present, "" for "any".
+ * `cases` is the comma-joined set the URL carries, so "" is every case.
+ */
+type Draft = {
+	pos: Pos;
+	decl: string;
+	conj: string;
+	cases: string;
+	letters: string;
+};
 
 function draftFrom(search: WordListSearch): Draft {
 	return {
 		pos: search.pos ?? "all",
 		decl: search.decl ?? "",
 		conj: search.conj ?? "",
+		cases: search.cases ?? "",
 		letters: search.letters ?? "",
 	};
 }
@@ -67,10 +81,11 @@ function searchFrom(draft: Draft): WordListSearch {
 	const letters = draft.letters.trim();
 	return {
 		...(draft.pos !== "all" && { pos: draft.pos }),
-		...(draft.pos !== "all" &&
-			draft.pos !== "verb" &&
+		...((draft.pos === "noun" || draft.pos === "adjective") &&
 			draft.decl !== "" && { decl: draft.decl }),
 		...(draft.pos === "verb" && draft.conj !== "" && { conj: draft.conj }),
+		...(draft.pos === "preposition" &&
+			draft.cases !== "" && { cases: draft.cases }),
 		...(letters !== "" && { letters }),
 	};
 }
@@ -79,7 +94,16 @@ const POS_NOUNS: Record<WordListPartOfSpeech, [string, string]> = {
 	noun: ["noun", "nouns"],
 	adjective: ["adjective", "adjectives"],
 	verb: ["verb", "verbs"],
+	preposition: ["preposition", "prepositions"],
 };
+
+/** "the ablative", "the accusative or the ablative" — any of them, said so. */
+function eitherCase(cases: ReadonlyArray<string>) {
+	const named = cases.map((c) => `the ${c}`);
+	return named.length <= 1
+		? named.join("")
+		: `${named.slice(0, -1).join(", ")} or ${named.at(-1)}`;
+}
 
 /**
  * The list's summary in pieces, so the count can be set large and the rest
@@ -101,6 +125,10 @@ function describe(search: WordListSearch, count: number) {
 				? "that are irregular"
 				: `of the ${conjugation.label} conjugation`,
 		);
+	}
+	const cases = selectedCases(search.cases);
+	if (cases.length > 0) {
+		qualifiers.push(`taking ${eitherCase(cases)}`);
 	}
 	if (search.letters) {
 		qualifiers.push(`starting with ${search.letters}`);
@@ -227,6 +255,57 @@ function ChipGroup<T extends string>({
 	);
 }
 
+/**
+ * The case filter: checkboxes wearing the same pill, because it is the one
+ * filter that takes several answers at once. Its value is the comma-joined set
+ * in grammar order — the spelling entries.governs uses — so the draft and the
+ * URL never disagree about how to write "accusative and ablative".
+ */
+function CaseChipGroup({
+	legend,
+	hint,
+	name,
+	value,
+	onChange,
+}: {
+	legend: string;
+	hint: React.ReactNode;
+	name: string;
+	value: string;
+	onChange: (value: string) => void;
+}) {
+	const checked = new Set<string>(selectedCases(value));
+
+	const toggle = (option: string) => {
+		const next = new Set(checked);
+		if (next.has(option)) next.delete(option);
+		else next.add(option);
+		onChange(formatCases(next));
+	};
+
+	return (
+		<fieldset>
+			<legend className={LABEL}>{legend}</legend>
+			<p className="mt-1 text-ink-600 text-sm">{hint}</p>
+			<div className="mt-2 flex flex-wrap gap-2">
+				{WORD_LIST_CASES.map((option) => (
+					<label key={option} className={CHIP}>
+						<input
+							type="checkbox"
+							className="sr-only"
+							name={name}
+							value={option}
+							checked={checked.has(option)}
+							onChange={() => toggle(option)}
+						/>
+						{option}
+					</label>
+				))}
+			</div>
+		</fieldset>
+	);
+}
+
 export function WordListBuilder() {
 	const search = route.useSearch();
 	const navigate = useNavigate({ from: "/word-list" });
@@ -291,9 +370,9 @@ export function WordListBuilder() {
 					name="pos"
 					options={POS_OPTIONS}
 					value={draft.pos}
-					// A declension means nothing to a verb, so a new part of speech
-					// starts its own inflection filter afresh.
-					onChange={(pos) => update({ pos, decl: "", conj: "" })}
+					// A declension means nothing to a verb, nor a case to a noun, so a
+					// new part of speech starts its own filters afresh.
+					onChange={(pos) => update({ pos, decl: "", conj: "", cases: "" })}
 				/>
 
 				{(draft.pos === "noun" || draft.pos === "adjective") && (
@@ -313,6 +392,23 @@ export function WordListBuilder() {
 						options={CONJUGATION_CHIPS}
 						value={draft.conj}
 						onChange={(conj) => update({ conj })}
+					/>
+				)}
+
+				{draft.pos === "preposition" && (
+					<CaseChipGroup
+						legend="Case"
+						hint={
+							<>
+								Pick one or more: a preposition is listed if it takes any of
+								them, so <i lang="la">in</i>, which takes the accusative and the
+								ablative, is found under either. Leave all unpicked for every
+								case.
+							</>
+						}
+						name="cases"
+						value={draft.cases}
+						onChange={(cases) => update({ cases })}
 					/>
 				)}
 
