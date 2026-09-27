@@ -14,14 +14,17 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 		if (isLoggingOut) return;
 		setIsLoggingOut(true);
 
-		await logout();
-		// Leave any admin page before the guard notices the session is gone, then
-		// invalidate: the root loader is what this button reads, and it is cached
-		// until something tells the router the session changed.
-		await router.navigate({ to: "/", search: {} });
-		await router.invalidate();
-
-		setIsLoggingOut(false);
+		try {
+			await logout();
+			// Leave any admin page before the guard notices the session is gone, then
+			// invalidate: the root loader is what this button reads, and it is cached
+			// until something tells the router the session changed.
+			await router.navigate({ to: "/", search: {} });
+			await router.invalidate();
+		} finally {
+			// A failed logout must leave the button pressable, not spinning for good.
+			setIsLoggingOut(false);
+		}
 	};
 
 	return (

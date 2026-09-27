@@ -83,7 +83,10 @@ export function PrincipalPartList({
 		>
 			{parts.map((part, i) => (
 				<li
-					key={part}
+					// Position, not the form: two slots can print the same word, and the
+					// list is rebuilt whole from one string, never reordered.
+					// biome-ignore lint/suspicious/noArrayIndexKey: see above
+					key={i}
 					className={`rounded-lg border border-parchment-200 ${
 						compact ? "bg-parchment-50 px-3 py-2" : "bg-parchment-100 px-4 py-3"
 					}`}

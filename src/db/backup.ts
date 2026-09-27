@@ -35,6 +35,12 @@ const suffix = ".db";
 // older copy from the retention window.
 const minDelayMs = 60_000;
 
+// setTimeout keeps its delay in a signed 32-bit integer, and Node turns anything
+// longer — about 24.8 days, so DB_BACKUP_INTERVAL_HOURS above 596 — into 1ms with
+// a warning. The schedule would then back up as fast as it could reschedule. A
+// longer wait is walked in steps of this size instead.
+const maxTimerMs = 2 ** 31 - 1;
+
 /** Exported so the retention schedule reads its interval the same way this one does. */
 export function envNumber(name: string, fallback: number): number {
 	const raw = process.env[name];
@@ -167,20 +173,29 @@ export function scheduleBackups(client: Database.Database): void {
 		// is held open by its own listener, so the schedule costs nothing here — and a
 		// pending backup cannot hold the process open during a shutdown that is waiting
 		// for the event loop to empty.
-		setTimeout(() => {
-			try {
-				const file = createBackup(client);
-				const pruned = pruneBackups();
-				console.log(
-					`SQLite: backed up to ${file}${pruned.length ? `, pruned ${pruned.length} older` : ""}.`,
-				);
-			} catch (err) {
-				// A failed backup is not a reason to take the site down, but it has to be
-				// loud — a silent one leaves you believing in copies that do not exist.
-				console.error("SQLite: backup failed.", err);
-			}
-			tick();
-		}, delay).unref();
+		setTimeout(
+			() => {
+				// Not due yet: this was one step of a wait longer than a timer can hold.
+				if (delay > maxTimerMs) {
+					tick();
+					return;
+				}
+
+				try {
+					const file = createBackup(client);
+					const pruned = pruneBackups();
+					console.log(
+						`SQLite: backed up to ${file}${pruned.length ? `, pruned ${pruned.length} older` : ""}.`,
+					);
+				} catch (err) {
+					// A failed backup is not a reason to take the site down, but it has to be
+					// loud — a silent one leaves you believing in copies that do not exist.
+					console.error("SQLite: backup failed.", err);
+				}
+				tick();
+			},
+			Math.min(delay, maxTimerMs),
+		).unref();
 	};
 
 	tick();

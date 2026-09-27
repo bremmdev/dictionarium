@@ -1,5 +1,5 @@
 import type { EntryWithSenses } from "#/db/schema";
-import { MIN_QUERY_LENGTH } from "#/utils/search/rules";
+import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
@@ -12,7 +12,11 @@ type ResultsProps = {
 
 export function Results({ results, total, isFetching, query }: ResultsProps) {
 	const trimmed = query.trim();
-	const isTooShort = trimmed.length > 0 && trimmed.length < MIN_QUERY_LENGTH;
+	// Measured the way searchEntries measures it — on the key, not the typing —
+	// so "a." or "ā!" is too short here exactly when the server skipped it,
+	// rather than reading as a search that ran and found nothing.
+	const isTooShort =
+		trimmed.length > 0 && normalizeLemma(trimmed).length < MIN_QUERY_LENGTH;
 
 	// Announce the outcome, never the in-between. Firing on every keystroke of a
 	// pending search would just talk over the user.
