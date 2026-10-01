@@ -22,7 +22,7 @@ On the row:
 - **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for an adjective means only the indeclinable ones.
 - The lemma repeats inside the string wherever a dictionary prints it there. A verb's first principal part is its lemma and always was; an adjective's masculine is the same, and _bonus, bona, bonum_ is the line a reader expects. A noun is the exception, because _puella, puellae_ is filed as a nominative and a genitive rather than as one run-on line.
 - **gender** is its own column on nouns (`m` / `f` / `n`), not buried in the principal-parts string.
-- **governs** is its own column on prepositions, and on senses — see [`governs`](#governs-the-case-a-word-takes).
+- **governs** is its own column on prepositions, and on senses — see `[governs](#governs-the-case-a-word-takes)`.
 
 ## Store what you query by
 
@@ -108,11 +108,11 @@ So the fix is a **value, not a column**. No `indeclinable` boolean sitting besid
 
 Not every value answers for every part of speech. `DECLENSIONS_BY_PART_OF_SPEECH` in `src/utils/entries/rules.ts` narrows the list, and the form's chips, `parseEntryDraft`, the Wiktionary fill and `check-inflection.ts` all read it:
 
-| Part of speech | Files under                        |
-| -------------- | ---------------------------------- |
-| `noun`         | `1` … `5`, `indeclinable`          |
-| `adjective`    | `1-2`, `3`, `indeclinable`         |
-| `numeral`      | `1-2`, `3`, `indeclinable`         |
+| Part of speech | Files under                          |
+| -------------- | ------------------------------------ |
+| `noun`         | `1` … `5`, `indeclinable`            |
+| `adjective`    | `1-2`, `3`, `indeclinable`           |
+| `numeral`      | `1-2`, `3`, `indeclinable`           |
 | `pronoun`      | any — no value fits their system yet |
 
 A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns keep the whole list until the column grows a value for the pronominal declension (see below); narrowing them now would be guessing.
@@ -283,7 +283,7 @@ One row per genuinely distinct meaning, one-to-many from `entries`. Shipped in m
 | `rank`       | yes      | 1 is the core meaning; the rest follow in dictionary order                                    |
 | `meaning_en` | yes      | the comma-separated glosses of this _one_ sense                                               |
 | `usage`      | no       | `medical`, `military`, `poetic`, … — a label on this sense only                               |
-| `governs`    | no       | the case this sense takes — _noceō_ `dative`; see [`governs`](#governs-the-case-a-word-takes) |
+| `governs`    | no       | the case this sense takes — _noceō_ `dative`; see `[governs](#governs-the-case-a-word-takes)` |
 | `example_la` | no       | a quotation showing the sense                                                                 |
 | `example_en` | no       | its translation                                                                               |
 
@@ -309,6 +309,26 @@ The cascade only fires when `PRAGMA foreign_keys` is on, which is per-connection
 ### Reading it back is one query, not eleven
 
 `with: { senses: … }` compiles to a correlated subquery that SQLite aggregates into JSON before it reaches Node — not a join, not an N+1. The shape matters: a join returns one row per _sense_, so `limit 10` would cut a word in half and ten result rows could be four words. The subquery keeps one row per entry, which is what `MAX_RESULTS` was always counting.
+
+## `proverbs`
+
+A table of their own because a proverb is a sentence, not a word: it has no part of speech, no filing and no rank.
+
+| Column           | Required | Notes                                                                          |
+| ---------------- | -------- | ------------------------------------------------------------------------------ |
+| `id`             | yes      | surrogate key                                                                  |
+| `text_la`        | yes      | display text, macrons kept; **unique**                                         |
+| `text_plain`     | yes      | `normalizeLemma(text_la)`, the search key; same rule as `lemma_plain`          |
+| `translation_en` | yes      | what it says: "Make haste slowly."                                             |
+| `meaning_en`     | no       | what it means, when that differs: "More haste, less speed."                    |
+| `author`         | yes      | "Horace", or `anonymous` for a saying with no author to name                   |
+| `source`         | no       | the locus: "Odes 1.11.8"                                                       |
+| `notes`          | no       | free text                                                                      |
+| `created_at`     | yes      | unix seconds via `nowSeconds`; NOT NULL because no proverb predates the column |
+
+**`anonymous` is a value, not a NULL**, for the reason `[indeclinable](#the-inflection-vocabulary)` is one. An empty `author` could mean "proverbial, nobody to name" or "nobody looked it up". So the column is NOT NULL, and "no author" is answered with `ANONYMOUS` from `src/utils/proverbs/rules.ts`. Anything listing or grouping authors filters that value out.
+
+No link to `entries` yet. Showing "proverbs using this word" on a word's page would take a join table filled in by hand. _iacta_ files under _iaciō_, and no string match finds that.
 
 ## Later
 

@@ -80,6 +80,25 @@ export type Sense = typeof senses.$inferSelect;
 /** An entry with its senses attached, in rank order — what the detail page reads. */
 export type EntryWithSenses = Entry & { senses: Array<Sense> };
 
+export const proverbs = sqliteTable("proverbs", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	// display form, with macrons; unique so one proverb is filed once
+	textLa: text("text_la").notNull().unique(),
+	textPlain: text("text_plain").notNull(),
+	// literal translation
+	translationEn: text("translation_en").notNull(),
+	// what it is used to mean. NULL when the translation already is the meaning 
+	meaningEn: text("meaning_en"),
+	// not NULL. Use "ANONYMOUS" for a saying with no known author.
+	author: text("author").notNull(),
+	// Where it is found: "Odes 1.11.8".
+	source: text("source"),
+	notes: text("notes"),
+	createdAt: integer("created_at").notNull().$defaultFn(nowSeconds),
+});
+
+export type Proverb = typeof proverbs.$inferSelect;
+
 /**
  * Analytics: two event logs, one row per thing that happened.
  *

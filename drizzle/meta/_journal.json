@@ -57,6 +57,13 @@
       "when": 1790513984435,
       "tag": "0007_add_governs",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790865064415,
+      "tag": "0008_add_proverbs",
+      "breakpoints": true
     }
   ]
 }
