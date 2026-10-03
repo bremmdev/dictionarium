@@ -4,6 +4,8 @@ There are two ways a word gets into the dictionary — `/admin` in a browser, `s
 
 Correcting a word already on file is the same desk, not a second one: `/admin?lemma=soror` is the form with that row read back into it.
 
+Proverbs have a desk of their own beside it — see [The proverb desk](#the-proverb-desk).
+
 Two consequences worth naming up front:
 
 - **Nothing in the form decides what is valid.** `parseEntryDraft` does, and the form calls it for the messages only.
@@ -11,7 +13,12 @@ Two consequences worth naming up front:
 
 | File                                  | Responsibility                                                                     |
 | ------------------------------------- | ---------------------------------------------------------------------------------- |
-| `src/routes/admin.tsx`                | The one guarded page — see [auth.md](./auth.md). A heading and the form. `?lemma=` says which word. |
+| `src/routes/admin.tsx`                | The one guarded page — see [auth.md](./auth.md). The desk switcher and both desks. `?lemma=` says which word, `?desk=proverbs` which desk. |
+| `src/components/admin/Fields.tsx`     | The inputs, chips and messages both desks are built from.                          |
+| `src/components/admin/ProverbForm.tsx`| The proverb desk: add/edit switch, picker, fields.                                 |
+| `src/utils/proverbs/form.ts`          | `proverbFormReducer` — the proverb desk's transitions.                             |
+| `src/utils/proverbs/rules.ts`         | `parseProverbDraft` and `ANONYMOUS`.                                               |
+| `src/server/proverbs.ts`              | `getProverbs`, which lists; `createProverb` and `updateProverb`, which write.      |
 | `src/components/admin/EntryForm.tsx`  | Fields, focus, and the live region. Dispatches; decides nothing.                   |
 | `src/utils/entries/form.ts`           | `formReducer` — every transition the draft makes, as a pure function.              |
 | `src/utils/entries/rules.ts`          | `parseEntryDraft` and the inflection vocabulary — see [schema.md](./schema.md).    |
@@ -205,9 +212,26 @@ A fill with no warnings still writes one sr-only line into the live region. The 
 
 Adding a sense leaves the caret in the new row's meaning. Removing one hands focus to **Add sense**, because the row it was in is about to unmount. The Latin button labels each carry an English gloss — see [a11y.md](./a11y.md#english-glosses-on-the-latin-buttons).
 
+## The proverb desk
+
+A switcher at the top of `/admin` moves between **Verba** and **Proverbia**. Words is the default and is never written into the URL; `?desk=proverbs` is the other desk, set *beside* `?lemma` rather than instead of it. Both desks stay mounted and only the inactive one is hidden, so a half-filed word is still there after a look at the proverbs, and the other way round. The loader reads both desks' data whatever is showing (`loaderDeps` is the lemma only), so switching never loads.
+
+A proverb has no page to start an edit from, so the desk has its own **add / edit** switch and, in edit, a picker listing every proverb on file. The flow is the editor's choice, held in `proverbFormReducer`'s `mode`, and **a save keeps it**:
+
+```
+add    Adde      → Additum.     the form empties, still in add; focus in the Latin
+edit   pick → Ēmenda → Ēmendātum.  the form empties, still in edit; focus on the picker
+```
+
+Switching between add and edit empties the draft: carried into an add, a corrected proverb would be filed a second time as a new one.
+
+`parseProverbDraft` is the gate, called by the form for the messages and by `createProverb` / `updateProverb` as `.validator`, the same split as entries. It derives `text_plain`, holds the Latin to the lemma's script rule, files a typed "Anonymous" as `ANONYMOUS`, and stores `meaning_en` as NULL when it only repeats the translation. **anonymous** is a chip, not a word to type: ticking it removes the author field and empties it, so no name that nobody can see is ever on its way to the database.
+
+The duplicate check runs on **`text_plain`**, not on `text_la`: *Veni, vidi, vici* is *Vēnī, vīdī, vīcī* typed in a hurry, and the UNIQUE on `text_la` would let it through.
+
 ## Later
 
-Deleting an entry is not built, and neither is reordering senses by anything other than retyping them.
+Deleting an entry or a proverb is not built, and neither is reordering senses by anything other than retyping them.
 
 ## Gotchas
 

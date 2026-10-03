@@ -369,7 +369,7 @@ const SUSPECT = [
  * what this can still find is a mark with no precomposed form, and those are
  * exactly the ones worth refusing.
  */
-function suspectCharacter(value: string) {
+export function suspectCharacter(value: string) {
 	for (const char of value) {
 		const code = char.codePointAt(0) as number;
 		const suspect = SUSPECT.find((s) => code >= s.from && code <= s.to);
@@ -408,7 +408,7 @@ function text(value: unknown) {
 }
 
 /** Latin is stored precomposed, so normalize before anything else looks at it. */
-function latin(value: unknown) {
+export function latin(value: unknown) {
 	return text(value).normalize("NFC");
 }
 

@@ -1,0 +1,394 @@
+{
+	"source": "Total War: ROME REMASTERED, data/text/quotes.txt",
+	"count": 16,
+	"proverbs": [
+		{
+			"textLa": "Vēnī, vīdī, vīcī",
+			"textPlain": "veni vidi vici",
+			"translationEn": "I came, I saw, I conquered",
+			"meaningEn": null,
+			"author": "Gaius Julius Caesar",
+			"source": "Suetonius, Divus Iulius 37",
+			"notes": "Caesar's words, carried on a placard in his Pontic triumph.",
+			"game": {
+				"key": "{quote_80}",
+				"latin": "Veni, vidi, vici",
+				"translation": "I came, I saw, I conquered",
+				"attribution": "Gaius Julius Caesar"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/suetonius/suet.caesar.html",
+					"https://www.perseus.tufts.edu/hopper/text?doc=Suet.+Jul.+37",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Silent enim lēgēs inter arma",
+			"textPlain": "silent enim leges inter arma",
+			"translationEn": "Laws are silent in times of war",
+			"meaningEn": null,
+			"author": "Cicero",
+			"source": "Pro Milone 11",
+			"notes": null,
+			"game": {
+				"key": "{quote_83}",
+				"latin": "Silent enim leges inter arma",
+				"translation": "Laws are silent in times of war",
+				"attribution": "Cicero"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/cicero/milo.shtml",
+					"https://www.perseus.tufts.edu/hopper/text?doc=Cic.+Mil.+11",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Bella dētestāta mātribus",
+			"textPlain": "bella detestata matribus",
+			"translationEn": "Wars are the dread of mothers",
+			"meaningEn": null,
+			"author": "Horace",
+			"source": "Odes 1.1.24–25",
+			"notes": "Game has 'detesta', which is not a Latin word. Horace's line is 'bellaque matribus detestata'; the game's word order is kept.",
+			"game": {
+				"key": "{quote_96}",
+				"latin": "Bella detesta matribus",
+				"translation": "Wars are the dread of mothers",
+				"attribution": "Horace"
+			},
+			"verification": {
+				"status": "corrected",
+				"checks": [
+					"https://www.thelatinlibrary.com/horace/carm1.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Odes 1.1.24–25 reads 'bellaque matribus / detestata'.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Bella, horrida bella",
+			"textPlain": "bella horrida bella",
+			"translationEn": "Wars, horrid wars!",
+			"meaningEn": null,
+			"author": "Virgil",
+			"source": "Aeneid 6.86",
+			"notes": "Game misspells 'horrida' as 'horida'.",
+			"game": {
+				"key": "{quote_99}",
+				"latin": "Bella, horida bella",
+				"translation": "Wars, horrid wars!",
+				"attribution": "Virgil"
+			},
+			"verification": {
+				"status": "corrected",
+				"checks": [
+					"https://www.thelatinlibrary.com/vergil/aen6.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Aeneid 6.86 reads 'bella, horrida bella'.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Dulce et decōrum est prō patriā morī",
+			"textPlain": "dulce et decorum est pro patria mori",
+			"translationEn": "It is a sweet and seemly thing to die for one's country",
+			"meaningEn": null,
+			"author": "Horace",
+			"source": "Odes 3.2.13",
+			"notes": null,
+			"game": {
+				"key": "{quote_118}",
+				"latin": "Dulce et decorum est pro patria mori",
+				"translation": "It is a sweet and seemly thing to die for one's country",
+				"attribution": "Horace"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/horace/carm3.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Quī dēsīderat pācem praeparet bellum",
+			"textPlain": "qui desiderat pacem praeparet bellum",
+			"translationEn": "Let him who desires peace prepare for war",
+			"meaningEn": null,
+			"author": "Vegetius",
+			"source": "Epitoma rei militaris 3, praefatio",
+			"notes": "Usually quoted as 'Si vis pacem, para bellum', which is a later paraphrase of this line.",
+			"game": {
+				"key": "{quote_121}",
+				"latin": "Qui desiderat pacem praeparet bellum",
+				"translation": "Let him who desires peace prepare for war",
+				"attribution": "Vegetius"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/vegetius3.html",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)",
+					"https://en.wiktionary.org/wiki/qui"
+				],
+				"found": "Book 3 preface: 'Igitur qui desiderat pacem, praeparet bellum'.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Quae caret ōra cruōre nostrō?",
+			"textPlain": "quae caret ora cruore nostro",
+			"translationEn": "What coast knows not our blood?",
+			"meaningEn": null,
+			"author": "Horace",
+			"source": "Odes 2.1.36",
+			"notes": "The Latin Library's line marker says 35, but it is misplaced; the line is 36.",
+			"game": {
+				"key": "{quote_132}",
+				"latin": "Quae caret ora cruore nostro?",
+				"translation": "What coast knows not our blood?",
+				"attribution": "Horace"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/horace/carm2.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Line 36 by count and by stanza (four-line stanzas; 33–36 is the ninth). The Latin Library's own '35' marker on that line is misplaced.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Fortēs fortūna adiuvat",
+			"textPlain": "fortes fortuna adiuvat",
+			"translationEn": "Fortune favours the brave",
+			"meaningEn": null,
+			"author": "Terence",
+			"source": "Phormio 203",
+			"notes": "Terence's text has 'fortis', the old accusative plural form of fortēs.",
+			"game": {
+				"key": "{quote_141}",
+				"latin": "Fortes fortuna adiuvat",
+				"translation": "Fortune favours the brave",
+				"attribution": "Terence"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/ter.phormio.html",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Terence writes 'fortis fortuna adiuvat', with the old accusative plural fortīs; fortēs is the standard form.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Fortis cadere, cēdere nōn potest",
+			"textPlain": "fortis cadere cedere non potest",
+			"translationEn": "A brave man may fall, but he cannot yield",
+			"meaningEn": null,
+			"author": "anonymous",
+			"source": null,
+			"notes": "No ancient source found. Known as the motto of the Moore family, Earls of Drogheda.",
+			"game": {
+				"key": "{quote_148}",
+				"latin": "Fortis cadere, cedere non potest",
+				"translation": "A brave man may fall, but he cannot yield",
+				"attribution": "Latin proverb"
+			},
+			"verification": {
+				"status": "unresolved",
+				"checks": [
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)",
+					"https://en.wikipedia.org/wiki/Earl_of_Drogheda (search result only, not opened)"
+				],
+				"found": "No ancient or Erasmus source found. Its documented use is as a motto of the Moore family, Earls of Drogheda.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Alta sedent cīvīlis vulnera dextrae",
+			"textPlain": "alta sedent civilis vulnera dextrae",
+			"translationEn": "Deep are the wounds that civil strife inflicts",
+			"meaningEn": null,
+			"author": "Lucan",
+			"source": "De bello civili 1.32",
+			"notes": null,
+			"game": {
+				"key": "{quote_157}",
+				"latin": "Alta sedent civilis vulnera dextrae",
+				"translation": "Deep are the wounds that civil strife inflicts",
+				"attribution": "Lucan"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/lucan/lucan1.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "That edition spells it 'uolnera'; vulnera is the standard spelling.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Fās est et ab hoste docērī",
+			"textPlain": "fas est et ab hoste doceri",
+			"translationEn": "It is right to learn, even from the enemy",
+			"meaningEn": null,
+			"author": "Ovid",
+			"source": "Metamorphoses 4.428",
+			"notes": null,
+			"game": {
+				"key": "{quote_162}",
+				"latin": "Fas est et ab hoste doceri",
+				"translation": "It is right to learn, even from the enemy",
+				"attribution": "Ovid"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/ovid/ovid.met4.shtml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)",
+					"https://en.wiktionary.org/wiki/fas"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Victī vīcimus",
+			"textPlain": "victi vicimus",
+			"translationEn": "Conquered, we have conquered.",
+			"meaningEn": null,
+			"author": "Plautus",
+			"source": "Casina 510",
+			"notes": "Game has 'vincimus' (present) and translates 'Conquered, we conquer'. Plautus wrote the perfect 'vicimus'; the translation follows the corrected Latin.",
+			"game": {
+				"key": "{quote_171}",
+				"latin": "Victi vincimus",
+				"translation": "Conquered, we conquer",
+				"attribution": "Plautus"
+			},
+			"verification": {
+				"status": "corrected",
+				"checks": [
+					"https://www.thelatinlibrary.com/plautus/cas.shtml",
+					"https://github.com/PerseusDL/canonical-latinLit/blob/master/data/phi0119/phi006/phi0119.phi006.perseus-lat2.xml",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Casina 510, Chalinus: 'nostro omine it dies; iam victi vicimus'. Both editions have the perfect vīcimus, not vincimus.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Flet victus, victor interiit",
+			"textPlain": "flet victus victor interiit",
+			"translationEn": "The conquered mourns, the conqueror is undone",
+			"meaningEn": null,
+			"author": "anonymous",
+			"source": "Erasmus, Adagia II.vi.24 (1524)",
+			"notes": "Erasmus's Latin for a Greek Sibylline oracle about the battle of Chaeronea, quoted by Plutarch, Demosthenes 19.1: 'Tears are for the conquered there, and for the conqueror, death.' Philip, the victor, was assassinated two years later.",
+			"game": {
+				"key": "{quote_174}",
+				"latin": "Flet victus, victor interiit",
+				"translation": "The conquered mourns, the conqueror is undone",
+				"attribution": "Latin proverb"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Plutarch/Lives/Demosthenes*.html",
+					"http://ihrim.huma-num.fr/nmh/Erasmus/Proverbia/Adagium_1524.html (site unreachable; adage number from its page title)",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Timidī māter nōn flet",
+			"textPlain": "timidi mater non flet",
+			"translationEn": "A coward's mother does not weep",
+			"meaningEn": "Caution keeps a soldier alive: in war nothing should be underestimated.",
+			"author": "anonymous",
+			"source": "Cornelius Nepos, Thrasybulus 2.3",
+			"notes": "Nepos quotes it as a common saying, in indirect speech: 'neque sine causa dici matrem timidi flere non solere'. There timidus means 'cautious', not 'cowardly'. Erasmus, Adagia IV.vi.12 (3512), gives the form used here.",
+			"game": {
+				"key": "{quote_179}",
+				"latin": "Timidi mater non flet",
+				"translation": "A coward's mother does not weep",
+				"attribution": "Latin proverb"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/nepos/nepos.thras.shtml",
+					"http://ihrim.huma-num.fr/nmh/Erasmus/Proverbia/Adagium_3512.html (site unreachable; adage number from its page title)",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Ālea iacta est",
+			"textPlain": "alea iacta est",
+			"translationEn": "The die is cast",
+			"meaningEn": "The decision is made and cannot be undone.",
+			"author": "Gaius Julius Caesar",
+			"source": "Suetonius, Divus Iulius 32",
+			"notes": "Suetonius has the word order 'iacta alea est'. Perseus numbers the chapter 32; the Latin Library labels it [31].",
+			"game": {
+				"key": "{quote_192}",
+				"latin": "Alea iacta est",
+				"translation": "The die is cast",
+				"attribution": "Gaius Julius Caesar"
+			},
+			"verification": {
+				"status": "verified",
+				"checks": [
+					"https://www.thelatinlibrary.com/suetonius/suet.caesar.html",
+					"https://www.perseus.tufts.edu/hopper/text?doc=Suet.+Jul.+32",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Perseus numbers it chapter 32; the Latin Library labels the same passage [31].",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		},
+		{
+			"textLa": "Vae victīs",
+			"textPlain": "vae victis",
+			"translationEn": "Woe to the vanquished",
+			"meaningEn": null,
+			"author": "Livy",
+			"source": "Ab urbe condita 5.48.9",
+			"notes": "Game has 'victus' (the conquered man, nominative), which is ungrammatical here. Livy's Brennus says 'vae victis' (dative plural), which is what the translation renders.",
+			"game": {
+				"key": "{quote_195}",
+				"latin": "Vae victus",
+				"translation": "Woe to the vanquished",
+				"attribution": "Livy"
+			},
+			"verification": {
+				"status": "corrected",
+				"checks": [
+					"https://www.thelatinlibrary.com/livy/liv.5.shtml",
+					"https://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.02.0160:book=5:chapter=48",
+					"Lewis & Short via https://github.com/PerseusDL/lexica (lat.ls.perseus-eng1.xml)"
+				],
+				"found": "Livy 5.48.9 (Conway & Walters): 'uox, uae uictis'.",
+				"macrons": "each stem checked against Lewis & Short; endings by standard grammar"
+			}
+		}
+	],
+	"verifiedOn": "2026-10-01"
+}

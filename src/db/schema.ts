@@ -89,7 +89,7 @@ export const proverbs = sqliteTable("proverbs", {
 	translationEn: text("translation_en").notNull(),
 	// what it is used to mean. NULL when the translation already is the meaning 
 	meaningEn: text("meaning_en"),
-	// not NULL. Use "ANONYMOUS" for a saying with no known author.
+	// not NULL. Use ANONYMOUS (src/utils/proverbs/rules.ts) for a saying with no known author.
 	author: text("author").notNull(),
 	// Where it is found: "Odes 1.11.8".
 	source: text("source"),
