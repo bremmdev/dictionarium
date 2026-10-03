@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DeclensionsRouteImport } from './routes/declensions'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
+import { Route as ProverbsRouteImport } from './routes/proverbs'
 import { Route as WordListRouteImport } from './routes/word-list'
 import { Route as AdminStatsRouteImport } from './routes/admin_.stats'
 import { Route as VerbumLemmaRouteImport } from './routes/verbum.$lemma'
@@ -43,6 +44,11 @@ const NumbersRoute = NumbersRouteImport.update({
   path: '/numbers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProverbsRoute = ProverbsRouteImport.update({
+  id: '/proverbs',
+  path: '/proverbs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WordListRoute = WordListRouteImport.update({
   id: '/word-list',
   path: '/word-list',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
+  '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/stats': typeof AdminStatsRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
+  '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/stats': typeof AdminStatsRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
+  '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin_/stats': typeof AdminStatsRoute
   '/verbum/$lemma': typeof VerbumLemmaRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/declensions'
     | '/login'
     | '/numbers'
+    | '/proverbs'
     | '/word-list'
     | '/admin/stats'
     | '/verbum/$lemma'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/declensions'
     | '/login'
     | '/numbers'
+    | '/proverbs'
     | '/word-list'
     | '/admin/stats'
     | '/verbum/$lemma'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/declensions'
     | '/login'
     | '/numbers'
+    | '/proverbs'
     | '/word-list'
     | '/admin_/stats'
     | '/verbum/$lemma'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DeclensionsRoute: typeof DeclensionsRoute
   LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
+  ProverbsRoute: typeof ProverbsRoute
   WordListRoute: typeof WordListRoute
   AdminStatsRoute: typeof AdminStatsRoute
   VerbumLemmaRoute: typeof VerbumLemmaRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NumbersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/proverbs': {
+      id: '/proverbs'
+      path: '/proverbs'
+      fullPath: '/proverbs'
+      preLoaderRoute: typeof ProverbsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/word-list': {
       id: '/word-list'
       path: '/word-list'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeclensionsRoute: DeclensionsRoute,
   LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
+  ProverbsRoute: ProverbsRoute,
   WordListRoute: WordListRoute,
   AdminStatsRoute: AdminStatsRoute,
   VerbumLemmaRoute: VerbumLemmaRoute,

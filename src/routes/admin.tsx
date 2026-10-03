@@ -102,7 +102,7 @@ function DeskSwitcher() {
 						className={LINK}
 						lang="la"
 					>
-						Proverbia
+						Prōverbia
 						<span className="sr-only" lang="en">
 							{" (proverbs)"}
 						</span>

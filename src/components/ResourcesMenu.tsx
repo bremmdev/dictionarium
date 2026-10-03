@@ -1,6 +1,6 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, Hash, ListFilter, Table2 } from "lucide-react";
+import { ChevronDown, Hash, ListFilter, Quote, Table2 } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const RESOURCES = [
@@ -21,6 +21,12 @@ const RESOURCES = [
 		label: "Word lists",
 		description: "Build your own list of words",
 		Icon: ListFilter,
+	},
+	{
+		to: "/proverbs",
+		label: "Proverbs",
+		description: "Sayings and their sources, by author",
+		Icon: Quote,
 	},
 ] as const;
 

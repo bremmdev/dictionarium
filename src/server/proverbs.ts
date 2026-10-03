@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 
 import { db } from "#/db";
 import { type Proverb, proverbs } from "#/db/schema";
 import { authMiddleware } from "#/server/auth";
-import { parseProverbDraft } from "#/utils/proverbs/rules";
+import { ANONYMOUS, parseProverbDraft } from "#/utils/proverbs/rules";
 
 /**
  * Every proverb on file, for the desk's edit picker. Whole rows, because picking
@@ -16,6 +16,22 @@ export const getProverbs = createServerFn({ method: "GET" })
 		async (): Promise<Array<Proverb>> =>
 			db.select().from(proverbs).orderBy(asc(proverbs.textPlain)),
 	);
+
+/**
+ * Every proverb, for the public /proverbs page: by author, A to Z, and by text
+ * within an author. ANONYMOUS goes last 
+ */
+export const listProverbs = createServerFn({ method: "GET" }).handler(
+	async (): Promise<Array<Proverb>> =>
+		db
+			.select()
+			.from(proverbs)
+			.orderBy(
+				sql`${proverbs.author} = ${ANONYMOUS}`,
+				sql`${proverbs.author} collate nocase`,
+				asc(proverbs.textPlain),
+			),
+);
 
 /** createEntry's counterpart. The validator is the gate here too. */
 export const createProverb = createServerFn({ method: "POST" })

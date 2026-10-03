@@ -326,7 +326,7 @@ A table of their own because a proverb is a sentence, not a word: it has no part
 | `notes`          | no       | free text                                                                      |
 | `created_at`     | yes      | unix seconds via `nowSeconds`; NOT NULL because no proverb predates the column |
 
-**`anonymous` is a value, not a NULL**, for the reason `[indeclinable](#the-inflection-vocabulary)` is one. An empty `author` could mean "proverbial, nobody to name" or "nobody looked it up". So the column is NOT NULL, and "no author" is answered with `ANONYMOUS` from `src/utils/proverbs/rules.ts`. Anything listing or grouping authors filters that value out.
+**`anonymous` is a value, not a NULL**, for the reason `[indeclinable](#the-inflection-vocabulary)` is one. An empty `author` could mean "proverbial, nobody to name" or "nobody looked it up". So the column is NOT NULL, and "no author" is answered with `ANONYMOUS` from `src/utils/proverbs/rules.ts`.
 
 No link to `entries` yet. Showing "proverbs using this word" on a word's page would take a join table filled in by hand. _iacta_ files under _iaciō_, and no string match finds that.
 

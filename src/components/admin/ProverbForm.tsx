@@ -196,7 +196,7 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 		<div className="space-y-10">
 			<div className="space-y-6">
 				<Heading variant="h2" as="h1" lang="la">
-					{editing ? "Proverbium ēmendandum" : "Proverbium novum"}
+					{editing ? "Prōverbium ēmendandum" : "Prōverbium novum"}
 					<span className="sr-only" lang="en">
 						{editing ? " (a proverb to correct)" : " (a new proverb)"}
 					</span>
