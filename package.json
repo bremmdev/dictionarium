@@ -26,7 +26,7 @@
     "check:governs": "tsx scripts/check-governs.ts"
   },
   "dependencies": {
-    "@bremmdev/m7kit": "^0.62.0",
+    "@bremmdev/m7kit": "^0.64.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "^0.10.12",
     "@tanstack/react-router": "^1.170.35",

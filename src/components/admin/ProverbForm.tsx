@@ -1,6 +1,7 @@
-import { Button } from "@bremmdev/m7kit";
+import { Button, useAnnounce } from "@bremmdev/m7kit";
 import { useRouter } from "@tanstack/react-router";
-import { useId, useReducer, useRef } from "react";
+import { useEffect, useId, useReducer, useRef } from "react";
+import { flushSync } from "react-dom";
 import {
 	CHIP,
 	ChipGroup,
@@ -126,6 +127,21 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 	/** Editing, with nothing picked yet: the picker is the whole desk. */
 	const picking = mode.kind === "edit" && mode.id === null;
 
+	// The saved banner is announced from here rather than being a live region:
+	// it is rendered together with its message, and a region that arrives with
+	// its text is routinely missed. It is polite, so it waits for the field that
+	// focus has just moved to.
+	const announce = useAnnounce();
+
+	useEffect(() => {
+		if (status.kind !== "saved") return;
+		announce(
+			status.created
+				? `Additum. ${status.textLa} is filed among the proverbs.`
+				: `Ēmendātum. ${status.textLa} is filed as it now reads.`,
+		);
+	}, [status, announce]);
+
 	const setField = (name: keyof ProverbFields) => (value: string) =>
 		dispatch({ type: "field", name, value });
 
@@ -149,7 +165,9 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 		} catch (err) {
 			if (!(err instanceof ProverbValidationError)) throw err;
 
-			dispatch({ type: "submit-invalid", fields: err.fields });
+			// Rendered before focus lands, because focus is what reads the
+			// problems out — see the word desk.
+			flushSync(() => dispatch({ type: "submit-invalid", fields: err.fields }));
 			summaryRef.current?.focus();
 			return;
 		}
@@ -178,13 +196,15 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 			// that list out of date.
 			await router.invalidate();
 		} catch (err) {
-			dispatch({
-				type: "submit-failed",
-				message:
-					err instanceof Error
-						? err.message
-						: "That proverb could not be saved.",
-			});
+			flushSync(() =>
+				dispatch({
+					type: "submit-failed",
+					message:
+						err instanceof Error
+							? err.message
+							: "That proverb could not be saved.",
+				}),
+			);
 			summaryRef.current?.focus();
 		}
 	};
@@ -219,7 +239,7 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 			<form className="space-y-10" onSubmit={handleSubmit} noValidate>
 				<div ref={summaryRef} tabIndex={-1} className="focus-ring space-y-4">
 					{status.kind === "saved" && (
-						<output className="block rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3">
+						<div className="rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3">
 							<span className="font-bold text-accent" lang="la">
 								{status.created ? "Additum." : "Ēmendātum."}
 							</span>{" "}
@@ -231,14 +251,11 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 									? "is filed among the proverbs."
 									: "is filed as it now reads."}
 							</span>
-						</output>
+						</div>
 					)}
 
 					{(problems.length > 0 || status.kind === "failed") && (
-						<div
-							role="alert"
-							className="rounded-lg border border-accent bg-parchment-100 px-4 py-3"
-						>
+						<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
 							<p className="font-bold text-accent" lang="la">
 								Nōn licet.
 							</p>

@@ -1,7 +1,8 @@
-import { Button } from "@bremmdev/m7kit";
+import { Button, useAnnounce } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 import { useEffect, useId, useReducer, useRef } from "react";
+import { flushSync } from "react-dom";
 import type { EntryWithSenses } from "#/db/schema";
 import { createEntry, suggestEntry, updateEntry } from "#/server/entries";
 import {
@@ -235,6 +236,31 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		dispatch({ type: "case-focus-handled" });
 	}, [state.focusCase]);
 
+	// The banners above the form are read out from here rather than being live
+	// regions themselves: each is rendered together with its message, and a
+	// region that arrives with its text is routinely missed. A new status or
+	// lookup is a new object, so each outcome is announced once.
+	const announce = useAnnounce();
+
+	useEffect(() => {
+		if (status.kind !== "saved") return;
+		announce(
+			status.created
+				? `Additum. ${status.lemma} is in the dictionary.`
+				: `Ēmendātum. ${status.lemma} is filed as it now reads.`,
+		);
+	}, [status, announce]);
+
+	useEffect(() => {
+		if (lookup.kind === "filled") {
+			// The filled fields are the confirmation, and they are right there —
+			// but only to someone looking at them.
+			announce(["Wiktionary filled the form.", ...lookup.warnings].join(" "));
+		} else if (lookup.kind === "failed") {
+			announce(`Nihil inventum. ${lookup.message}`);
+		}
+	}, [lookup, announce]);
+
 	const asks = isPartOfSpeech(draft.partOfSpeech)
 		? INFLECTS[draft.partOfSpeech]
 		: undefined;
@@ -281,7 +307,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		}
 		// Focus stays in the lemma field either way: a lookup that found nothing
 		// is usually a spelling to fix, and one that worked has filled the fields
-		// the editor is about to read. Both banners announce themselves.
+		// the editor is about to read. Both outcomes are announced.
 	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -310,10 +336,12 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		} catch (err) {
 			if (!(err instanceof EntryValidationError)) throw err;
 
-			dispatch({ type: "submit-invalid", fields: err.fields });
 			// Every message at once, at the top, with focus moved to it: a form
 			// this long can put its first problem above the fold and its second
-			// below it.
+			// below it. Focus is what reads the messages out, so they have to be
+			// rendered before it lands — a plain dispatch would only render them
+			// after this handler, into a summary already focused and read empty.
+			flushSync(() => dispatch({ type: "submit-invalid", fields: err.fields }));
 			summaryRef.current?.focus();
 			return;
 		}
@@ -344,11 +372,15 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// showed, and this save is what makes it wrong. This is that something.
 			await router.invalidate();
 		} catch (err) {
-			dispatch({
-				type: "submit-failed",
-				message:
-					err instanceof Error ? err.message : "That entry could not be saved.",
-			});
+			flushSync(() =>
+				dispatch({
+					type: "submit-failed",
+					message:
+						err instanceof Error
+							? err.message
+							: "That entry could not be saved.",
+				}),
+			);
 			summaryRef.current?.focus();
 		}
 	};
@@ -358,13 +390,12 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 	return (
 		<form className="space-y-10" onSubmit={handleSubmit} noValidate>
-			{/* One live region for every outcome, so a screen reader hears the
-			    result of a submit or a lookup whichever way it went. */}
+			{/* One place for every outcome. None of it is a live region: the saved
+			    banner and both lookup outcomes are announced (see the effects
+			    above), and the problems are read out by focus moving here. */}
 			<div ref={summaryRef} tabIndex={-1} className="focus-ring space-y-4">
 				{status.kind === "saved" && (
-					// <output> rather than a <p role="status">: it is the element that
-					// carries that role natively, and this is a result of a submit.
-					<output className="block rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3">
+					<div className="rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3">
 						<span className="font-bold text-accent" lang="la">
 							{status.created ? "Additum." : "Ēmendātum."}
 						</span>{" "}
@@ -382,14 +413,11 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 								? "is in the dictionary."
 								: "is filed as it now reads."}
 						</span>
-					</output>
+					</div>
 				)}
 
 				{(problems.length > 0 || status.kind === "failed") && (
-					<div
-						role="alert"
-						className="rounded-lg border border-accent bg-parchment-100 px-4 py-3"
-					>
+					<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
 						<p className="font-bold text-accent" lang="la">
 							Nōn licet.
 						</p>
@@ -402,32 +430,20 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 					</div>
 				)}
 
-				{lookup.kind === "filled" && (
-					// With nothing to warn about there is nothing to show, and the
-					// element has to leave the flow rather than sit in it at zero
-					// height: an empty summary region self-collapses, and one holding
-					// an invisible block does not, which is a 40px hole under the
-					// heading that nobody can see the reason for.
-					<output className={lookup.warnings.length > 0 ? "block" : "sr-only"}>
-						{/* The filled fields are the confirmation, and they are right
-						    there — but only to someone looking at them. */}
-						<span className="sr-only">Wiktionary filled the form.</span>
-
-						{lookup.warnings.length > 0 && (
-							<ul className="list-disc space-y-1 rounded-lg border border-parchment-300 bg-parchment-100 py-3 pr-4 pl-9 text-ink-700 text-sm">
-								{lookup.warnings.map((warning) => (
-									<li key={warning}>{warning}</li>
-								))}
-							</ul>
-						)}
-					</output>
+				{/* With nothing to warn about there is nothing to show, and nothing
+				    is rendered: an empty summary self-collapses, and one holding an
+				    invisible block does not, which is a 40px hole under the heading
+				    that nobody can see the reason for. */}
+				{lookup.kind === "filled" && lookup.warnings.length > 0 && (
+					<ul className="list-disc space-y-1 rounded-lg border border-parchment-300 bg-parchment-100 py-3 pr-4 pl-9 text-ink-700 text-sm">
+						{lookup.warnings.map((warning) => (
+							<li key={warning}>{warning}</li>
+						))}
+					</ul>
 				)}
 
 				{lookup.kind === "failed" && (
-					<div
-						role="alert"
-						className="rounded-lg border border-accent bg-parchment-100 px-4 py-3"
-					>
+					<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
 						<p className="font-bold text-accent" lang="la">
 							Nihil inventum.
 						</p>

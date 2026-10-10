@@ -232,15 +232,22 @@ The `<search>` landmark holds **only the controls**. Results are page content an
 
 This is what the HTML spec asks for — the `search` element is not for presenting results — and it is the practical choice too. A landmark stretched over the whole page is useless as a jump target; two named landmarks give two useful ones. (The wider language-and-labelling rules live in [a11y.md](./a11y.md).)
 
-The result count is announced through a live region that is **always mounted**:
+The result count is announced through M7KIT's shared announcer rather than a live region of its own:
 
 ```tsx
-<p aria-live="polite" className="sr-only">
-  {announcement}
-</p>
+const announce = useAnnounce();
+const announcementId = useId();
+const announced = useRef(announcement);
+useEffect(() => {
+	if (announcement === announced.current) return;
+	announced.current = announcement;
+	if (announcement !== "") announce(announcement, { id: announcementId });
+}, [announcement, announce, announcementId]);
 ```
 
-A live region inserted into the DOM at the same moment its text appears is routinely missed by screen readers. It renders empty and gains text instead. The announcement is also suppressed while `isFetching` — announcing every intermediate state talks over the user.
+A live region inserted into the DOM at the same moment its text appears is routinely missed by screen readers, so the region has to be **mounted before** its message. The announcer's regions are: `useAnnounce` creates them when `Results` mounts, and every component on the page shares them, so a message from elsewhere cannot overwrite this one. Each message is a new element, so searching for the same word again is announced again.
+
+Only a change is news. The outcome the page loaded with is already on screen, so it is not announced, as with the old region, which a screen reader does not read at load either. The announcement is also suppressed while `isFetching` — announcing every intermediate state talks over the user — and the `id` drops a count still waiting to be read when the next search lands, so quick searches announce only the last.
 
 Focus is never moved to the results. The polite announcement is the affordance; yanking focus out of the input would be hostile. The one place focus _is_ moved is the _dēlē_ button, which unmounts itself on clear and hands focus back to the input rather than dropping it on `<body>`.
 

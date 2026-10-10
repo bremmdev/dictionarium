@@ -1,4 +1,4 @@
-import { Button } from "@bremmdev/m7kit";
+import { Button, useAnnounce } from "@bremmdev/m7kit";
 import {
 	createFileRoute,
 	useNavigate,
@@ -23,6 +23,7 @@ function RouteComponent() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [error, setError] = useState("");
 	const [isPending, setIsPending] = useState(false);
+	const announce = useAnnounce();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -38,10 +39,15 @@ function RouteComponent() {
 			await router.invalidate();
 			await navigate({ to: "/admin" });
 		} catch {
-			setError("That password is not right.");
+			const message = "That password is not right.";
+			setError(message);
 			setIsPending(false);
 			setPassword("");
 			inputRef.current?.focus();
+			// Announced rather than left to focus: a submit with Enter never left
+			// the field, so focusing it again reads nothing, and the error below
+			// is rendered with its message, which a live region routinely misses.
+			announce(`Nōn licet. ${message}`, { politeness: "assertive" });
 		}
 	};
 
@@ -129,7 +135,7 @@ function RouteComponent() {
 				</div>
 
 				{error !== "" && (
-					<p id="password-error" role="alert" className="text-lg">
+					<p id="password-error" className="text-lg">
 						<span className="font-bold text-accent" lang="la">
 							Nōn licet.
 						</span>{" "}

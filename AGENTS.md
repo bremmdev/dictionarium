@@ -1,3 +1,7 @@
+# Accessibility
+
+Screen reader status messages go through M7KIT's shared announcer (`useAnnounce()` from `@bremmdev/m7kit`), not a new `aria-live`, `role="status"`, `role="alert"` or `<output>` element. See vault/a11y.md.
+
 <!-- intent-skills:start -->
 # TanStack Intent - before editing files, run the matching guidance command.
 tanstackIntent:

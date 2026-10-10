@@ -198,17 +198,23 @@ npx tsx scripts/enrich-entries.ts --file lemmas.txt --write
 
 ## What the form says, and to whom
 
-One live region holds every outcome, so a screen reader hears the result whichever way it went:
+Every outcome is shown in the summary at the top of the form, and a screen reader hears it whichever way it went — but none of the summary is a live region. Each outcome reaches a screen reader one of two ways: announced through M7KIT's shared announcer, or read out by focus moving to the summary.
 
-| Outcome        | Element                | Focus                                                     |
-| -------------- | ---------------------- | --------------------------------------------------------- |
-| Entry created  | `<output>`             | stays put; the banner links to the new page               |
-| Invalid draft  | `role="alert"`         | moves to the summary — this form is long enough to put its first problem above the fold and its second below it |
-| Submit refused | `role="alert"`         | moves to the summary                                      |
-| Fill succeeded | `<output>`, warnings only | stays in the lemma field — the filled fields are the confirmation, to anyone who can see them |
-| Fill failed    | `role="alert"`         | stays in the lemma field, which is usually the thing to fix |
+| Outcome        | Shown            | Heard                       | Focus                                                     |
+| -------------- | ---------------- | --------------------------- | --------------------------------------------------------- |
+| Entry created  | banner           | announced                   | stays put; the banner links to the new page               |
+| Invalid draft  | problems         | read by focus               | moves to the summary — this form is long enough to put its first problem above the fold and its second below it |
+| Submit refused | problems         | read by focus               | moves to the summary                                      |
+| Fill succeeded | warnings only    | announced, with each warning | stays in the lemma field — the filled fields are the confirmation, to anyone who can see them |
+| Fill failed    | banner           | announced                   | stays in the lemma field, which is usually the thing to fix |
 
-A fill with no warnings still writes one sr-only line into the live region. The fields visibly change for a sighted reader; that line is the same news for someone who is not looking.
+Announced, not live, because every banner here is rendered together with its message, and a live region that arrives with its text is routinely missed (the same reason the search keeps its region mounted — [search.md](./search.md#structure-and-announcements)). The announcer's regions already exist; the effects in `EntryForm` hand them each new `status` and `lookup` as it lands. All of it is polite: nothing here is urgent enough to cut off what the screen reader is saying.
+
+Read by focus, because focus is already going there: an announcement as well would read the problems twice. That only works if the problems are on screen when focus lands. A `dispatch` in an event handler renders *after* the handler returns, so the summary was focused while still empty — and the `role="alert"` it used to carry was what actually spoke. The dispatch is wrapped in `flushSync`, which renders first; then focus moves.
+
+A fill with no warnings still announces "Wiktionary filled the form." The fields visibly change for a sighted reader; that line is the same news for someone who is not looking.
+
+The proverb desk does the same: its saved banner is announced, politely, after focus has moved on to where the next proverb starts, and its problems are read by focus.
 
 Adding a sense leaves the caret in the new row's meaning. Removing one hands focus to **Add sense**, because the row it was in is about to unmount. The Latin button labels each carry an English gloss — see [a11y.md](./a11y.md#english-glosses-on-the-latin-buttons).
 

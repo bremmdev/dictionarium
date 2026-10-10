@@ -1,3 +1,5 @@
+import { useAnnounce } from "@bremmdev/m7kit";
+import { useEffect, useId, useRef } from "react";
 import type { EntryWithSenses } from "#/db/schema";
 import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
@@ -31,12 +33,21 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 		}
 	}
 
+	// Through M7KIT's shared announcer, so it cannot talk over another message
+	// on the page. Only a change is news: the outcome the page loaded with is
+	// already on screen. The id drops a count still waiting when the next search
+	// lands, so quick searches announce only the last.
+	const announce = useAnnounce();
+	const announcementId = useId();
+	const announced = useRef(announcement);
+	useEffect(() => {
+		if (announcement === announced.current) return;
+		announced.current = announcement;
+		if (announcement !== "") announce(announcement, { id: announcementId });
+	}, [announcement, announce, announcementId]);
+
 	return (
 		<div className={`${isFetching ? "animate-pulse" : ""}`}>
-			<p aria-live="polite" className="sr-only">
-				{announcement}
-			</p>
-
 			{trimmed === "" && (
 				<p className="text-center text-ink-600 text-lg">
 					Search{" "}
