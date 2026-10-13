@@ -231,7 +231,7 @@ edit   pick → Ēmenda → Ēmendātum.  the form empties, still in edit; focus
 
 Switching between add and edit empties the draft: carried into an add, a corrected proverb would be filed a second time as a new one.
 
-`parseProverbDraft` is the gate, called by the form for the messages and by `createProverb` / `updateProverb` as `.validator`, the same split as entries. It derives `text_plain`, holds the Latin to the lemma's script rule, files a typed "Anonymous" as `ANONYMOUS`, and stores `meaning_en` as NULL when it only repeats the translation. **anonymous** is a chip, not a word to type: ticking it removes the author field and empties it, so no name that nobody can see is ever on its way to the database.
+`parseProverbDraft` is the gate, called by the form for the messages and by `createProverb` / `updateProverb` as `.validator`, the same split as entries. It derives `text_plain`, holds the Latin to the lemma's script rule, files a typed "Anonymous" as `ANONYMOUS`, and stores `meaning_en` as NULL when it only repeats the translation. **anonymous** is a chip, not a word to type: ticking it removes the author field and empties it, so no name that nobody can see is ever on its way to the database. Beside the author field, a **previous author** dropdown lists every named author already filed (read from the picker's proverbs, so no extra load) and writes into the same field — picking one is typing it, spelled the way it was filed.
 
 The duplicate check runs on **`text_plain`**, not on `text_la`: *Veni, vidi, vici* is *Vēnī, vīdī, vīcī* typed in a hurry, and the UNIQUE on `text_la` would let it through.
 

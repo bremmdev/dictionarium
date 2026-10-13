@@ -27,6 +27,13 @@ import { normalizeLemma } from "#/utils/search/rules";
 
 const MODES = ["add", "edit"] as const;
 
+/** Every named author already filed, A to Z, for the author dropdown. */
+function filedAuthors(proverbs: Array<Proverb>) {
+	return [...new Set(proverbs.map((p) => p.author))]
+		.filter((author) => author !== ANONYMOUS)
+		.sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+}
+
 /** One labelled input or textarea, with its hint and its message. */
 function TextField({
 	id,
@@ -211,6 +218,7 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 
 	const problems = Object.values(errors);
 	const searchKey = normalizeLemma(draft.textLa);
+	const authors = filedAuthors(proverbs);
 
 	return (
 		<div className="space-y-10">
@@ -382,6 +390,32 @@ export function ProverbForm({ proverbs }: { proverbs: Array<Proverb> }) {
 											value={draft.author}
 											onChange={(e) => setField("author")(e.target.value)}
 										/>
+										{/* Same field as the input, so a typed filed name shows here. */}
+										{authors.length > 0 && (
+											<>
+												<label
+													htmlFor={`${fieldId}-author-filed`}
+													className="sr-only"
+												>
+													Previous author
+												</label>
+												<select
+													id={`${fieldId}-author-filed`}
+													className={`${INPUT} min-w-48 flex-1`}
+													value={
+														authors.includes(draft.author) ? draft.author : ""
+													}
+													onChange={(e) => setField("author")(e.target.value)}
+												>
+													<option value="">Choose a previous author…</option>
+													{authors.map((author) => (
+														<option key={author} value={author}>
+															{author}
+														</option>
+													))}
+												</select>
+											</>
+										)}
 									</>
 								)}
 								<label className={CHIP}>
