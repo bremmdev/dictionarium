@@ -1,5 +1,5 @@
 import { Button, useAnnounce } from "@bremmdev/m7kit";
-import { Link, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 import { useEffect, useId, useReducer, useRef } from "react";
 import { flushSync } from "react-dom";
@@ -38,6 +38,7 @@ import {
 	INPUT,
 	LABEL,
 } from "#/components/admin/Fields";
+import { TextLink } from "#/components/TextLink";
 
 /** The small per-sense buttons that reveal an optional pair of fields. */
 const TOGGLE =
@@ -399,15 +400,14 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						<span className="font-bold text-accent" lang="la">
 							{status.created ? "Additum." : "Ēmendātum."}
 						</span>{" "}
-						<Link
+						<TextLink
 							to="/verbum/$lemma"
 							params={{ lemma: status.lemma }}
 							search={{}}
-							className="focus-ring text-accent underline"
 							lang="la"
 						>
 							{status.lemma}
-						</Link>{" "}
+						</TextLink>{" "}
 						<span className="text-ink-600">
 							{status.created
 								? "is in the dictionary."
@@ -974,14 +974,13 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				{/* The way back out of an edit without making one. A create has no
 				    equivalent: there is no word it came from. */}
 				{editing && (
-					<Link
+					<TextLink
 						to="/verbum/$lemma"
 						params={{ lemma: entry?.lemma ?? draft.lemma }}
 						search={{}}
-						className="focus-ring text-accent"
 					>
 						Cancel
-					</Link>
+					</TextLink>
 				)}
 			</div>
 		</form>

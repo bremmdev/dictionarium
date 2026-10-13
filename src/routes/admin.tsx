@@ -7,6 +7,7 @@ import {
 import { EntryForm } from "#/components/admin/EntryForm";
 import { ProverbForm } from "#/components/admin/ProverbForm";
 import { Heading } from "#/components/Heading";
+import { TextLink } from "#/components/TextLink";
 import { getIsAdmin } from "#/server/auth";
 import { getProverbs } from "#/server/proverbs";
 import { getEntryByLemma } from "#/server/search";
@@ -136,15 +137,14 @@ function RouteComponent() {
 					{entry && (
 						<p className="text-ink-600">
 							Editing{" "}
-							<Link
+							<TextLink
 								to="/verbum/$lemma"
 								params={{ lemma: entry.lemma }}
 								search={{}}
-								className="focus-ring text-accent underline"
 								lang="la"
 							>
 								{entry.lemma}
-							</Link>
+							</TextLink>
 							.
 						</p>
 					)}
@@ -180,13 +180,9 @@ function NotFound() {
 			<p className="text-ink-600 text-lg">
 				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo; to edit.
 			</p>
-			<Link
-				to="/admin"
-				search={{}}
-				className="focus-ring inline-block text-accent"
-			>
+			<TextLink to="/admin" search={{}}>
 				File a new word instead
-			</Link>
+			</TextLink>
 		</div>
 	);
 }

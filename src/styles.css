@@ -105,6 +105,47 @@
   .nav-link {
     @apply font-bold tracking-wide hover:text-gold-600;
   }
+
+  /* <TextLink>. The underline is a pen stroke, like the sketches, pressed
+     harder on hover. A mask, so it takes the link's colour. */
+  .text-link {
+    @apply inline-flex items-center gap-2 font-semibold text-accent;
+  }
+
+  .text-link-label {
+    position: relative;
+  }
+
+  .text-link-label::after {
+    content: "";
+    position: absolute;
+    inset-inline: -0.1em;
+    bottom: -0.2em;
+    height: 0.4em;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1.5 5.5C22 3.5 45 6.5 66 4.5S92 3 98.5 3.5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  }
+
+  .text-link:hover .text-link-label::after {
+    transform: scaleY(1.6);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .text-link-label::after {
+      transition: transform 150ms ease-out;
+    }
+  }
+
+  /* Forced colours paint backgrounds Canvas, which would hide the stroke. */
+  @media (forced-colors: active) {
+    .text-link-label {
+      text-decoration: underline;
+    }
+
+    .text-link-label::after {
+      display: none;
+    }
+  }
 }
 
 * {

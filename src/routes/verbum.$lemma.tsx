@@ -1,12 +1,14 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@bremmdev/m7kit";
 import {
 	createFileRoute,
 	Link,
 	notFound,
 	useLoaderData,
 } from "@tanstack/react-router";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Info, Pencil, Search } from "lucide-react";
 import abacus from "#/assets/abacus-sketch.svg";
 import acanthus from "#/assets/acanthus-sketch.svg";
+import amphora from "#/assets/amphora-sketch.svg";
 import aqueduct from "#/assets/aqueduct-sketch.svg";
 import arch from "#/assets/arch-sketch.svg";
 import bust from "#/assets/bust-sketch.svg";
@@ -22,6 +24,7 @@ import { Heading } from "#/components/Heading";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarFacts } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
+import { TextLink } from "#/components/TextLink";
 import type { Entry, EntryWithSenses } from "#/db/schema";
 import { recordEntryView } from "#/server/analytics";
 import { getEntryByLemma } from "#/server/search";
@@ -99,14 +102,9 @@ function BackLink() {
 	const { q } = Route.useSearch();
 
 	return (
-		<Link
-			to="/"
-			search={q === undefined ? {} : { q }}
-			className="focus-ring inline-flex items-center gap-2 text-accent"
-		>
-			<ArrowLeft className="h-4 w-4" aria-hidden="true" />
+		<TextLink to="/" search={q === undefined ? {} : { q }} icon={ArrowLeft}>
 			{q === undefined ? "Back to search" : `Back to results for “${q}”`}
-		</Link>
+		</TextLink>
 	);
 }
 
@@ -291,25 +289,65 @@ function WordDetail() {
 	);
 }
 
+/** Links to search, which ignores macrons, so /verbum/amo still finds amō. */
 function NotFound() {
 	const { lemma } = Route.useParams();
 
 	return (
-		<div className="mx-auto max-w-3xl px-4 sm:px-8 py-16 md:py-24 space-y-4 text-center">
-			<Heading
-				variant="h3"
-				as="h1"
-				className="font-bold text-accent!"
-				lang="la"
-			>
-				Nihil inventum.
-			</Heading>
-			<p className="text-ink-600 text-lg">
-				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo;.
-			</p>
-			<Link to="/" search={{}} className="focus-ring inline-block text-accent">
-				Back to search
-			</Link>
-		</div>
+		<Banner
+			illustrations={[
+				{ src: amphora, className: "w-40 -rotate-6 select-none md:w-56" },
+			]}
+			content={
+				<>
+					<BackLink />
+
+					<p className="mt-6 font-medium text-gold-600 text-sm uppercase tracking-[0.32em] md:text-base">
+						Not in the dictionary
+					</p>
+					<div className="mt-3 flex items-center justify-center gap-4 md:justify-start">
+						<Heading variant="h1" lang="la">
+							Nihil inventum.
+						</Heading>
+						<Tooltip hoverDelay={200} touchBehavior="tap">
+							<TooltipTrigger className="my-0 rounded-full bg-parchment-50 p-2 text-gold-600 transition-colors hover:border-accent hover:bg-parchment-100 hover:text-accent">
+								<Info size={20} aria-hidden="true" />
+								<span className="sr-only">
+									What does <span lang="la">Nihil inventum</span> mean?
+								</span>
+							</TooltipTrigger>
+							<TooltipContent
+								placement="bottom right"
+								className="w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
+							>
+								<p className="text-ink-700 leading-relaxed">
+									<span className="font-semibold text-ink-900">
+										&ldquo;Nothing found.&rdquo;
+									</span>{" "}
+									<span lang="la">Inventum</span> is from{" "}
+									<span lang="la">inveniō</span>, to come upon. It gave English{" "}
+									<em>invent</em>, which first meant to find.
+								</p>
+							</TooltipContent>
+						</Tooltip>
+					</div>
+					<p className="mx-auto mt-6 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
+						We couldn't find &ldquo;
+						<span lang="la" className="wrap-anywhere">
+							{lemma}
+						</span>
+						&rdquo;. A word's page needs its exact spelling, macrons and all.
+						Search doesn't, so give that a try.
+					</p>
+					<TextLink to="/" search={{ q: lemma }} icon={Search} className="mt-8">
+						Search for &ldquo;
+						<span lang="la" className="wrap-anywhere">
+							{lemma}
+						</span>
+						&rdquo;
+					</TextLink>
+				</>
+			}
+		/>
 	);
 }
