@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "#/db";
 import { entries, senses } from "#/db/schema";
 import { authMiddleware } from "#/server/auth";
+import type { LookupResult } from "#/utils/entries/form";
 import { isPartOfSpeech, parseEntryDraft } from "#/utils/entries/rules";
 import { suggestFromWiktionary } from "#/utils/entries/wiktionary";
 
@@ -171,9 +172,32 @@ export const suggestEntry = createServerFn({ method: "POST" })
 			throw new Error("That is too long to be a lemma.");
 		}
 
+		// The entry being edited, which may look itself up again.
+		const editing =
+			typeof raw.editing === "number" && Number.isInteger(raw.editing)
+				? raw.editing
+				: undefined;
+
 		return {
 			lemma,
 			partOfSpeech: isPartOfSpeech(partOfSpeech) ? partOfSpeech : undefined,
+			editing,
 		};
 	})
-	.handler(({ data }) => suggestFromWiktionary(data));
+	.handler(async ({ data: { editing, ...spec } }): Promise<LookupResult> => {
+		// A word already on file is not looked up: filing it again would only fail at Adde.
+		const existing = db
+			.select({ id: entries.id, lemma: entries.lemma })
+			.from(entries)
+			.where(eq(entries.lemma, spec.lemma))
+			.get();
+
+		if (existing && existing.id !== editing) {
+			return { kind: "exists", lemma: existing.lemma };
+		}
+
+		return {
+			kind: "suggested",
+			suggestion: await suggestFromWiktionary(spec),
+		};
+	});

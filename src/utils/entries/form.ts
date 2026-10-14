@@ -107,6 +107,11 @@ export type EntrySuggestion = {
 	warnings: Array<string>;
 };
 
+/** What Quaere gets back: a draft to read, or the word already on file. */
+export type LookupResult =
+	| { kind: "suggested"; suggestion: EntrySuggestion }
+	| { kind: "exists"; lemma: string };
+
 /** Where the last lookup got to. Separate from the submit: they can overlap. */
 export type LookupStatus =
 	| { kind: "idle" }
@@ -118,6 +123,8 @@ export type LookupStatus =
 	 */
 	| { kind: "pending"; request: number }
 	| { kind: "filled"; warnings: Array<string> }
+	/** The lemma is already filed, so Wiktionary was not asked and the draft is untouched. */
+	| { kind: "exists"; lemma: string }
 	| { kind: "failed"; message: string };
 
 export type FormState = {
@@ -158,6 +165,7 @@ export type FormAction =
 	| { type: "submit-failed"; message: string }
 	| { type: "lookup-started"; request: number }
 	| { type: "lookup-filled"; request: number; suggestion: EntrySuggestion }
+	| { type: "lookup-exists"; request: number; lemma: string }
 	| { type: "lookup-failed"; request: number; message: string };
 
 const EMPTY_SENSE = {
@@ -526,6 +534,11 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				lookup: { kind: "filled", warnings },
 			};
 		}
+
+		case "lookup-exists":
+			if (!isAwaited(state, action.request)) return state;
+
+			return { ...state, lookup: { kind: "exists", lemma: action.lemma } };
 
 		case "lookup-failed":
 			if (!isAwaited(state, action.request)) return state;

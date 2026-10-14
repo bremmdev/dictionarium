@@ -55,12 +55,15 @@ This is [auth.md](./auth.md#the-boundary-guards-are-ux-middleware-is-the-gate)'s
 ```
 type a lemma
   ↓  Quaere       suggestEntry → Wiktionary. Fills every field. Submits nothing.
+                  Already filed? “Iam inest.” with a link to edit it; Wiktionary is not asked.
   ↓  read         chips, senses, notes — cut what a learner's dictionary does not want
   ↓  Adde         parseEntryDraft for the messages, then createEntry for real
   ↓  Additum.     the new lemma links to its page; the form empties, ready for the next
 ```
 
 `createEntry` writes the entry and its senses in **one transaction** — an entry with no senses is not an entry. It asks whether the lemma is already on file before inserting, purely so the answer is a sentence (*“capiō” is already in the dictionary.*) rather than a constraint name; `UNIQUE` on `lemma` is what actually stops the duplicate.
+
+`suggestEntry` makes the same check before it reaches Wiktionary and returns `{ kind: "exists" }` instead of a draft, so a duplicate is caught at Quaere rather than at Adde. It matches the exact lemma, macrons included (malum and mālum share `lemma_plain`), and skips the entry being edited, so an edit can still look its own word up again.
 
 On success the form calls `router.invalidate()`. The word count on the home page comes from a loader and is cached until something says otherwise — this is that something, for the same reason login and logout invalidate in [auth.md](./auth.md#where-the-answer-is-cached).
 

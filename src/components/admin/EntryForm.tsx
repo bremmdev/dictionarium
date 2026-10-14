@@ -257,6 +257,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// The filled fields are the confirmation, and they are right there —
 			// but only to someone looking at them.
 			announce(["Wiktionary filled the form.", ...lookup.warnings].join(" "));
+		} else if (lookup.kind === "exists") {
+			announce(`Iam inest. ${lookup.lemma} is already in the dictionary.`);
 		} else if (lookup.kind === "failed") {
 			announce(`Nihil inventum. ${lookup.message}`);
 		}
@@ -294,10 +296,18 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		dispatch({ type: "lookup-started", request });
 
 		try {
-			const suggestion = await suggestEntry({
-				data: { lemma: draft.lemma, partOfSpeech: draft.partOfSpeech },
+			const result = await suggestEntry({
+				data: {
+					lemma: draft.lemma,
+					partOfSpeech: draft.partOfSpeech,
+					editing: mode.kind === "edit" ? mode.id : undefined,
+				},
 			});
-			dispatch({ type: "lookup-filled", request, suggestion });
+			dispatch(
+				result.kind === "exists"
+					? { type: "lookup-exists", request, lemma: result.lemma }
+					: { type: "lookup-filled", request, suggestion: result.suggestion },
+			);
 		} catch (err) {
 			dispatch({
 				type: "lookup-failed",
@@ -440,6 +450,28 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							<li key={warning}>{warning}</li>
 						))}
 					</ul>
+				)}
+
+				{lookup.kind === "exists" && (
+					<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
+						<p className="font-bold text-accent" lang="la">
+							Iam inest.
+						</p>
+						<p className="mt-2 text-ink-700 text-sm">
+							<TextLink
+								to="/verbum/$lemma"
+								params={{ lemma: lookup.lemma }}
+								search={{}}
+								lang="la"
+							>
+								{lookup.lemma}
+							</TextLink>{" "}
+							is already in the dictionary.{" "}
+							<TextLink to="/admin" search={{ lemma: lookup.lemma }}>
+								Edit it instead
+							</TextLink>
+						</p>
+					</div>
 				)}
 
 				{lookup.kind === "failed" && (
