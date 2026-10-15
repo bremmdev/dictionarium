@@ -19,7 +19,7 @@ The app will be public — read-only lookup for everyone, an authenticated admin
 On the row:
 
 - **lemma** is the canonical headword (1st principal part of a verb; nominative of a noun; the word itself otherwise).
-- **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for an adjective means only the indeclinable ones.
+- **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for a noun or an adjective means only the indeclinable ones. _fās_ is filed "indecl. n." with no genitive, because it has none (A&G §103a; Lewis & Short).
 - The lemma repeats inside the string wherever a dictionary prints it there. A verb's first principal part is its lemma and always was; an adjective's masculine is the same, and _bonus, bona, bonum_ is the line a reader expects. A noun is the exception, because _puella, puellae_ is filed as a nominative and a genitive rather than as one run-on line.
 - **gender** is its own column on nouns (`m` / `f` / `n`), not buried in the principal-parts string.
 - **governs** is its own column on prepositions, and on senses — see `[governs](#governs-the-case-a-word-takes)`.
@@ -121,6 +121,10 @@ The column's question was never "which numbered table?" — it is **how does thi
 
 It is not a numeral problem, either. The grammar has a named class for it: "A few adjectives are indeclinable: _damnās, frūgī, nēquam, necesse, tot, quot, aliquot, totidem, potis_" ([A&G §122](https://dcc.dickinson.edu/grammar/latin/indeclinable-adjectives)).
 
+Nor an adjective one. A&G §103a lists the native indeclinable nouns — _fās, nefās, īnstar, nihil, opus_ ("need"), _secus_ — "used only as nominative and accusative singular" ([A&G §103](https://dcc.dickinson.edu/node/26676)). Lewis & Short files them with a gender and no genitive ("fas, indecl. n."), and so does this dictionary: `indeclinable`, a gender, and NULL `principal_parts`. Borrowed names (_Abraham_, _alpha_) are the same class in larger numbers.
+
+**Follow the dictionary's label.** "indecl." means `indeclinable`. A _defective_ noun the dictionary still files with a genitive (_fors_, _vicis_; A&G §103b–h) keeps its numbered declension, and the missing cases go in `notes`. _nihil_ is indeclinable, with "gen. _nihilī_, abl. _nihilō_ (from _nihilum_)" in `notes`. _opus_ "need" is a sense of _opus, operis_ (_opus est_), not a second row — `lemma` is unique.
+
 ### `terminations`, and why counting the forms cannot replace it
 
 A 3rd-declension adjective files with one, two or three nominative forms, and the grammar has a name for each class ([A&G §§115–121](https://dcc.dickinson.edu/grammar/latin/adjectives-third-declension)). Printed dictionaries never name it. Lewis & Short files _ācer, cris, cre, adj._ and the OLD files _ACER ~cris ~cre, a._ — the forms are the statement, and the reader is expected to count.
@@ -144,7 +148,7 @@ That is the whole case for the column. It is the same case `declension` makes on
 | `1`                     | one form for all three, filed with its genitive (_vetus, veteris_) |
 | NULL                    | the question does not apply                                        |
 
-**Only `declension = '3'` is asked.** A `1-2` adjective has already answered by being `1-2`: built from 1st- and 2nd-declension endings, it has one form per gender by construction, so a `terminations` beside it would be a second place to say the same thing and a first place to contradict it. An indeclinable adjective is not asked for the opposite reason — it has no terminations to count, and it is the one adjective whose `principal_parts` is NULL.
+**Only `declension = '3'` is asked.** A `1-2` adjective has already answered by being `1-2`: built from 1st- and 2nd-declension endings, it has one form per gender by construction, so a `terminations` beside it would be a second place to say the same thing and a first place to contradict it. An indeclinable adjective is not asked for the opposite reason — it has no terminations to count, and it is the one adjective whose `principal_parts` is NULL (as an indeclinable noun is the one noun).
 
 This makes `terminations` the only column whose applicability turns on **another column's value** rather than on the part of speech. `hasTerminations(partOfSpeech, declension)` is where that is written down, and the form, the validator and `check-inflection.ts` all read it rather than each restating the rule.
 

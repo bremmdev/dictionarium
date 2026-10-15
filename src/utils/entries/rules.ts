@@ -135,17 +135,20 @@ export function isTerminations(value: string): value is Terminations {
  * Nouns file their genitive there, verbs their principal parts, adjectives their
  * terminations; see vault/schema.md.
  *
- * An indeclinable adjective is the exception inside the exception: nequam and
- * frugi never change shape, so there is no second form to print and the lemma is
- * the whole filing after all. Which is why this takes the declension too — for a
- * noun or a verb the answer does not depend on it, and for an adjective it does.
+ * An indeclinable word is the exception inside the exception: fās and nēquam
+ * never change shape, so there is no second form to print and the lemma is the
+ * whole filing after all (A&G §§103a, 122). Which is why this takes the
+ * declension too — for a verb the answer does not depend on it.
  */
 export function hasPrincipalParts(
 	partOfSpeech: string,
 	declension?: string,
 ): partOfSpeech is "noun" | "verb" | "adjective" {
-	if (partOfSpeech === "noun" || partOfSpeech === "verb") return true;
-	return partOfSpeech === "adjective" && declension !== "indeclinable";
+	if (partOfSpeech === "verb") return true;
+	return (
+		(partOfSpeech === "noun" || partOfSpeech === "adjective") &&
+		declension !== "indeclinable"
+	);
 }
 
 /**
@@ -547,12 +550,14 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 			principalParts = principalPartsInput;
 		}
 	} else if (asks !== undefined && principalPartsInput !== "") {
-		// An indeclinable adjective lands here, and "the lemma is the whole filing
-		// for an adjective" would be a lie about adjectives in general.
+		// Indeclinables land here, and "the lemma is the whole filing for a noun"
+		// would be a lie about nouns in general.
 		fields.principalParts =
-			partOfSpeech === "adjective"
-				? "An indeclinable adjective never changes shape, so it has no other terminations to file."
-				: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
+			partOfSpeech === "noun"
+				? "An indeclinable noun never changes shape, so it has no genitive to file."
+				: partOfSpeech === "adjective"
+					? "An indeclinable adjective never changes shape, so it has no other terminations to file."
+					: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
 	}
 
 	// --- governs -----------------------------------------------------------
