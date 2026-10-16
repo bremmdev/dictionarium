@@ -40,6 +40,74 @@ const KEY_ROWS = CONJUGATION_KEYS.map(
 	}),
 );
 
+const STEM_COLUMNS = [
+	{ key: "conjugation", label: "Conjugation" },
+	{ key: "perfect", label: "Perfect" },
+	{ key: "stem", label: "Stem" },
+	{ key: "how", label: "How it is made" },
+];
+
+const STEM_ROWS = [
+	{
+		conjugation: "1st",
+		perfect: "salūtāvī",
+		stem: "salūtāv-",
+		how: (
+			<>
+				<LatinWord>v</LatinWord> after the stem vowel, in nearly every verb of
+				the group
+			</>
+		),
+	},
+	{
+		conjugation: "2nd",
+		perfect: "monuī",
+		stem: "monu-",
+		how: (
+			<>
+				<LatinWord>u</LatinWord> in place of the <LatinWord>ē</LatinWord>, the
+				commonest of several types
+			</>
+		),
+	},
+	{
+		conjugation: "3rd",
+		perfect: "dūxī",
+		stem: "dūx-",
+		how: (
+			<>
+				<LatinWord>s</LatinWord> after the root, and <LatinWord>c</LatinWord> +{" "}
+				<LatinWord>s</LatinWord> is written <LatinWord>x</LatinWord>; other
+				verbs of the group do it differently
+			</>
+		),
+	},
+	{
+		conjugation: "4th",
+		perfect: "audīvī",
+		stem: "audīv-",
+		how: (
+			<>
+				<LatinWord>v</LatinWord> after the stem vowel, as in the first
+			</>
+		),
+	},
+	{
+		conjugation: "Mixed",
+		perfect: "cēpī",
+		stem: "cēp-",
+		how: "the root vowel itself lengthened and changed",
+	},
+].map(({ conjugation, perfect, stem, how }) => ({
+	id: conjugation,
+	cells: {
+		conjugation,
+		perfect: <LatinWord>{perfect}</LatinWord>,
+		stem: <LatinWord>{stem}</LatinWord>,
+		how,
+	},
+}));
+
 const STEPS = [
 	{
 		id: "infinitive",
@@ -119,6 +187,19 @@ export function Filing() {
 					</li>
 				))}
 			</ol>
+			<p>
+				The perfect is not built from the present at all. It has a stem of its
+				own, and only in the first and fourth conjugations can you count on
+				guessing it. Take the third principal part and drop its{" "}
+				<LatinWord>-ī</LatinWord>: what is left is the perfect stem, and the
+				perfect endings go straight onto it.
+			</p>
+			<Table
+				caption="The perfect stem, read off the third principal part."
+				columns={STEM_COLUMNS}
+				rows={STEM_ROWS}
+				className="mx-auto max-w-4xl"
+			/>
 		</section>
 	);
 }

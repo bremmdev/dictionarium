@@ -3,6 +3,7 @@
 ## Progress
 
 - **2026-10-16, present indicative active done** for all five groups. Live: Persōnae, Filing a verb, The conjugations, Terminātiōnēs (present only), `check:conjugations`, resources menu entry. All 30 forms and 20 principal parts checked against Wiktionary. Not built yet: Tempora (waits until there is more than one tense) and everything from the imperfect onwards.
+- **2026-10-16, perfect indicative active done.** Each verb now has a heading plus present-system and perfect-system tables side by side from lg up (to recheck once more tenses join). Per-table notes. `perfectStem` on each verb. `PERFECT_ENDINGS` is shared by every conjugation, and " / " in it marks a genuine alternative (-ērunt / -ēre) that the check also verifies. Filing gained a perfect-stem table. All 35 perfect forms checked against Wiktionary.
 - How it differs from the plan below:
   - `principalParts` is a four-part tuple and the lemma is its first item.
   - Verbs carry a single `base` (salūt-, mon-, dūc-, aud-, cap-). `perfect` and `supine` stems get added when those tenses do.

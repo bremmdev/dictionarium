@@ -4,8 +4,9 @@
 //
 // Every form is spelled with its macrons. In the present they are often the
 // only difference between two groups: monēre against dūcere, audīs against
-// capis. scripts/check-conjugations.ts rebuilds every form from `base` and
-// ENDINGS, so the paradigms and the endings sheet cannot disagree.
+// capis. scripts/check-conjugations.ts rebuilds every form from its stem and
+// ENDINGS or PERFECT_ENDINGS, so the paradigms and the endings sheet cannot
+// disagree.
 
 import type { Conjugation } from "#/utils/entries/rules";
 
@@ -84,6 +85,8 @@ export type Verb = {
 	english: string;
 	/** What the endings attach to. The thematic vowel is in ENDINGS, not here. */
 	base: string;
+	/** The third principal part without its -ī. */
+	perfectStem: string;
 	indicative: MoodForms<"indicative">;
 	subjunctive?: MoodForms<"subjunctive">;
 };
@@ -179,6 +182,23 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 	},
 };
 
+/**
+ * The perfect system has one set of endings for every verb, so it is kept
+ * apart from ENDINGS. " / " separates a genuine alternative, as in the cell.
+ */
+export const PERFECT_ENDINGS: MoodEndings<"indicative"> = {
+	active: {
+		perfect: {
+			"1sg": "-ī",
+			"2sg": "-istī",
+			"3sg": "-it",
+			"1pl": "-imus",
+			"2pl": "-istis",
+			"3pl": "-ērunt / -ēre",
+		},
+	},
+};
+
 /** The personal endings every active tense is built from, and what they mean. */
 export const PERSONAL_ENDINGS: Record<
 	Person,
@@ -259,6 +279,7 @@ const SALUTO: Verb = {
 	principalParts: ["salūtō", "salūtāre", "salūtāvī", "salūtātum"],
 	english: "greet",
 	base: "salūt",
+	perfectStem: "salūtāv",
 	indicative: {
 		active: {
 			present: {
@@ -269,6 +290,14 @@ const SALUTO: Verb = {
 				"2pl": { form: "salūtātis" },
 				"3pl": { form: "salūtant" },
 			},
+			perfect: {
+				"1sg": { form: "salūtāvī" },
+				"2sg": { form: "salūtāvistī" },
+				"3sg": { form: "salūtāvit" },
+				"1pl": { form: "salūtāvimus" },
+				"2pl": { form: "salūtāvistis" },
+				"3pl": { form: "salūtāvērunt", alt: "salūtāvēre" },
+			},
 		},
 	},
 };
@@ -277,6 +306,7 @@ const MONEO: Verb = {
 	principalParts: ["moneō", "monēre", "monuī", "monitum"],
 	english: "warn, advise",
 	base: "mon",
+	perfectStem: "monu",
 	indicative: {
 		active: {
 			present: {
@@ -287,6 +317,14 @@ const MONEO: Verb = {
 				"2pl": { form: "monētis" },
 				"3pl": { form: "monent" },
 			},
+			perfect: {
+				"1sg": { form: "monuī" },
+				"2sg": { form: "monuistī" },
+				"3sg": { form: "monuit" },
+				"1pl": { form: "monuimus" },
+				"2pl": { form: "monuistis" },
+				"3pl": { form: "monuērunt", alt: "monuēre" },
+			},
 		},
 	},
 };
@@ -295,6 +333,7 @@ const DUCO: Verb = {
 	principalParts: ["dūcō", "dūcere", "dūxī", "ductum"],
 	english: "lead",
 	base: "dūc",
+	perfectStem: "dūx",
 	indicative: {
 		active: {
 			present: {
@@ -305,6 +344,14 @@ const DUCO: Verb = {
 				"2pl": { form: "dūcitis" },
 				"3pl": { form: "dūcunt" },
 			},
+			perfect: {
+				"1sg": { form: "dūxī" },
+				"2sg": { form: "dūxistī" },
+				"3sg": { form: "dūxit" },
+				"1pl": { form: "dūximus" },
+				"2pl": { form: "dūxistis" },
+				"3pl": { form: "dūxērunt", alt: "dūxēre" },
+			},
 		},
 	},
 };
@@ -313,6 +360,7 @@ const AUDIO: Verb = {
 	principalParts: ["audiō", "audīre", "audīvī", "audītum"],
 	english: "hear",
 	base: "aud",
+	perfectStem: "audīv",
 	indicative: {
 		active: {
 			present: {
@@ -323,6 +371,14 @@ const AUDIO: Verb = {
 				"2pl": { form: "audītis" },
 				"3pl": { form: "audiunt" },
 			},
+			perfect: {
+				"1sg": { form: "audīvī" },
+				"2sg": { form: "audīvistī" },
+				"3sg": { form: "audīvit" },
+				"1pl": { form: "audīvimus" },
+				"2pl": { form: "audīvistis" },
+				"3pl": { form: "audīvērunt", alt: "audīvēre" },
+			},
 		},
 	},
 };
@@ -331,6 +387,7 @@ const CAPIO: Verb = {
 	principalParts: ["capiō", "capere", "cēpī", "captum"],
 	english: "take, seize",
 	base: "cap",
+	perfectStem: "cēp",
 	indicative: {
 		active: {
 			present: {
@@ -340,6 +397,14 @@ const CAPIO: Verb = {
 				"1pl": { form: "capimus" },
 				"2pl": { form: "capitis" },
 				"3pl": { form: "capiunt" },
+			},
+			perfect: {
+				"1sg": { form: "cēpī" },
+				"2sg": { form: "cēpistī" },
+				"3sg": { form: "cēpit" },
+				"1pl": { form: "cēpimus" },
+				"2pl": { form: "cēpistis" },
+				"3pl": { form: "cēpērunt", alt: "cēpēre" },
 			},
 		},
 	},

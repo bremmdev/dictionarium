@@ -56,8 +56,8 @@ const BLURBS: Record<string, React.ReactNode> = {
 	),
 };
 
-/** Keyed by lemma. A verb without one simply follows its pattern. */
-const NOTES: Record<string, React.ReactNode> = {
+// Keyed by lemma, one set per table. A verb without one follows its pattern.
+const PRESENT_NOTES: Record<string, React.ReactNode> = {
 	salūtō: (
 		<>
 			The <LatinWord>ā</LatinWord> of the stem is swallowed by the{" "}
@@ -66,7 +66,7 @@ const NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>:{" "}
 			<LatinWord>salūtās</LatinWord> but <LatinWord>salūtat</LatinWord>,{" "}
 			<LatinWord>salūtant</LatinWord>. A long vowel shortens in those two places
-			all through the verb.
+			all through the present system.
 		</>
 	),
 	moneō: (
@@ -106,6 +106,51 @@ const NOTES: Record<string, React.ReactNode> = {
 	),
 };
 
+const PERFECT_NOTES: Record<string, React.ReactNode> = {
+	salūtō: (
+		<>
+			The regular first-conjugation perfect: a <LatinWord>v</LatinWord> after
+			the stem vowel, <LatinWord>salūtā-</LatinWord> + <LatinWord>v-</LatinWord>
+			. Speech often dropped the <LatinWord>v</LatinWord> and ran the vowels
+			together, and writers kept the short forms:{" "}
+			<LatinWord>salūtāstī</LatinWord>, <LatinWord>salūtārunt</LatinWord>.
+		</>
+	),
+	moneō: (
+		<>
+			The <LatinWord>ē</LatinWord> of the stem gives way to a{" "}
+			<LatinWord>u</LatinWord>: <LatinWord>monu-</LatinWord>. That is the
+			commonest second-conjugation perfect but far from the only one —{" "}
+			<LatinWord>videō</LatinWord> has <LatinWord>vīdī</LatinWord>,{" "}
+			<LatinWord>maneō</LatinWord> has <LatinWord>mānsī</LatinWord>.
+		</>
+	),
+	dūcō: (
+		<>
+			An s-perfect: <LatinWord>dūc-</LatinWord> + <LatinWord>s</LatinWord>,
+			which Latin writes <LatinWord>x</LatinWord>. The third conjugation has no
+			one way of making a perfect, so the third principal part is the only safe
+			guide.
+		</>
+	),
+	audiō: (
+		<>
+			Made like the first conjugation, with a <LatinWord>v</LatinWord> after the
+			long <LatinWord>ī</LatinWord>. Forms without the <LatinWord>v</LatinWord>{" "}
+			are common as well: <LatinWord>audiī</LatinWord>,{" "}
+			<LatinWord>audiistī</LatinWord>, <LatinWord>audiit</LatinWord>.
+		</>
+	),
+	capiō: (
+		<>
+			The perfect changes the root itself: <LatinWord>cap-</LatinWord> becomes{" "}
+			<LatinWord>cēp-</LatinWord>, and the <LatinWord>i</LatinWord> of the
+			present is gone. In the perfect the mixed conjugation is no different from
+			any other, because every verb takes the same perfect endings.
+		</>
+	),
+};
+
 function Group({ title, stem, verbs }: ConjugationGroup) {
 	return (
 		<div className="space-y-6">
@@ -118,13 +163,19 @@ function Group({ title, stem, verbs }: ConjugationGroup) {
 				<span className="font-normal text-ink-600 normal-case">({stem})</span>
 			</Heading>
 			<p className="mx-auto max-w-3xl text-center">{BLURBS[title]}</p>
-			{verbs.map((verb) => (
-				<Verb
-					key={verb.principalParts[0]}
-					verb={verb}
-					note={NOTES[verb.principalParts[0]]}
-				/>
-			))}
+			{verbs.map((verb) => {
+				const [lemma] = verb.principalParts;
+				return (
+					<Verb
+						key={lemma}
+						verb={verb}
+						notes={{
+							present: PRESENT_NOTES[lemma],
+							perfect: PERFECT_NOTES[lemma],
+						}}
+					/>
+				);
+			})}
 		</div>
 	);
 }
