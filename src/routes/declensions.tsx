@@ -8,9 +8,17 @@ import { Adjectives } from "#/components/declensions/Adjectives";
 import { Cases } from "#/components/declensions/Cases";
 import { Endings } from "#/components/declensions/Endings";
 import { Paradigms } from "#/components/declensions/Paradigms";
-import { SectionNav } from "#/components/declensions/SectionNav";
 import { Stems } from "#/components/declensions/Stems";
 import { Heading } from "#/components/Heading";
+import { type Section, SectionNav } from "#/components/SectionNav";
+
+const SECTIONS: Section[] = [
+	{ id: "cases", label: "Cāsūs", gloss: "cases" },
+	{ id: "filing", label: "Filing a noun" },
+	{ id: "declensions", label: "The five declensions" },
+	{ id: "endings", label: "Terminātiōnēs", gloss: "endings" },
+	{ id: "adjectives", label: "Adiectīva", gloss: "adjectives" },
+];
 
 export const Route = createFileRoute("/declensions")({
 	component: RouteComponent,
@@ -74,7 +82,7 @@ function RouteComponent() {
 	return (
 		<>
 			<DeclensionsBanner />
-			<SectionNav />
+			<SectionNav sections={SECTIONS} />
 			<div className="mx-auto max-w-page-width space-y-8 md:space-y-16 py-16 md:py-24">
 				<Cases />
 				<Stems />

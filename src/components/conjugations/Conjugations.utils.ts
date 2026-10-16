@@ -1,0 +1,402 @@
+// Data only — no JSX, so this stays a .ts module, for the same reason as
+// Declensions.utils.ts: the components wrap the Latin in <LatinWord>, and the
+// prose lives in the .tsx files where it can carry lang="la".
+//
+// Every form is spelled with its macrons. In the present they are often the
+// only difference between two groups: monēre against dūcere, audīs against
+// capis. scripts/check-conjugations.ts rebuilds every form from `base` and
+// ENDINGS, so the paradigms and the endings sheet cannot disagree.
+
+import type { Conjugation } from "#/utils/entries/rules";
+
+export const PERSONS = ["1sg", "2sg", "3sg", "1pl", "2pl", "3pl"] as const;
+export type Person = (typeof PERSONS)[number];
+
+/** Short label for the row header, and the full name a screen reader hears. */
+export const PERSON_LABELS: Record<Person, { short: string; full: string }> = {
+	"1sg": { short: "1st sg.", full: "first person singular" },
+	"2sg": { short: "2nd sg.", full: "second person singular" },
+	"3sg": { short: "3rd sg.", full: "third person singular" },
+	"1pl": { short: "1st pl.", full: "first person plural" },
+	"2pl": { short: "2nd pl.", full: "second person plural" },
+	"3pl": { short: "3rd pl.", full: "third person plural" },
+};
+
+export const TENSES = [
+	"present",
+	"imperfect",
+	"future",
+	"perfect",
+	"pluperfect",
+	"futurePerfect",
+] as const;
+export type Tense = (typeof TENSES)[number];
+
+/** The Latin name a table header shows, and the English it is glossed with. */
+export const TENSE_LABELS: Record<Tense, { la: string; en: string }> = {
+	present: { la: "Praesēns", en: "present" },
+	imperfect: { la: "Imperfectum", en: "imperfect" },
+	future: { la: "Futūrum", en: "future" },
+	perfect: { la: "Perfectum", en: "perfect" },
+	pluperfect: { la: "Plūsquamperfectum", en: "pluperfect" },
+	futurePerfect: { la: "Futūrum exāctum", en: "future perfect" },
+};
+
+/** Which stem each tense is built on — one table per system on the page. */
+export const SYSTEMS = {
+	present: ["present", "imperfect", "future"],
+	perfect: ["perfect", "pluperfect", "futurePerfect"],
+} as const satisfies Record<string, ReadonlyArray<Tense>>;
+
+/** The subjunctive has no future tenses. */
+export const MOOD_TENSES = {
+	indicative: TENSES,
+	subjunctive: ["present", "imperfect", "perfect", "pluperfect"],
+} as const satisfies Record<string, ReadonlyArray<Tense>>;
+
+export type Mood = keyof typeof MOOD_TENSES;
+export type Voice = "active" | "passive";
+type MoodTense<M extends Mood> = (typeof MOOD_TENSES)[M][number];
+
+/** One cell; `alt` is a genuine second form in the same slot. */
+export type Form = {
+	form: string;
+	alt?: string;
+	/** Not built from base + ending (dūc), so the derivation check skips it. */
+	irregular?: true;
+};
+
+export type TenseForms = Record<Person, Form>;
+
+/** Optional at every level: the page fills in tense by tense, and shows only what exists. */
+type MoodForms<M extends Mood> = Partial<
+	Record<Voice, Partial<Record<MoodTense<M>, TenseForms>>>
+>;
+
+export type Verb = {
+	/** As the dictionary files them. The first part keys BLURBS and NOTES. */
+	principalParts: [
+		present: string,
+		infinitive: string,
+		perfect: string,
+		supine: string,
+	];
+	english: string;
+	/** What the endings attach to. The thematic vowel is in ENDINGS, not here. */
+	base: string;
+	indicative: MoodForms<"indicative">;
+	subjunctive?: MoodForms<"subjunctive">;
+};
+
+export type RegularConjugation = Exclude<Conjugation, "irregular">;
+
+type EndingRow = Record<Person, string>;
+
+type MoodEndings<M extends Mood> = Partial<
+	Record<Voice, Partial<Record<MoodTense<M>, EndingRow>>>
+>;
+
+export type ConjugationEndings = {
+	indicative: MoodEndings<"indicative">;
+	subjunctive?: MoodEndings<"subjunctive">;
+};
+
+/**
+ * The endings sheet, thematic vowel included, the way the declension sheet
+ * prints -ae and -ārum: salūt- + -ās, aud- + -īs. Hyphenated because the page
+ * prints them that way; the check strips the hyphen.
+ */
+export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
+	"1": {
+		indicative: {
+			active: {
+				present: {
+					"1sg": "-ō",
+					"2sg": "-ās",
+					"3sg": "-at",
+					"1pl": "-āmus",
+					"2pl": "-ātis",
+					"3pl": "-ant",
+				},
+			},
+		},
+	},
+	"2": {
+		indicative: {
+			active: {
+				present: {
+					"1sg": "-eō",
+					"2sg": "-ēs",
+					"3sg": "-et",
+					"1pl": "-ēmus",
+					"2pl": "-ētis",
+					"3pl": "-ent",
+				},
+			},
+		},
+	},
+	"3": {
+		indicative: {
+			active: {
+				present: {
+					"1sg": "-ō",
+					"2sg": "-is",
+					"3sg": "-it",
+					"1pl": "-imus",
+					"2pl": "-itis",
+					"3pl": "-unt",
+				},
+			},
+		},
+	},
+	"4": {
+		indicative: {
+			active: {
+				present: {
+					"1sg": "-iō",
+					"2sg": "-īs",
+					"3sg": "-it",
+					"1pl": "-īmus",
+					"2pl": "-ītis",
+					"3pl": "-iunt",
+				},
+			},
+		},
+	},
+	"3io": {
+		indicative: {
+			active: {
+				present: {
+					"1sg": "-iō",
+					"2sg": "-is",
+					"3sg": "-it",
+					"1pl": "-imus",
+					"2pl": "-itis",
+					"3pl": "-iunt",
+				},
+			},
+		},
+	},
+};
+
+/** The personal endings every active tense is built from, and what they mean. */
+export const PERSONAL_ENDINGS: Record<
+	Person,
+	{ ending: string; example: string; english: string }
+> = {
+	"1sg": { ending: "-ō / -m", example: "salūtō", english: "I greet" },
+	"2sg": { ending: "-s", example: "salūtās", english: "you greet" },
+	"3sg": { ending: "-t", example: "salūtat", english: "he, she, it greets" },
+	"1pl": { ending: "-mus", example: "salūtāmus", english: "we greet" },
+	"2pl": { ending: "-tis", example: "salūtātis", english: "you (all) greet" },
+	"3pl": { ending: "-nt", example: "salūtant", english: "they greet" },
+};
+
+export const PRINCIPAL_PARTS = [
+	{
+		part: "present",
+		example: "salūtō",
+		gives:
+			"the first person singular present — and, for -iō, whether an -ere verb is third or mixed",
+	},
+	{
+		part: "infinitive",
+		example: "salūtāre",
+		gives: "the conjugation, and the stem of the present, imperfect and future",
+	},
+	{
+		part: "perfect",
+		example: "salūtāvī",
+		gives: "the stem of the perfect, pluperfect and future perfect",
+	},
+	{
+		part: "supine",
+		example: "salūtātum",
+		gives: "the stem of the perfect passive participle",
+	},
+];
+
+/** How the dictionary entry gives the group away. */
+export const CONJUGATION_KEYS: Array<{
+	conjugation: string;
+	entry: string;
+	infinitive: string;
+	stemVowel: string | null;
+}> = [
+	{
+		conjugation: "1st",
+		entry: "salūtō, salūtāre",
+		infinitive: "-āre",
+		stemVowel: "ā",
+	},
+	{
+		conjugation: "2nd",
+		entry: "moneō, monēre",
+		infinitive: "-ēre",
+		stemVowel: "ē",
+	},
+	{
+		conjugation: "3rd",
+		entry: "dūcō, dūcere",
+		infinitive: "-ere",
+		stemVowel: null,
+	},
+	{
+		conjugation: "4th",
+		entry: "audiō, audīre",
+		infinitive: "-īre",
+		stemVowel: "ī",
+	},
+	{
+		conjugation: "Mixed",
+		entry: "capiō, capere",
+		infinitive: "-iō, -ere",
+		stemVowel: "i",
+	},
+];
+
+const SALUTO: Verb = {
+	principalParts: ["salūtō", "salūtāre", "salūtāvī", "salūtātum"],
+	english: "greet",
+	base: "salūt",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "salūtō" },
+				"2sg": { form: "salūtās" },
+				"3sg": { form: "salūtat" },
+				"1pl": { form: "salūtāmus" },
+				"2pl": { form: "salūtātis" },
+				"3pl": { form: "salūtant" },
+			},
+		},
+	},
+};
+
+const MONEO: Verb = {
+	principalParts: ["moneō", "monēre", "monuī", "monitum"],
+	english: "warn, advise",
+	base: "mon",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "moneō" },
+				"2sg": { form: "monēs" },
+				"3sg": { form: "monet" },
+				"1pl": { form: "monēmus" },
+				"2pl": { form: "monētis" },
+				"3pl": { form: "monent" },
+			},
+		},
+	},
+};
+
+const DUCO: Verb = {
+	principalParts: ["dūcō", "dūcere", "dūxī", "ductum"],
+	english: "lead",
+	base: "dūc",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "dūcō" },
+				"2sg": { form: "dūcis" },
+				"3sg": { form: "dūcit" },
+				"1pl": { form: "dūcimus" },
+				"2pl": { form: "dūcitis" },
+				"3pl": { form: "dūcunt" },
+			},
+		},
+	},
+};
+
+const AUDIO: Verb = {
+	principalParts: ["audiō", "audīre", "audīvī", "audītum"],
+	english: "hear",
+	base: "aud",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "audiō" },
+				"2sg": { form: "audīs" },
+				"3sg": { form: "audit" },
+				"1pl": { form: "audīmus" },
+				"2pl": { form: "audītis" },
+				"3pl": { form: "audiunt" },
+			},
+		},
+	},
+};
+
+const CAPIO: Verb = {
+	principalParts: ["capiō", "capere", "cēpī", "captum"],
+	english: "take, seize",
+	base: "cap",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "capiō" },
+				"2sg": { form: "capis" },
+				"3sg": { form: "capit" },
+				"1pl": { form: "capimus" },
+				"2pl": { form: "capitis" },
+				"3pl": { form: "capiunt" },
+			},
+		},
+	},
+};
+
+export type ConjugationGroup = {
+	conjugation: RegularConjugation;
+	/** The heading: "First conjugation". Also keys the blurb in Paradigms.tsx. */
+	title: string;
+	/** The stem the group is named for — printed beside the heading. */
+	stem: string;
+	verbs: Verb[];
+};
+
+// Mixed last: capiō is explained as part third, part fourth.
+export const CONJUGATION_GROUPS: ConjugationGroup[] = [
+	{
+		conjugation: "1",
+		title: "First conjugation",
+		stem: "ā-stems",
+		verbs: [SALUTO],
+	},
+	{
+		conjugation: "2",
+		title: "Second conjugation",
+		stem: "ē-stems",
+		verbs: [MONEO],
+	},
+	{
+		conjugation: "3",
+		title: "Third conjugation",
+		stem: "consonant stems",
+		verbs: [DUCO],
+	},
+	{
+		conjugation: "4",
+		title: "Fourth conjugation",
+		stem: "ī-stems",
+		verbs: [AUDIO],
+	},
+	{
+		conjugation: "3io",
+		title: "Mixed conjugation",
+		stem: "third-conjugation -iō verbs",
+		verbs: [CAPIO],
+	},
+];
+
+/** Column order for the endings sheet. */
+export const ENDING_COLUMNS: Array<{
+	key: RegularConjugation | "person";
+	label: string;
+}> = [
+	{ key: "person", label: "Person" },
+	{ key: "1", label: "1st" },
+	{ key: "2", label: "2nd" },
+	{ key: "3", label: "3rd" },
+	{ key: "4", label: "4th" },
+	{ key: "3io", label: "Mixed" },
+];

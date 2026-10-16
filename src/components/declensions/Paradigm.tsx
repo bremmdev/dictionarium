@@ -1,3 +1,4 @@
+import { FormCell } from "../FormCell";
 import { LatinWord } from "../LatinWord";
 import { Table } from "../Table";
 import {
@@ -5,27 +6,6 @@ import {
 	PARADIGM_COLUMNS,
 	type Paradigm as ParadigmData,
 } from "./Declensions.utils";
-
-/**
- * One cell: the form, and the second form that shares the slot where there is
- * one — urbīs beside urbēs, domō beside domuī. The alternative is set in muted
- * ink rather than gold so the form to learn first still reads as the answer,
- * and the "or" sits outside the lang="la" span so a Latin voice does not try to
- * pronounce an English word.
- */
-function Cell({ form, alt }: { form: string; alt?: string }) {
-	return (
-		<>
-			<LatinWord>{form}</LatinWord>
-			{alt && (
-				<span className="text-ink-600 text-sm md:text-base">
-					{" or "}
-					<span lang="la">{alt}</span>
-				</span>
-			)}
-		</>
-	);
-}
 
 type ParadigmProps = {
 	paradigm: ParadigmData;
@@ -42,8 +22,8 @@ export function Paradigm({ paradigm, note, className }: ParadigmProps) {
 		id: grammaticalCase,
 		cells: {
 			grammaticalCase,
-			singular: <Cell {...singular[grammaticalCase]} />,
-			plural: <Cell {...plural[grammaticalCase]} />,
+			singular: <FormCell {...singular[grammaticalCase]} />,
+			plural: <FormCell {...plural[grammaticalCase]} />,
 		},
 	}));
 

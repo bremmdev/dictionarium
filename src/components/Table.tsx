@@ -51,7 +51,8 @@ export function Table({
 		// own box rather than pushing the page sideways on a phone. The border
 		// sits on the table rather than on that box so the caption reads as a
 		// lead-in above the frame instead of being boxed in with the headers.
-		<div className={`overflow-x-auto ${className ?? ""}`}>
+		// relative, so an sr-only span in a far column stays inside the scroll box.
+		<div className={`relative overflow-x-auto ${className ?? ""}`}>
 			{/* One size for the whole table, stepped down below md: the cells
 			    inherit it, so a paradigm on a phone fits its column instead of
 			    scrolling inside it. The header row and the caption take the same

@@ -1,6 +1,13 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, Hash, ListFilter, Quote, Table2 } from "lucide-react";
+import {
+	ChevronDown,
+	Hash,
+	ListFilter,
+	Quote,
+	Table2,
+	TableProperties,
+} from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const RESOURCES = [
@@ -9,6 +16,12 @@ const RESOURCES = [
 		label: "Declensions",
 		description: "Nouns and adjectives by case",
 		Icon: Table2,
+	},
+	{
+		to: "/conjugations",
+		label: "Conjugations",
+		description: "Verbs by person and tense",
+		Icon: TableProperties,
 	},
 	{
 		to: "/numbers",

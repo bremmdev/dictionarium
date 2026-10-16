@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ConjugationsRouteImport } from './routes/conjugations'
 import { Route as DeclensionsRouteImport } from './routes/declensions'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConjugationsRoute = ConjugationsRouteImport.update({
+  id: '/conjugations',
+  path: '/conjugations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeclensionsRoute = DeclensionsRouteImport.update({
@@ -68,6 +74,7 @@ const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/conjugations'
     | '/declensions'
     | '/login'
     | '/numbers'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/conjugations'
     | '/declensions'
     | '/login'
     | '/numbers'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/conjugations'
     | '/declensions'
     | '/login'
     | '/numbers'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ConjugationsRoute: typeof ConjugationsRoute
   DeclensionsRoute: typeof DeclensionsRoute
   LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conjugations': {
+      id: '/conjugations'
+      path: '/conjugations'
+      fullPath: '/conjugations'
+      preLoaderRoute: typeof ConjugationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/declensions': {
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ConjugationsRoute: ConjugationsRoute,
   DeclensionsRoute: DeclensionsRoute,
   LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
