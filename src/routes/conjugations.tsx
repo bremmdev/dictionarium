@@ -8,6 +8,7 @@ import { Endings } from "#/components/conjugations/Endings";
 import { Filing } from "#/components/conjugations/Filing";
 import { Paradigms } from "#/components/conjugations/Paradigms";
 import { Persons } from "#/components/conjugations/Persons";
+import { Translating } from "#/components/conjugations/Translating";
 import { Heading } from "#/components/Heading";
 import { type Section, SectionNav } from "#/components/SectionNav";
 
@@ -15,6 +16,7 @@ const SECTIONS: Section[] = [
 	{ id: "persons", label: "Persōnae", gloss: "persons" },
 	{ id: "filing", label: "Filing a verb" },
 	{ id: "conjugations", label: "The conjugations" },
+	{ id: "translating", label: "Translating" },
 	{ id: "endings", label: "Terminātiōnēs", gloss: "endings" },
 ];
 
@@ -85,6 +87,7 @@ function RouteComponent() {
 				<Persons />
 				<Filing />
 				<Paradigms />
+				<Translating />
 				<Endings />
 			</div>
 		</>
