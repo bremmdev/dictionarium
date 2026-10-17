@@ -4,7 +4,6 @@ import { Info } from "lucide-react";
 import toga from "#/assets/toga-sketch.svg";
 import wreath from "#/assets/wreath-sketch.svg";
 import { Banner } from "#/components/Banner";
-import { Endings } from "#/components/conjugations/Endings";
 import { Filing } from "#/components/conjugations/Filing";
 import { Paradigms } from "#/components/conjugations/Paradigms";
 import { Persons } from "#/components/conjugations/Persons";
@@ -17,7 +16,6 @@ const SECTIONS: Section[] = [
 	{ id: "filing", label: "Filing a verb" },
 	{ id: "conjugations", label: "The conjugations" },
 	{ id: "translating", label: "Translating" },
-	{ id: "endings", label: "Terminātiōnēs", gloss: "endings" },
 ];
 
 export const Route = createFileRoute("/conjugations")({
@@ -88,7 +86,6 @@ function RouteComponent() {
 				<Filing />
 				<Paradigms />
 				<Translating />
-				<Endings />
 			</div>
 		</>
 	);
