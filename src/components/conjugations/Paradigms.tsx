@@ -65,8 +65,11 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>salūtāō</LatinWord> — and shortens before{" "}
 			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>:{" "}
 			<LatinWord>salūtās</LatinWord> but <LatinWord>salūtat</LatinWord>,{" "}
-			<LatinWord>salūtant</LatinWord>. A long vowel shortens in those two places
-			all through the present system.
+			<LatinWord>salūtant</LatinWord>. The imperfect adds{" "}
+			<LatinWord>-bā-</LatinWord>, whose <LatinWord>ā</LatinWord> shortens the
+			same way and before a final <LatinWord>-m</LatinWord> too:{" "}
+			<LatinWord>salūtābās</LatinWord> but <LatinWord>salūtābam</LatinWord>,{" "}
+			<LatinWord>salūtābat</LatinWord>, <LatinWord>salūtābant</LatinWord>.
 		</>
 	),
 	moneō: (
@@ -74,16 +77,20 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			Long everywhere but at the edges: <LatinWord>monēs</LatinWord>,{" "}
 			<LatinWord>monēmus</LatinWord>, <LatinWord>monētis</LatinWord> against the
 			short <LatinWord>e</LatinWord> of <LatinWord>moneō</LatinWord>,{" "}
-			<LatinWord>monet</LatinWord> and <LatinWord>monent</LatinWord>.
+			<LatinWord>monet</LatinWord> and <LatinWord>monent</LatinWord>. In the
+			imperfect the <LatinWord>ē</LatinWord> stays long in every person:{" "}
+			<LatinWord>monēbam</LatinWord>, <LatinWord>monēbant</LatinWord>.
 		</>
 	),
 	dūcō: (
 		<>
 			Set it beside <LatinWord>moneō</LatinWord>: <LatinWord>dūcis</LatinWord>,{" "}
 			<LatinWord>dūcimus</LatinWord> against <LatinWord>monēs</LatinWord>,{" "}
-			<LatinWord>monēmus</LatinWord>. The <LatinWord>ū</LatinWord> of{" "}
-			<LatinWord>dūc-</LatinWord> is long all through the present, but not in
-			the supine: <LatinWord>ductum</LatinWord>.
+			<LatinWord>monēmus</LatinWord>. In the imperfect the two meet:{" "}
+			<LatinWord>dūcēbam</LatinWord> takes a long <LatinWord>ē</LatinWord>{" "}
+			exactly like <LatinWord>monēbam</LatinWord>. The <LatinWord>ū</LatinWord>{" "}
+			of <LatinWord>dūc-</LatinWord> is long all through the present system, but
+			not in the supine: <LatinWord>ductum</LatinWord>.
 		</>
 	),
 	audiō: (
@@ -91,8 +98,10 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			The <LatinWord>i</LatinWord> of <LatinWord>audit</LatinWord> is short
 			because of the <LatinWord>-t</LatinWord>, and the one in{" "}
 			<LatinWord>audiō</LatinWord> and <LatinWord>audiunt</LatinWord> because a
-			vowel in front of another vowel is short in Latin. Everywhere else it is
-			long.
+			vowel in front of another vowel is short in Latin. Everywhere else in the
+			present it is long. The imperfect puts an <LatinWord>ē</LatinWord> after
+			it, so the <LatinWord>i</LatinWord> is short all through:{" "}
+			<LatinWord>audiēbam</LatinWord>.
 		</>
 	),
 	capiō: (
@@ -101,7 +110,9 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>capimus</LatinWord>, <LatinWord>capitis</LatinWord> are short
 			where <LatinWord>audīs</LatinWord>, <LatinWord>audīmus</LatinWord>,{" "}
 			<LatinWord>audītis</LatinWord> are long. In those three forms the vowel
-			length is all that separates the two groups.
+			length is all that separates the two groups. The imperfect is the fourth
+			conjugation's outright: <LatinWord>capiēbam</LatinWord> like{" "}
+			<LatinWord>audiēbam</LatinWord>.
 		</>
 	),
 };

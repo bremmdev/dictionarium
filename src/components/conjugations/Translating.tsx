@@ -3,7 +3,7 @@ import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
 import { TenseLabel } from "./Labels";
 
-// Checked against Allen & Greenough §§ 160–161, 465–466, 473 and
+// Checked against Allen & Greenough §§ 160–161, 465–466, 470–471, 473 and
 // Gildersleeve & Lodge §§ 227, 235–240.
 
 const COLUMNS = [
@@ -21,6 +21,33 @@ const ROWS = [
 			latin: <LatinWord>salūtō</LatinWord>,
 			english: "I greet, I am greeting, I do greet",
 			when: "now, as a habit, or always",
+		},
+	},
+	{
+		id: "imperfect-progressive",
+		cells: {
+			tense: <TenseLabel tense="imperfect" />,
+			latin: <LatinWord>salūtābam</LatinWord>,
+			english: "I was greeting",
+			when: "going on at some time in the past — a scene, not an event",
+		},
+	},
+	{
+		id: "imperfect-habitual",
+		cells: {
+			tense: <TenseLabel tense="imperfect" />,
+			latin: <LatinWord>salūtābam</LatinWord>,
+			english: "I used to greet, I kept greeting",
+			when: "again and again in the past, as a habit",
+		},
+	},
+	{
+		id: "imperfect-conative",
+		cells: {
+			tense: <TenseLabel tense="imperfect" />,
+			latin: <LatinWord>salūtābam</LatinWord>,
+			english: "I tried to greet, I began to greet",
+			when: "started or attempted, but not carried through",
 		},
 	},
 	{
@@ -61,8 +88,9 @@ export function Translating() {
 				A Latin tense covers more ground than an English one, so one form can
 				need two or three translations. English splits the present into{" "}
 				<em>I greet</em> and <em>I am greeting</em>; Latin has{" "}
-				<LatinWord>salūtō</LatinWord> for both. The perfect does the same with
-				two kinds of past.
+				<LatinWord>salūtō</LatinWord> for both. The past is cut the other way:
+				English <em>I greeted</em> can be the imperfect or the perfect, and
+				Latin makes you choose between what went on and what was done.
 			</p>
 			<Table
 				caption="One Latin form, several English ones."
@@ -71,6 +99,17 @@ export function Translating() {
 				className="mx-auto max-w-5xl"
 			/>
 			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-600 leading-relaxed">
+				<p>
+					<strong className="font-semibold text-ink-900">
+						The imperfect describes, the perfect reports.
+					</strong>{" "}
+					Cicero has both in one line about Socrates:{" "}
+					<LatinWord>ita cēnsēbat itaque disseruit</LatinWord>,{" "}
+					<em>that was what he thought</em>, as a settled view,{" "}
+					<em>and that is what he said</em>, on the one occasion. Where the
+					context already makes a scene of it, a plain <em>he thought</em> is
+					often the better English for an imperfect.
+				</p>
 				<p>
 					<strong className="font-semibold text-ink-900">
 						The two perfects are one form,
@@ -91,9 +130,18 @@ export function Translating() {
 					<em>we have been suffering for many years now</em>. Latin says the
 					suffering continues; a Latin perfect would mean it had stopped.
 				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						The imperfect can need an English pluperfect
+					</strong>{" "}
+					in the same way, one step further back:{" "}
+					<LatinWord>iam dūdum flēbam</LatinWord>,{" "}
+					<em>I had been weeping for a long time</em>. The weeping had begun
+					earlier and was still going on at the moment the story has reached.
+				</p>
 				<p className="text-sm">
 					After Allen and Greenough, <cite>New Latin Grammar</cite>, §§ 160–161,
-					465–466 and 473, and Gildersleeve and Lodge,{" "}
+					465–466, 470–471 and 473, and Gildersleeve and Lodge,{" "}
 					<cite>Latin Grammar</cite>, §§ 227 and 235–240.
 				</p>
 			</div>

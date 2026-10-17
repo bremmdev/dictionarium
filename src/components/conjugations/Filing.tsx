@@ -128,9 +128,11 @@ const STEPS = [
 			<>
 				Take the <LatinWord>-ō</LatinWord>, <LatinWord>-eō</LatinWord> or{" "}
 				<LatinWord>-iō</LatinWord> off the first part and add that group's
-				endings: <LatinWord>salūt-</LatinWord> + <LatinWord>-ās</LatinWord>,{" "}
-				<LatinWord>mon-</LatinWord> + <LatinWord>-ēs</LatinWord>,{" "}
-				<LatinWord>dūc-</LatinWord> + <LatinWord>-is</LatinWord>.
+				endings: <LatinWord>salūt-</LatinWord> + <LatinWord>-ās</LatinWord> or{" "}
+				<LatinWord>-ābam</LatinWord>, <LatinWord>mon-</LatinWord> +{" "}
+				<LatinWord>-ēs</LatinWord> or <LatinWord>-ēbam</LatinWord>,{" "}
+				<LatinWord>dūc-</LatinWord> + <LatinWord>-is</LatinWord> or{" "}
+				<LatinWord>-ēbam</LatinWord>.
 			</>
 		),
 	},
@@ -172,7 +174,10 @@ export function Filing() {
 				nowrap
 				className="mx-auto max-w-4xl"
 			/>
-			<p>So conjugating any regular verb in the present is two steps:</p>
+			<p>
+				So conjugating any regular verb in the present or the imperfect is two
+				steps:
+			</p>
 			{/* The same numbered steps as Filing a noun on /declensions. */}
 			<ol className="mx-auto max-w-3xl space-y-3">
 				{STEPS.map(({ id, body }, i) => (

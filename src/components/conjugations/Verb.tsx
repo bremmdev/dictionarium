@@ -44,8 +44,7 @@ export function Verb({ verb, notes }: VerbProps) {
 					{` — ${verb.english}`}
 				</span>
 			</Heading>
-			{/* Side by side while each system has one tense; recheck the
-			    breakpoint once the imperfect and pluperfect join them. */}
+			{/* Side by side from lg; recheck once the pluperfect joins. */}
 			<div className="mx-auto grid max-w-4xl items-start gap-8 lg:grid-cols-2">
 				{SYSTEMS_IN_ORDER.map((system) => (
 					<div key={system} className="space-y-3">

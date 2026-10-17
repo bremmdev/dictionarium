@@ -56,8 +56,9 @@ export function Persons() {
 			<p>
 				The first person singular is the one that varies:{" "}
 				<LatinWord>-ō</LatinWord> in the present, <LatinWord>-m</LatinWord> in
-				some other tenses. Everything after it is the same in every conjugation,
-				so the endings sheet below differs only in the vowel in front of them.
+				the imperfect: <LatinWord>salūtābam</LatinWord>. Everything after it is
+				the same in every conjugation, so the groups differ only in what comes
+				in front of the endings.
 			</p>
 		</section>
 	);

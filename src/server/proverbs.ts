@@ -19,7 +19,7 @@ export const getProverbs = createServerFn({ method: "GET" })
 
 /**
  * Every proverb, for the public /proverbs page: by author, A to Z, and by text
- * within an author. ANONYMOUS goes last 
+ * within an author. ANONYMOUS goes last
  */
 export const listProverbs = createServerFn({ method: "GET" }).handler(
 	async (): Promise<Array<Proverb>> =>
