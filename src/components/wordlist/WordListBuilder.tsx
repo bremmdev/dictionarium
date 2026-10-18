@@ -39,7 +39,9 @@ const POS_OPTIONS = [
 	{ value: "noun", label: "Nouns" },
 	{ value: "adjective", label: "Adjectives" },
 	{ value: "verb", label: "Verbs" },
+	{ value: "adverb", label: "Adverbs" },
 	{ value: "preposition", label: "Prepositions" },
+	{ value: "other", label: "Other" },
 ] as const;
 
 const ANY = { value: "", label: "Any" };
@@ -94,7 +96,9 @@ const POS_NOUNS: Record<WordListPartOfSpeech, [string, string]> = {
 	noun: ["noun", "nouns"],
 	adjective: ["adjective", "adjectives"],
 	verb: ["verb", "verbs"],
+	adverb: ["adverb", "adverbs"],
 	preposition: ["preposition", "prepositions"],
+	other: ["other word", "other words"],
 };
 
 /** "the ablative", "the accusative or the ablative" — any of them, said so. */
