@@ -5,12 +5,27 @@
  */
 import { formatCases, readCases } from "#/utils/entries/rules";
 
-/** The parts of speech the list offers. No `pos` at all means every word. */
-export const WORD_LIST_PARTS_OF_SPEECH = [
+/**
+ * The parts of speech the list names, each matched as filed. No `pos` at all
+ * means every word.
+ */
+export const NAMED_PARTS_OF_SPEECH = [
 	"noun",
 	"adjective",
 	"verb",
+	"adverb",
 	"preposition",
+] as const;
+
+/**
+ * `other` is every word filed under none of the named ones — numerals,
+ * pronouns, conjunctions, interjections, particles. It is defined by what it
+ * is not, so a part of speech added to INFLECTS later lands here rather than
+ * on no list at all.
+ */
+export const WORD_LIST_PARTS_OF_SPEECH = [
+	...NAMED_PARTS_OF_SPEECH,
+	"other",
 ] as const;
 
 export type WordListPartOfSpeech = (typeof WORD_LIST_PARTS_OF_SPEECH)[number];

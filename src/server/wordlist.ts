@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 
 import { db } from "#/db";
 import { type EntryWithSenses, entries } from "#/db/schema";
@@ -7,6 +7,7 @@ import {
 	findConjugation,
 	findDeclension,
 	MAX_LIST_RESULTS,
+	NAMED_PARTS_OF_SPEECH,
 	parseLetters,
 	parseWordListSearch,
 	selectedCases,
@@ -23,7 +24,13 @@ export const listEntries = createServerFn({ method: "GET" })
 	.handler(async ({ data }): Promise<WordList> => {
 		const conditions = [];
 
-		if (data.pos) conditions.push(eq(entries.partOfSpeech, data.pos));
+		if (data.pos === "other") {
+			conditions.push(
+				notInArray(entries.partOfSpeech, [...NAMED_PARTS_OF_SPEECH]),
+			);
+		} else if (data.pos) {
+			conditions.push(eq(entries.partOfSpeech, data.pos));
+		}
 		const declension = findDeclension(data.pos, data.decl);
 		if (declension) conditions.push(eq(entries.declension, declension.value));
 
