@@ -12,16 +12,16 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const RESOURCES = [
 	{
-		to: "/declensions",
-		label: "Declensions",
-		description: "Nouns and adjectives by case",
-		Icon: Table2,
-	},
-	{
 		to: "/conjugations",
 		label: "Conjugations",
 		description: "Verbs by person and tense",
 		Icon: TableProperties,
+	},
+	{
+		to: "/declensions",
+		label: "Declensions",
+		description: "Nouns and adjectives by case",
+		Icon: Table2,
 	},
 	{
 		to: "/numbers",
@@ -30,16 +30,16 @@ const RESOURCES = [
 		Icon: Hash,
 	},
 	{
-		to: "/word-list",
-		label: "Word lists",
-		description: "Build your own list of words",
-		Icon: ListFilter,
-	},
-	{
 		to: "/proverbs",
 		label: "Proverbs",
 		description: "Sayings and their sources, by author",
 		Icon: Quote,
+	},
+	{
+		to: "/word-list",
+		label: "Word lists",
+		description: "Build your own list of words",
+		Icon: ListFilter,
 	},
 ] as const;
 

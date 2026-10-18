@@ -124,7 +124,14 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			the stem vowel, <LatinWord>salūtā-</LatinWord> + <LatinWord>v-</LatinWord>
 			. Speech often dropped the <LatinWord>v</LatinWord> and ran the vowels
 			together, and writers kept the short forms:{" "}
-			<LatinWord>salūtāstī</LatinWord>, <LatinWord>salūtārunt</LatinWord>.
+			<LatinWord>salūtāstī</LatinWord>, <LatinWord>salūtārunt</LatinWord>,{" "}
+			<LatinWord>salūtāram</LatinWord>. The pluperfect endings look like the
+			imperfect of <LatinWord>sum</LatinWord>, <LatinWord>eram</LatinWord>,{" "}
+			<LatinWord>erās</LatinWord>, <LatinWord>erat</LatinWord>, and their{" "}
+			<LatinWord>ā</LatinWord> shortens as the imperfect's{" "}
+			<LatinWord>-bā-</LatinWord> does: <LatinWord>salūtāverās</LatinWord> but{" "}
+			<LatinWord>salūtāveram</LatinWord>, <LatinWord>salūtāverat</LatinWord>,{" "}
+			<LatinWord>salūtāverant</LatinWord>.
 		</>
 	),
 	moneō: (
@@ -149,15 +156,17 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			Made like the first conjugation, with a <LatinWord>v</LatinWord> after the
 			long <LatinWord>ī</LatinWord>. Forms without the <LatinWord>v</LatinWord>{" "}
 			are common as well: <LatinWord>audiī</LatinWord>,{" "}
-			<LatinWord>audiistī</LatinWord>, <LatinWord>audiit</LatinWord>.
+			<LatinWord>audiistī</LatinWord>, <LatinWord>audiit</LatinWord>, and in the
+			pluperfect <LatinWord>audieram</LatinWord>.
 		</>
 	),
 	capiō: (
 		<>
 			The perfect changes the root itself: <LatinWord>cap-</LatinWord> becomes{" "}
 			<LatinWord>cēp-</LatinWord>, and the <LatinWord>i</LatinWord> of the
-			present is gone. In the perfect the mixed conjugation is no different from
-			any other, because every verb takes the same perfect endings.
+			present is gone. In the perfect and the pluperfect the mixed conjugation
+			is no different from any other, because every verb takes the same endings
+			there.
 		</>
 	),
 };

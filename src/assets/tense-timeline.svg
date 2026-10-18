@@ -1,0 +1,64 @@
+<svg width="100%" viewBox="0 80 740 226" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Where the tenses of salūtō fall on a line from past to future</title>
+<desc>A horizontal groove runs from the past on the left to the future on the right, with a bar marking now. The pluperfect is a pebble far to the left. The imperfect is a long shaded stretch of the past, and the perfect is a single pebble inside that stretch. The present is a pebble on the bar for now. The future side is still empty.</desc>
+<style>
+	text { font-family: Georgia, "Times New Roman", serif; }
+	.name { fill: #3a342c; font-size: 14px; font-weight: 500; }
+	.sub { fill: #5b5348; font-size: 12px; }
+	.marker { fill: #5b5348; font-size: 12px; letter-spacing: 0.12em; text-anchor: middle; }
+	.now { fill: #8f3e2a; font-size: 14px; font-weight: 600; letter-spacing: 0.12em; text-anchor: middle; }
+	.leader { fill: none; stroke: #8a7e69; stroke-width: 0.5px; stroke-dasharray: 4px 3px; }
+	.dot { fill: #8a7e69; }
+	.pebble { fill: #c05b38; stroke: #8f3e2a; stroke-width: 1px; }
+</style>
+
+<!-- The groove the pebbles sit in -->
+<rect x="30" y="150" width="670" height="28" rx="14" fill="#f3eada" stroke="#dbcba2" stroke-width="0.5"/>
+
+<!-- Imperfect: a stretch of the past, not a point -->
+<rect x="200" y="153" width="220" height="22" rx="11" fill="#c05b38" fill-opacity="0.22" stroke="#8f3e2a" stroke-width="1" stroke-dasharray="4 3"/>
+
+<!-- Now: the counting bar, carried down to the time axis -->
+<line x1="520" y1="192" x2="520" y2="268" class="leader"/>
+<rect x="517" y="134" width="6" height="60" rx="3" fill="#8a7e69"/>
+
+<!-- Pebbles -->
+<circle cx="110" cy="164" r="11" class="pebble"/>
+<circle cx="340" cy="164" r="11" class="pebble"/>
+<circle cx="520" cy="164" r="11" class="pebble"/>
+
+<!-- Imperfect label, above -->
+<g>
+	<line x1="300" y1="153" x2="290" y2="128" class="leader"/><circle cx="300" cy="153" r="2" class="dot"/>
+	<text x="200" y="104" class="name">Imperfectum</text>
+	<text x="200" y="122" class="sub">salūtābam — I was greeting, I used to greet</text>
+</g>
+
+<!-- Present label, above -->
+<g>
+	<line x1="523" y1="136" x2="536" y2="128" class="leader"/><circle cx="523" cy="136" r="2" class="dot"/>
+	<text x="540" y="104" class="name">Praesēns</text>
+	<text x="540" y="122" class="sub">salūtō — I greet, I am greeting</text>
+</g>
+
+<!-- Pluperfect label, below -->
+<g>
+	<line x1="110" y1="176" x2="96" y2="202" class="leader"/><circle cx="110" cy="176" r="2" class="dot"/>
+	<text x="40" y="218" class="name">Plūperfectum</text>
+	<text x="40" y="236" class="sub">salūtāveram — I had greeted</text>
+</g>
+
+<!-- Perfect label, below -->
+<g>
+	<line x1="340" y1="176" x2="304" y2="202" class="leader"/><circle cx="340" cy="176" r="2" class="dot"/>
+	<text x="290" y="218" class="name">Perfectum</text>
+	<text x="290" y="236" class="sub">salūtāvī — I greeted, I have greeted</text>
+</g>
+
+<!-- Time axis -->
+<line x1="30" y1="268" x2="694" y2="268" stroke="#8a7e69" stroke-width="1"/>
+<path d="M 700 268 L 690 263 L 690 273 Z" fill="#8a7e69"/>
+<text x="270" y="292" class="marker">PAST</text>
+<text x="520" y="292" class="now">PRESENT</text>
+<text x="630" y="292" class="marker">FUTURE</text>
+</svg>

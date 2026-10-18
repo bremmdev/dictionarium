@@ -39,7 +39,8 @@ export const TENSE_LABELS: Record<Tense, { la: string; en: string }> = {
 	imperfect: { la: "Imperfectum", en: "imperfect" },
 	future: { la: "Futūrum", en: "future" },
 	perfect: { la: "Perfectum", en: "perfect" },
-	pluperfect: { la: "Plūsquamperfectum", en: "pluperfect" },
+	// Short for Plūsquamperfectum, which made the column too wide.
+	pluperfect: { la: "Plūperfectum", en: "pluperfect" },
 	futurePerfect: { la: "Futūrum exāctum", en: "future perfect" },
 };
 
@@ -236,6 +237,14 @@ export const PERFECT_ENDINGS: MoodEndings<"indicative"> = {
 			"2pl": "-istis",
 			"3pl": "-ērunt / -ēre",
 		},
+		pluperfect: {
+			"1sg": "-eram",
+			"2sg": "-erās",
+			"3sg": "-erat",
+			"1pl": "-erāmus",
+			"2pl": "-erātis",
+			"3pl": "-erant",
+		},
 	},
 };
 
@@ -346,6 +355,14 @@ const SALUTO: Verb = {
 				"2pl": { form: "salūtāvistis" },
 				"3pl": { form: "salūtāvērunt", alt: "salūtāvēre" },
 			},
+			pluperfect: {
+				"1sg": { form: "salūtāveram" },
+				"2sg": { form: "salūtāverās" },
+				"3sg": { form: "salūtāverat" },
+				"1pl": { form: "salūtāverāmus" },
+				"2pl": { form: "salūtāverātis" },
+				"3pl": { form: "salūtāverant" },
+			},
 		},
 	},
 };
@@ -380,6 +397,14 @@ const MONEO: Verb = {
 				"1pl": { form: "monuimus" },
 				"2pl": { form: "monuistis" },
 				"3pl": { form: "monuērunt", alt: "monuēre" },
+			},
+			pluperfect: {
+				"1sg": { form: "monueram" },
+				"2sg": { form: "monuerās" },
+				"3sg": { form: "monuerat" },
+				"1pl": { form: "monuerāmus" },
+				"2pl": { form: "monuerātis" },
+				"3pl": { form: "monuerant" },
 			},
 		},
 	},
@@ -416,6 +441,14 @@ const DUCO: Verb = {
 				"2pl": { form: "dūxistis" },
 				"3pl": { form: "dūxērunt", alt: "dūxēre" },
 			},
+			pluperfect: {
+				"1sg": { form: "dūxeram" },
+				"2sg": { form: "dūxerās" },
+				"3sg": { form: "dūxerat" },
+				"1pl": { form: "dūxerāmus" },
+				"2pl": { form: "dūxerātis" },
+				"3pl": { form: "dūxerant" },
+			},
 		},
 	},
 };
@@ -451,6 +484,14 @@ const AUDIO: Verb = {
 				"2pl": { form: "audīvistis" },
 				"3pl": { form: "audīvērunt", alt: "audīvēre" },
 			},
+			pluperfect: {
+				"1sg": { form: "audīveram" },
+				"2sg": { form: "audīverās" },
+				"3sg": { form: "audīverat" },
+				"1pl": { form: "audīverāmus" },
+				"2pl": { form: "audīverātis" },
+				"3pl": { form: "audīverant" },
+			},
 		},
 	},
 };
@@ -485,6 +526,14 @@ const CAPIO: Verb = {
 				"1pl": { form: "cēpimus" },
 				"2pl": { form: "cēpistis" },
 				"3pl": { form: "cēpērunt", alt: "cēpēre" },
+			},
+			pluperfect: {
+				"1sg": { form: "cēperam" },
+				"2sg": { form: "cēperās" },
+				"3sg": { form: "cēperat" },
+				"1pl": { form: "cēperāmus" },
+				"2pl": { form: "cēperātis" },
+				"3pl": { form: "cēperant" },
 			},
 		},
 	},

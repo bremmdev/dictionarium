@@ -1,10 +1,11 @@
+import tenseTimeline from "#/assets/tense-timeline.svg";
 import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
 import { TenseLabel } from "./Labels";
 
-// Checked against Allen & Greenough §§ 160–161, 465–466, 470–471, 473 and
-// Gildersleeve & Lodge §§ 227, 235–240.
+// Checked against Allen & Greenough §§ 160–161, 205, 465–466, 470–471, 473,
+// 477, 543 and Gildersleeve & Lodge §§ 227, 235–241, 561.
 
 const COLUMNS = [
 	{ key: "tense", label: "Tense" },
@@ -68,6 +69,15 @@ const ROWS = [
 			when: "one event in the past, as in a story — the historical perfect",
 		},
 	},
+	{
+		id: "pluperfect",
+		cells: {
+			tense: <TenseLabel tense="pluperfect" />,
+			latin: <LatinWord>salūtāveram</LatinWord>,
+			english: "I had greeted",
+			when: "done before some other moment in the past — the past of the past",
+		},
+	},
 ];
 
 export function Translating() {
@@ -92,6 +102,14 @@ export function Translating() {
 				English <em>I greeted</em> can be the imperfect or the perfect, and
 				Latin makes you choose between what went on and what was done.
 			</p>
+			{/* Scrolls like a table on a phone, so the labels stay readable. */}
+			<div className="overflow-x-auto">
+				<img
+					src={tenseTimeline}
+					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now."
+					className="mx-auto w-full min-w-140 max-w-4xl"
+				/>
+			</div>
 			<Table
 				caption="One Latin form, several English ones."
 				columns={COLUMNS}
@@ -139,10 +157,48 @@ export function Translating() {
 					<em>I had been weeping for a long time</em>. The weeping had begun
 					earlier and was still going on at the moment the story has reached.
 				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						The pluperfect is the perfect of the imperfect,
+					</strong>{" "}
+					something already done at a moment in the past, and English{" "}
+					<em>had</em> matches it:{" "}
+					<LatinWord>puer, quem rēx lēgerat, dīxit “ēheu”</LatinWord>,{" "}
+					<em>the boy whom the king had chosen said “alas”</em>. The choosing
+					came before the speaking. The name says as much:{" "}
+					<LatinWord>plūs quam perfectus</LatinWord>,{" "}
+					<em>more than completed</em>, finished even before a moment that is
+					itself already past.
+				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						An English pluperfect is often a Latin perfect.
+					</strong>{" "}
+					In a <em>when</em> clause with <LatinWord>postquam</LatinWord>,{" "}
+					<LatinWord>ubi</LatinWord>, <LatinWord>ut</LatinWord> or{" "}
+					<LatinWord>simul ac</LatinWord>, Latin puts the earlier event in the
+					perfect:{" "}
+					<LatinWord>postquam Caesar pervēnit, obsidēs poposcit</LatinWord>,{" "}
+					<em>when Caesar had arrived, he demanded hostages</em>. The step back
+					is English's, not Latin's, and <em>arrived</em> would do as well.
+				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						Some pluperfects are a plain English past.
+					</strong>{" "}
+					A few verbs use the perfect for a present state:{" "}
+					<LatinWord>ōdī</LatinWord>, <em>I hate</em>,{" "}
+					<LatinWord>meminī</LatinWord>, <em>I remember</em>,{" "}
+					<LatinWord>nōvī</LatinWord>, <em>I know</em> (literally{" "}
+					<em>I have learned</em>). Their pluperfect is a simple past:{" "}
+					<LatinWord>ōderam</LatinWord>, <em>I hated</em>,{" "}
+					<LatinWord>nōveram</LatinWord>, <em>I knew</em> — not{" "}
+					<em>I had hated</em>, <em>I had known</em>.
+				</p>
 				<p className="text-sm">
 					After Allen and Greenough, <cite>New Latin Grammar</cite>, §§ 160–161,
-					465–466, 470–471 and 473, and Gildersleeve and Lodge,{" "}
-					<cite>Latin Grammar</cite>, §§ 227 and 235–240.
+					205, 465–466, 470–471, 473, 477 and 543, and Gildersleeve and Lodge,{" "}
+					<cite>Latin Grammar</cite>, §§ 227, 235–241 and 561.
 				</p>
 			</div>
 		</section>
