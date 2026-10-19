@@ -36,7 +36,7 @@ A foreign key with `onDelete: "cascade"` would erase a word's entire readership 
 
 ## What counts as a visit
 
-Counting happens on the server, in the `/verbum/$lemma` loader, gated on `cause === "enter"`.
+Counting happens on the server, in the `/verbum/$lemma/{-$homonym}` loader, gated on `cause === "enter"`.
 
 Server-side is what makes an SSR first paint, a shared link and a reader without JavaScript all count. The gate is what keeps that from over-counting, and it does two jobs that are easy to miss:
 
@@ -48,7 +48,7 @@ Server-side is what makes an SSR first paint, a shared link and a reader without
 
 Without the gate, reading a page of search results with a mouse would count every card the pointer crossed.
 
-**Recording lives in the route, not in `getEntryByLemma`.** That function has three callers — this loader, the `/admin` editor's loader, and any preload — so making the read write would count opening a word to fix a typo as somebody reading it. The cost of keeping them apart is one extra RPC on a client-side navigation, which is not awaited.
+**Recording lives in the route, not in `getEntry`.** That function also runs for every preload, so making the read write would count a hover as a visit; the `/admin` editor reads through `getEntryById`, which must not count either. The cost of keeping them apart is one extra RPC on a client-side navigation, which is not awaited.
 
 Searches need no equivalent guard, and the reason is worth writing down so nobody adds one: the only `<Link to="/">` in the app is the header wordmark, which carries no `q`, and an empty query is already dropped by the `MIN_QUERY_LENGTH` check. A search arrives by form submit into `navigate()`, which is never a preload.
 

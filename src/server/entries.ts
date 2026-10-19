@@ -38,7 +38,11 @@ export const createEntry = createServerFn({ method: "POST" })
 			const [created] = tx
 				.insert(entries)
 				.values(columns)
-				.returning({ id: entries.id })
+				.returning({
+					id: entries.id,
+					lemma: entries.lemma,
+					homonym: entries.homonym,
+				})
 				.all();
 
 			if (!created) {
@@ -56,7 +60,7 @@ export const createEntry = createServerFn({ method: "POST" })
 				)
 				.run();
 
-			return { lemma: columns.lemma };
+			return created;
 		});
 	});
 
@@ -93,7 +97,7 @@ export const updateEntry = createServerFn({ method: "POST" })
 			// The row may have been deleted since the form read it. Asking is what
 			// turns "0 rows updated" into a sentence.
 			const existing = tx
-				.select({ id: entries.id })
+				.select({ homonym: entries.homonym })
 				.from(entries)
 				.where(eq(entries.id, id))
 				.get();
@@ -137,7 +141,7 @@ export const updateEntry = createServerFn({ method: "POST" })
 				)
 				.run();
 
-			return { lemma: columns.lemma };
+			return { id, lemma: columns.lemma, homonym: existing.homonym };
 		});
 	});
 
@@ -187,13 +191,17 @@ export const suggestEntry = createServerFn({ method: "POST" })
 	.handler(async ({ data: { editing, ...spec } }): Promise<LookupResult> => {
 		// A word already on file is not looked up: filing it again would only fail at Adde.
 		const existing = db
-			.select({ id: entries.id, lemma: entries.lemma })
+			.select({
+				id: entries.id,
+				lemma: entries.lemma,
+				homonym: entries.homonym,
+			})
 			.from(entries)
 			.where(eq(entries.lemma, spec.lemma))
 			.get();
 
 		if (existing && existing.id !== editing) {
-			return { kind: "exists", lemma: existing.lemma };
+			return { kind: "exists", entry: existing };
 		}
 
 		return {

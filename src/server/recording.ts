@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "#/db";
 import { entries, searchEvents, viewEvents } from "#/db/schema";
@@ -61,7 +61,10 @@ export async function recordSearch(
  * happy path, and it is the only thing standing between the most-read list and
  * anyone who feels like POSTing nonsense at the public endpoint.
  */
-export async function recordView(lemma: string): Promise<void> {
+export async function recordView(
+	lemma: string,
+	homonym: number,
+): Promise<void> {
 	if (lemma === "" || (await isUncounted())) {
 		return;
 	}
@@ -70,13 +73,13 @@ export async function recordView(lemma: string): Promise<void> {
 		const known = db
 			.select({ id: entries.id })
 			.from(entries)
-			.where(eq(entries.lemma, lemma))
+			.where(and(eq(entries.lemma, lemma), eq(entries.homonym, homonym)))
 			.get();
 
 		if (!known) {
 			return;
 		}
 
-		db.insert(viewEvents).values({ lemma }).run();
+		db.insert(viewEvents).values({ lemma, homonym }).run();
 	});
 }

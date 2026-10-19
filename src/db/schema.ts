@@ -86,6 +86,9 @@ export type Sense = typeof senses.$inferSelect;
 /** An entry with its senses attached, in rank order — what the detail page reads. */
 export type EntryWithSenses = Entry & { senses: Array<Sense> };
 
+/** As read for display: homographs counts the entries spelled this way, itself included. */
+export type ShownEntry = EntryWithSenses & { homographs: number };
+
 export const proverbs = sqliteTable("proverbs", {
 	id: integer("id").primaryKey({ autoIncrement: true }),
 	// display form, with macrons; unique so one proverb is filed once

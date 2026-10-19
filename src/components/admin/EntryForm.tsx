@@ -30,6 +30,7 @@ import {
 	senseGoverns,
 	TERMINATIONS,
 } from "#/utils/entries/rules";
+import { entryLink } from "#/utils/entries/links";
 import { normalizeLemma } from "#/utils/search/rules";
 import {
 	CHIP,
@@ -247,8 +248,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		if (status.kind !== "saved") return;
 		announce(
 			status.created
-				? `Additum. ${status.lemma} is in the dictionary.`
-				: `Ēmendātum. ${status.lemma} is filed as it now reads.`,
+				? `Additum. ${status.entry.lemma} is in the dictionary.`
+				: `Ēmendātum. ${status.entry.lemma} is filed as it now reads.`,
 		);
 	}, [status, announce]);
 
@@ -258,7 +259,9 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// but only to someone looking at them.
 			announce(["Wiktionary filled the form.", ...lookup.warnings].join(" "));
 		} else if (lookup.kind === "exists") {
-			announce(`Iam inest. ${lookup.lemma} is already in the dictionary.`);
+			announce(
+				`Iam inest. ${lookup.entry.lemma} is already in the dictionary.`,
+			);
 		} else if (lookup.kind === "failed") {
 			announce(`Nihil inventum. ${lookup.message}`);
 		}
@@ -305,7 +308,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			});
 			dispatch(
 				result.kind === "exists"
-					? { type: "lookup-exists", request, lemma: result.lemma }
+					? { type: "lookup-exists", request, entry: result.entry }
 					: { type: "lookup-filled", request, suggestion: result.suggestion },
 			);
 		} catch (err) {
@@ -360,7 +363,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		dispatch({ type: "submit-started" });
 
 		try {
-			const { lemma: saved } =
+			const saved =
 				mode.kind === "edit"
 					? await updateEntry({ data: { ...filing, id: mode.id } })
 					: await createEntry({ data: filing });
@@ -369,7 +372,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// and drops it back to `create`: from here on the form is showing no
 			// word, and the navigation below must not be read as news.
 			shown.current = null;
-			dispatch({ type: "submit-succeeded", lemma: saved });
+			dispatch({ type: "submit-succeeded", entry: saved });
 
 			// The desk is a new word's again, so the URL has to stop naming the old
 			// one — the heading above the form reads from it. Replace rather than
@@ -410,13 +413,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 						<span className="font-bold text-accent" lang="la">
 							{status.created ? "Additum." : "Ēmendātum."}
 						</span>{" "}
-						<TextLink
-							to="/verbum/$lemma"
-							params={{ lemma: status.lemma }}
-							search={{}}
-							lang="la"
-						>
-							{status.lemma}
+						<TextLink {...entryLink(status.entry)} lang="la">
+							{status.entry.lemma}
 						</TextLink>{" "}
 						<span className="text-ink-600">
 							{status.created
@@ -458,16 +456,11 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							Iam inest.
 						</p>
 						<p className="mt-2 text-ink-700 text-sm">
-							<TextLink
-								to="/verbum/$lemma"
-								params={{ lemma: lookup.lemma }}
-								search={{}}
-								lang="la"
-							>
-								{lookup.lemma}
+							<TextLink {...entryLink(lookup.entry)} lang="la">
+								{lookup.entry.lemma}
 							</TextLink>{" "}
 							is already in the dictionary.{" "}
-							<TextLink to="/admin" search={{ lemma: lookup.lemma }}>
+							<TextLink to="/admin" search={{ id: lookup.entry.id }}>
 								Edit it instead
 							</TextLink>
 						</p>
@@ -1005,15 +998,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 
 				{/* The way back out of an edit without making one. A create has no
 				    equivalent: there is no word it came from. */}
-				{editing && (
-					<TextLink
-						to="/verbum/$lemma"
-						params={{ lemma: entry?.lemma ?? draft.lemma }}
-						search={{}}
-					>
-						Cancel
-					</TextLink>
-				)}
+				{editing && entry && <TextLink {...entryLink(entry)}>Cancel</TextLink>}
 			</div>
 		</form>
 	);

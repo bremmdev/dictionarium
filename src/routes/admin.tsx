@@ -7,10 +7,12 @@ import {
 import { EntryForm } from "#/components/admin/EntryForm";
 import { ProverbForm } from "#/components/admin/ProverbForm";
 import { Heading } from "#/components/Heading";
+import { Lemma } from "#/components/Lemma";
 import { TextLink } from "#/components/TextLink";
 import { getIsAdmin } from "#/server/auth";
 import { getProverbs } from "#/server/proverbs";
-import { getEntryByLemma } from "#/server/search";
+import { getEntryById } from "#/server/search";
+import { entryLink } from "#/utils/entries/links";
 
 /**
  * The two desks the switcher at the top moves between. Words is the default
@@ -29,31 +31,33 @@ export const Route = createFileRoute("/admin")({
 			throw redirect({ to: "/login" });
 		}
 	},
-	// One desk, two flows: /admin files a new word, /admin?lemma=ambulō edit it
+	// One desk, two flows: /admin files a new word, /admin?id=42 edits one.
+	// By id, because the lemma is editable and cum¹ and cum² share it.
 	// ?desk=proverbs is the other desk.
 	validateSearch: (
 		search: Record<string, unknown>,
-	): { lemma?: string; desk?: "proverbs" } => {
-		const lemma = typeof search.lemma === "string" ? search.lemma.trim() : "";
+	): { id?: number; desk?: "proverbs" } => {
+		const id = search.id;
 		return {
-			...(lemma === "" ? {} : { lemma }),
+			...(typeof id === "number" && Number.isInteger(id) && id > 0
+				? { id }
+				: {}),
 			...(search.desk === "proverbs" ? { desk: "proverbs" } : {}),
 		};
 	},
 	// Not the desk: both desks' data is read whichever is showing, so switching
 	// is a change of view and never a load.
-	loaderDeps: ({ search: { lemma } }) => ({ lemma }),
-	loader: async ({ deps: { lemma } }) => {
+	loaderDeps: ({ search: { id } }) => ({ id }),
+	loader: async ({ deps: { id } }) => {
 		const [entry, proverbs] = await Promise.all([
-			lemma === undefined ? null : getEntryByLemma({ data: lemma }),
+			id === undefined ? null : getEntryById({ data: id }),
 			getProverbs(),
 		]);
 
 		// Better than quietly opening an empty form: an edit link that points at
-		// nothing is a word that has been renamed or removed, and offering to
-		// create it under this spelling would be a different act than the one
-		// asked for.
-		if (lemma !== undefined && !entry) {
+		// nothing is a word that has been removed, and offering to file a new
+		// one would be a different act than the one asked for.
+		if (id !== undefined && !entry) {
 			throw notFound();
 		}
 
@@ -66,7 +70,7 @@ export const Route = createFileRoute("/admin")({
 /**
  * Exact, so the whole search has to match: by default a link is active when its
  * search is merely contained in the URL's, and the words link — which only
- * carries the lemma — is contained in every desk's. The router sets
+ * carries the id — is contained in every desk's. The router sets
  * aria-current from this, which is what the pills are styled by.
  */
 const ACTIVE = { exact: true };
@@ -83,7 +87,7 @@ function DeskSwitcher() {
 					<Link
 						from={Route.fullPath}
 						to="."
-						search={({ lemma }) => ({ lemma })}
+						search={({ id }) => ({ id })}
 						activeOptions={ACTIVE}
 						className={LINK}
 						lang="la"
@@ -98,7 +102,7 @@ function DeskSwitcher() {
 					<Link
 						from={Route.fullPath}
 						to="."
-						search={({ lemma }) => ({ lemma, desk: "proverbs" as const })}
+						search={({ id }) => ({ id, desk: "proverbs" as const })}
 						activeOptions={ACTIVE}
 						className={LINK}
 						lang="la"
@@ -137,13 +141,8 @@ function RouteComponent() {
 					{entry && (
 						<p className="text-ink-600">
 							Editing{" "}
-							<TextLink
-								to="/verbum/$lemma"
-								params={{ lemma: entry.lemma }}
-								search={{}}
-								lang="la"
-							>
-								{entry.lemma}
+							<TextLink {...entryLink(entry)} lang="la">
+								<Lemma entry={entry} />
 							</TextLink>
 							.
 						</p>
@@ -165,8 +164,6 @@ function RouteComponent() {
 }
 
 function NotFound() {
-	const { lemma } = Route.useSearch();
-
 	return (
 		<div className="mx-auto max-w-3xl space-y-4 px-4 sm:px-8 py-16 text-center md:py-24">
 			<Heading
@@ -178,7 +175,7 @@ function NotFound() {
 				Nihil inventum.
 			</Heading>
 			<p className="text-ink-600 text-lg">
-				No entry for &ldquo;<span lang="la">{lemma}</span>&rdquo; to edit.
+				That entry is no longer in the dictionary.
 			</p>
 			<TextLink to="/admin" search={{}}>
 				File a new word instead

@@ -4,6 +4,7 @@ import { Table } from "#/components/Table";
 import { getAnalyticsSummary } from "#/server/analytics";
 import { getIsAdmin } from "#/server/auth";
 import { DEFAULT_PERIOD, parsePeriod, PERIODS } from "#/utils/analytics/rules";
+import { homonymLabel } from "#/utils/entries/links";
 
 // "admin_" rather than "admin": the trailing underscore opts this route out of
 // nesting, so it serves /admin/stats without turning the existing /admin page
@@ -199,7 +200,7 @@ function Stats() {
 				<TopTable
 					label="Word"
 					lang="la"
-					rows={views.top.map((row) => ({ key: row.lemma, n: row.n }))}
+					rows={views.top.map((row) => ({ key: homonymLabel(row), n: row.n }))}
 					empty="No detail pages visited in this period."
 				/>
 			</section>

@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 
 import { db } from "#/db";
-import { type EntryWithSenses, entries } from "#/db/schema";
+import { homographCount } from "#/db/homographs";
+import { entries, type ShownEntry } from "#/db/schema";
 import {
 	findConjugation,
 	findDeclension,
@@ -14,7 +15,7 @@ import {
 } from "#/utils/wordlist/rules";
 
 export type WordList = {
-	entries: Array<EntryWithSenses>;
+	entries: Array<ShownEntry>;
 	/** True when there were more matches than MAX_LIST_RESULTS. */
 	truncated: boolean;
 };
@@ -72,9 +73,11 @@ export const listEntries = createServerFn({ method: "GET" })
 
 		const rows = await db.query.entries.findMany({
 			where: and(...conditions),
-			// lemma breaks the tie between malum and mālum, which share lemma_plain.
-			orderBy: [entries.lemmaPlain, entries.lemma],
+			// lemma breaks the tie between malum and mālum, which share lemma_plain;
+			// homonym the one between cum¹ and cum², which share lemma too.
+			orderBy: [entries.lemmaPlain, entries.lemma, entries.homonym],
 			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
+			extras: { homographs: homographCount(entries).as("homographs") },
 			// One over the cap, only to learn whether there is more.
 			limit: MAX_LIST_RESULTS + 1,
 		});

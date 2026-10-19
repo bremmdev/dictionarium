@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { count, eq, like, sql } from "drizzle-orm";
+import { and, count, eq, like, ne, type SQL, sql } from "drizzle-orm";
 
 import { db } from "#/db";
-import { type EntryWithSenses, entries } from "#/db/schema";
+import { homographCount } from "#/db/homographs";
+import { type Entry, entries, type ShownEntry } from "#/db/schema";
 import { recordSearch } from "#/server/recording";
 import {
 	MAX_RESULTS,
@@ -12,7 +13,7 @@ import {
 
 export const searchEntries = createServerFn({ method: "GET" })
 	.validator((q: unknown) => (typeof q === "string" ? q.trim() : ""))
-	.handler(async ({ data: q }): Promise<Array<EntryWithSenses>> => {
+	.handler(async ({ data: q }): Promise<Array<ShownEntry>> => {
 		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
 		const key = normalizeLemma(q);
 		if (key.length < MIN_QUERY_LENGTH) {
@@ -26,9 +27,12 @@ export const searchEntries = createServerFn({ method: "GET" })
 			orderBy: [
 				sql`case when ${entries.lemmaPlain} like ${`${key}%`} then 0 else 1 end`,
 				entries.lemmaPlain,
+				entries.lemma,
+				entries.homonym,
 			],
 			// rank is the dictionary order of an entry's senses, so it is the display order too.
 			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
+			extras: { homographs: homographCount(entries).as("homographs") },
 			limit: MAX_RESULTS,
 		});
 
@@ -51,25 +55,94 @@ export const searchEntries = createServerFn({ method: "GET" })
 		return results;
 	});
 
+function findEntry(where: SQL | undefined) {
+	return db.query.entries
+		.findFirst({
+			where,
+			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
+			extras: { homographs: homographCount(entries).as("homographs") },
+		})
+		.then((entry) => entry ?? null);
+}
+
+/** Another entry spelled the same way, as the detail page's "Also spelled" line names it. */
+export type Homograph = Pick<
+	Entry,
+	"id" | "lemma" | "homonym" | "partOfSpeech"
+> & {
+	meaningEn: string | null;
+};
+
+export type EntryPage = ShownEntry & { siblings: Array<Homograph> };
+
+async function findSiblings(entry: Entry): Promise<Array<Homograph>> {
+	const rows = await db.query.entries.findMany({
+		where: and(eq(entries.lemma, entry.lemma), ne(entries.id, entry.id)),
+		columns: { id: true, lemma: true, homonym: true, partOfSpeech: true },
+		with: {
+			senses: {
+				columns: { meaningEn: true },
+				orderBy: (s, { asc }) => [asc(s.rank)],
+				limit: 1,
+			},
+		},
+		orderBy: [entries.homonym],
+	});
+
+	return rows.map(({ senses, ...row }) => ({
+		...row,
+		meaningEn: senses[0]?.meaningEn ?? null,
+	}));
+}
+
 /**
- * Looks an entry up by its exact macron form, which is the URL key for the
- * detail page. lemma carries a UNIQUE constraint, so at most one row matches —
- * lemma_plain would not do here, since malum and mālum share it.
+ * Looks an entry up by its URL key: the exact macron form and which homograph
+ * it is. lemma_plain would not do here, since malum and mālum share it, and
+ * lemma alone would not either, since cum¹ and cum² share that. Brings the
+ * other cums along, for the page's "Also spelled" line.
  */
-export const getEntryByLemma = createServerFn({ method: "GET" })
-	.validator((lemma: unknown) => (typeof lemma === "string" ? lemma : ""))
-	.handler(async ({ data: lemma }): Promise<EntryWithSenses | null> => {
-		if (lemma === "") {
+export const getEntry = createServerFn({ method: "GET" })
+	.validator((input: unknown) => {
+		const raw = (
+			typeof input === "object" && input !== null ? input : {}
+		) as Record<string, unknown>;
+
+		return {
+			lemma: typeof raw.lemma === "string" ? raw.lemma.normalize("NFC") : "",
+			homonym:
+				typeof raw.homonym === "number" &&
+				Number.isInteger(raw.homonym) &&
+				raw.homonym > 0
+					? raw.homonym
+					: 0,
+		};
+	})
+	.handler(async ({ data: { lemma, homonym } }): Promise<EntryPage | null> => {
+		if (lemma === "" || homonym === 0) {
 			return null;
 		}
 
-		const entry = await db.query.entries.findFirst({
-			where: eq(entries.lemma, lemma.normalize("NFC")),
-			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
-		});
+		const entry = await findEntry(
+			and(eq(entries.lemma, lemma), eq(entries.homonym, homonym)),
+		);
+		if (!entry) {
+			return null;
+		}
 
-		return entry ?? null;
+		// Only asked when there is someone to find, which is almost never.
+		const siblings = entry.homographs > 1 ? await findSiblings(entry) : [];
+		return { ...entry, siblings };
 	});
+
+/** The admin desk's lookup: the id survives a rename, the URL key does not. */
+export const getEntryById = createServerFn({ method: "GET" })
+	.validator((id: unknown) =>
+		typeof id === "number" && Number.isInteger(id) && id > 0 ? id : 0,
+	)
+	.handler(
+		async ({ data: id }): Promise<ShownEntry | null> =>
+			id === 0 ? null : findEntry(eq(entries.id, id)),
+	);
 
 /**
  * Total number of lemmas, for the "search N words" hint on the home page. Every

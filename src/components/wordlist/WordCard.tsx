@@ -1,9 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { CaseTag } from "#/components/CaseTag";
+import { Lemma } from "#/components/Lemma";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarLabel } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
-import type { EntryWithSenses } from "#/db/schema";
+import type { ShownEntry } from "#/db/schema";
 
 /**
  * Shared by every card in the list. Details elements with the same name form
@@ -25,7 +26,7 @@ const GROUP = "word-list";
  * takes phrasing content (or a lone heading), and a button's contents are
  * flattened to its name anyway.
  */
-export function WordCard({ entry }: { entry: EntryWithSenses }) {
+export function WordCard({ entry }: { entry: ShownEntry }) {
 	const [core] = entry.senses;
 	const rest = entry.senses.length - 1;
 
@@ -34,7 +35,7 @@ export function WordCard({ entry }: { entry: EntryWithSenses }) {
 			<summary className="focus-ring-inner relative block cursor-pointer list-none py-3 pr-12 pl-4 transition-colors hover:bg-parchment-100 group-open:bg-parchment-100 [&::-webkit-details-marker]:hidden">
 				<span className="flex flex-wrap items-baseline gap-x-3">
 					<span className="font-bold text-ink-900 text-xl" lang="la">
-						{entry.lemma}
+						<Lemma entry={entry} />
 					</span>
 					<span className="font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]">
 						{grammarLabel(entry)}

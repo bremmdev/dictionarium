@@ -10,6 +10,7 @@
  *     adding or removing a row throws them away.
  */
 import type { EntryWithSenses } from "#/db/schema";
+import type { EntryRef } from "#/utils/entries/links";
 import {
 	formatCases,
 	hasGoverns,
@@ -78,7 +79,7 @@ export type SubmitStatus =
 	| { kind: "idle" }
 	| { kind: "pending" }
 	/** `created` is the difference between “Additum” and “Ēmendātum”. Both empty the desk. */
-	| { kind: "saved"; lemma: string; created: boolean }
+	| { kind: "saved"; entry: EntryRef; created: boolean }
 	| { kind: "failed"; message: string };
 
 /**
@@ -110,7 +111,7 @@ export type EntrySuggestion = {
 /** What Quaere gets back: a draft to read, or the word already on file. */
 export type LookupResult =
 	| { kind: "suggested"; suggestion: EntrySuggestion }
-	| { kind: "exists"; lemma: string };
+	| { kind: "exists"; entry: EntryRef };
 
 /** Where the last lookup got to. Separate from the submit: they can overlap. */
 export type LookupStatus =
@@ -124,7 +125,7 @@ export type LookupStatus =
 	| { kind: "pending"; request: number }
 	| { kind: "filled"; warnings: Array<string> }
 	/** The lemma is already filed, so Wiktionary was not asked and the draft is untouched. */
-	| { kind: "exists"; lemma: string }
+	| { kind: "exists"; entry: EntryRef }
 	| { kind: "failed"; message: string };
 
 export type FormState = {
@@ -161,11 +162,11 @@ export type FormAction =
 	| { type: "entry-loaded"; entry: EntryWithSenses | null }
 	| { type: "submit-started" }
 	| { type: "submit-invalid"; fields: Record<string, string> }
-	| { type: "submit-succeeded"; lemma: string }
+	| { type: "submit-succeeded"; entry: EntryRef }
 	| { type: "submit-failed"; message: string }
 	| { type: "lookup-started"; request: number }
 	| { type: "lookup-filled"; request: number; suggestion: EntrySuggestion }
-	| { type: "lookup-exists"; request: number; lemma: string }
+	| { type: "lookup-exists"; request: number; entry: EntryRef }
 	| { type: "lookup-failed"; request: number; message: string };
 
 const EMPTY_SENSE = {
@@ -485,7 +486,7 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				...cleared(state),
 				status: {
 					kind: "saved",
-					lemma: action.lemma,
+					entry: action.entry,
 					created: state.mode.kind === "create",
 				},
 			};
@@ -538,7 +539,7 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 		case "lookup-exists":
 			if (!isAwaited(state, action.request)) return state;
 
-			return { ...state, lookup: { kind: "exists", lemma: action.lemma } };
+			return { ...state, lookup: { kind: "exists", entry: action.entry } };
 
 		case "lookup-failed":
 			if (!isAwaited(state, action.request)) return state;

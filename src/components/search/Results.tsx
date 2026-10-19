@@ -1,11 +1,11 @@
 import { useAnnounce } from "@bremmdev/m7kit";
 import { useEffect, useId, useRef } from "react";
-import type { EntryWithSenses } from "#/db/schema";
+import type { ShownEntry } from "#/db/schema";
 import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
-	results: Array<EntryWithSenses>;
+	results: Array<ShownEntry>;
 	/** Every lemma in the dictionary is one word, so this is the word count. */
 	total: number;
 	isFetching: boolean;

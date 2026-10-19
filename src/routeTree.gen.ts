@@ -18,7 +18,7 @@ import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as ProverbsRouteImport } from './routes/proverbs'
 import { Route as WordListRouteImport } from './routes/word-list'
 import { Route as AdminStatsRouteImport } from './routes/admin_.stats'
-import { Route as VerbumLemmaRouteImport } from './routes/verbum.$lemma'
+import { Route as VerbumLemmaChar123HomonymChar125RouteImport } from './routes/verbum.$lemma.{-$homonym}'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,11 +65,12 @@ const AdminStatsRoute = AdminStatsRouteImport.update({
   path: '/admin/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VerbumLemmaRoute = VerbumLemmaRouteImport.update({
-  id: '/verbum/$lemma',
-  path: '/verbum/$lemma',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const VerbumLemmaChar123HomonymChar125Route =
+  VerbumLemmaChar123HomonymChar125RouteImport.update({
+    id: '/verbum/$lemma/{-$homonym}',
+    path: '/verbum/$lemma/{-$homonym}',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,7 +82,7 @@ export interface FileRoutesByFullPath {
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/stats': typeof AdminStatsRoute
-  '/verbum/$lemma': typeof VerbumLemmaRoute
+  '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +94,7 @@ export interface FileRoutesByTo {
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/stats': typeof AdminStatsRoute
-  '/verbum/$lemma': typeof VerbumLemmaRoute
+  '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +107,7 @@ export interface FileRoutesById {
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin_/stats': typeof AdminStatsRoute
-  '/verbum/$lemma': typeof VerbumLemmaRoute
+  '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +121,7 @@ export interface FileRouteTypes {
     | '/proverbs'
     | '/word-list'
     | '/admin/stats'
-    | '/verbum/$lemma'
+    | '/verbum/$lemma/{-$homonym}'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,7 +133,7 @@ export interface FileRouteTypes {
     | '/proverbs'
     | '/word-list'
     | '/admin/stats'
-    | '/verbum/$lemma'
+    | '/verbum/$lemma/{-$homonym}'
   id:
     | '__root__'
     | '/'
@@ -144,7 +145,7 @@ export interface FileRouteTypes {
     | '/proverbs'
     | '/word-list'
     | '/admin_/stats'
-    | '/verbum/$lemma'
+    | '/verbum/$lemma/{-$homonym}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,7 +158,7 @@ export interface RootRouteChildren {
   ProverbsRoute: typeof ProverbsRoute
   WordListRoute: typeof WordListRoute
   AdminStatsRoute: typeof AdminStatsRoute
-  VerbumLemmaRoute: typeof VerbumLemmaRoute
+  VerbumLemmaChar123HomonymChar125Route: typeof VerbumLemmaChar123HomonymChar125Route
 }
 
 declare module '@tanstack/react-router' {
@@ -225,11 +226,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/verbum/$lemma': {
-      id: '/verbum/$lemma'
-      path: '/verbum/$lemma'
-      fullPath: '/verbum/$lemma'
-      preLoaderRoute: typeof VerbumLemmaRouteImport
+    '/verbum/$lemma/{-$homonym}': {
+      id: '/verbum/$lemma/{-$homonym}'
+      path: '/verbum/$lemma/{-$homonym}'
+      fullPath: '/verbum/$lemma/{-$homonym}'
+      preLoaderRoute: typeof VerbumLemmaChar123HomonymChar125RouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -245,7 +246,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProverbsRoute: ProverbsRoute,
   WordListRoute: WordListRoute,
   AdminStatsRoute: AdminStatsRoute,
-  VerbumLemmaRoute: VerbumLemmaRoute,
+  VerbumLemmaChar123HomonymChar125Route: VerbumLemmaChar123HomonymChar125Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

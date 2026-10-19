@@ -1,6 +1,7 @@
 import { and, count, countDistinct, desc, eq, gte, isNull } from "drizzle-orm";
 
 import { db } from "#/db";
+import { homographCount } from "#/db/homographs";
 import { entries, searchEvents, viewEvents } from "#/db/schema";
 import {
 	cutoff,
@@ -32,7 +33,12 @@ export type AnalyticsSummary = {
 	};
 	views: {
 		total: number;
-		top: Array<{ lemma: string; n: number }>;
+		top: Array<{
+			lemma: string;
+			homonym: number;
+			homographs: number;
+			n: number;
+		}>;
 	};
 };
 
@@ -105,11 +111,16 @@ export function summarize(days: Period): AnalyticsSummary {
 		.get();
 
 	const topViews = db
-		.select({ lemma: viewEvents.lemma, n: count() })
+		.select({
+			lemma: viewEvents.lemma,
+			homonym: viewEvents.homonym,
+			homographs: homographCount(viewEvents),
+			n: count(),
+		})
 		.from(viewEvents)
 		.where(gte(viewEvents.createdAt, since))
-		.groupBy(viewEvents.lemma)
-		.orderBy(desc(count()), viewEvents.lemma)
+		.groupBy(viewEvents.lemma, viewEvents.homonym)
+		.orderBy(desc(count()), viewEvents.lemma, viewEvents.homonym)
 		.limit(TOP_N)
 		.all();
 

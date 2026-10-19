@@ -2,7 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { CaseTag } from "#/components/CaseTag";
 import { Heading } from "#/components/Heading";
-import type { Entry, EntryWithSenses } from "#/db/schema";
+import { Lemma } from "#/components/Lemma";
+import type { Entry, ShownEntry } from "#/db/schema";
+import { entryLink } from "#/utils/entries/links";
 import { caseLabel } from "#/utils/entries/rules";
 
 const ORDINALS: Record<string, string> = {
@@ -77,7 +79,7 @@ export function grammarLabel(entry: Entry) {
 
 type EntryCardProps = {
 	/** Needs the senses, not just the entry: the card shows the core meaning. */
-	entry: EntryWithSenses;
+	entry: ShownEntry;
 	/** Carried into the detail page so its back link can restore this search. */
 	query: string;
 };
@@ -98,12 +100,10 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 			<div className="flex items-baseline gap-3">
 				<Heading variant="h4" as="h3" lang="la">
 					<Link
-						to="/verbum/$lemma"
-						params={{ lemma: entry.lemma }}
-						search={query === "" ? {} : { q: query }}
+						{...entryLink(entry, query)}
 						className="focus-ring after:absolute after:inset-0"
 					>
-						{entry.lemma}
+						<Lemma entry={entry} />
 					</Link>
 				</Heading>
 				<p className="text-gold-600 uppercase text-sm font-semibold tracking-[0.18em]">

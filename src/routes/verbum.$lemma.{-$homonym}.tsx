@@ -3,9 +3,11 @@ import {
 	createFileRoute,
 	Link,
 	notFound,
+	redirect,
 	useLoaderData,
 } from "@tanstack/react-router";
 import { ArrowLeft, Info, Pencil, Search } from "lucide-react";
+import { Fragment } from "react";
 import abacus from "#/assets/abacus-sketch.svg";
 import acanthus from "#/assets/acanthus-sketch.svg";
 import amphora from "#/assets/amphora-sketch.svg";
@@ -21,33 +23,50 @@ import sundial from "#/assets/sundial-sketch.svg";
 import temple from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
+import { Lemma } from "#/components/Lemma";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarFacts } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
 import { TextLink } from "#/components/TextLink";
 import type { Entry, EntryWithSenses } from "#/db/schema";
 import { recordEntryView } from "#/server/analytics";
-import { getEntryByLemma } from "#/server/search";
+import { type EntryPage, getEntry } from "#/server/search";
+import { entryLink, parseHomonym } from "#/utils/entries/links";
 
-export const Route = createFileRoute("/verbum/$lemma")({
+export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 	// q is only carried so the back link can restore the search the user came
 	// from. It is optional, so a bare /verbum/ambulō stays a bare URL.
 	validateSearch: (search: Record<string, unknown>): { q?: string } => {
 		const q = typeof search.q === "string" ? search.q.trim() : "";
 		return q === "" ? {} : { q };
 	},
-	loader: async ({ params: { lemma }, cause }) => {
-		const entry = await getEntryByLemma({ data: lemma });
+	// One URL per word: cum¹ is /verbum/cum, so /verbum/cum/1 is sent there.
+	beforeLoad: ({ params: { lemma, homonym }, search }) => {
+		if (homonym === "1") {
+			throw redirect({
+				...entryLink({ lemma, homonym: 1 }, search.q),
+				statusCode: 301,
+			});
+		}
+	},
+	loader: async ({ params, cause }) => {
+		const homonym = parseHomonym(params.homonym);
+		if (homonym === null) {
+			throw notFound();
+		}
+
+		const entry = await getEntry({ data: { lemma: params.lemma, homonym } });
 
 		if (!entry) {
 			throw notFound();
 		}
 
 		// cause === "enter" is the entire visitor filter, we do not want to track preloads
-		// Recording lives here rather than inside getEntryByLemma precisely
-		// because that function has other callers
+		// Recording lives here rather than inside getEntry, so a read is never a visit
 		if (cause === "enter") {
-			recordEntryView({ data: entry.lemma }).catch(() => {});
+			recordEntryView({
+				data: { lemma: entry.lemma, homonym: entry.homonym },
+			}).catch(() => {});
 		}
 
 		return entry;
@@ -126,7 +145,7 @@ function EditLink({ entry }: { entry: EntryWithSenses }) {
 	return (
 		<Link
 			to="/admin"
-			search={{ lemma: entry.lemma }}
+			search={{ id: entry.id }}
 			className="focus-ring inline-flex items-center gap-2 rounded-full border border-parchment-300 bg-parchment-50 px-4 py-1.5 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] hover:border-accent hover:text-accent"
 			lang="la"
 		>
@@ -155,7 +174,35 @@ function GrammarChips({ entry }: { entry: Entry }) {
 	);
 }
 
-function WordBanner({ entry }: { entry: EntryWithSenses }) {
+/**
+ * The other words spelled this way, one click off. /verbum/cum is cum¹, so a
+ * reader after the conjunction lands on the preposition and needs the way over.
+ */
+function AlsoSpelled({ entry }: { entry: EntryPage }) {
+	const { q } = Route.useSearch();
+
+	if (entry.siblings.length === 0) {
+		return null;
+	}
+
+	return (
+		<p className="mt-6 text-ink-700">
+			Also spelled <i lang="la">{entry.lemma}</i>:{" "}
+			{entry.siblings.map((sibling, i) => (
+				<Fragment key={sibling.id}>
+					{i > 0 && "; "}
+					<TextLink {...entryLink(sibling, q)} lang="la">
+						<Lemma entry={{ ...sibling, homographs: entry.homographs }} />
+					</TextLink>{" "}
+					({sibling.partOfSpeech})
+					{sibling.meaningEn && <>, &ldquo;{sibling.meaningEn}&rdquo;</>}
+				</Fragment>
+			))}
+		</p>
+	);
+}
+
+function WordBanner({ entry }: { entry: EntryPage }) {
 	const [core] = entry.senses;
 
 	return (
@@ -185,7 +232,7 @@ function WordBanner({ entry }: { entry: EntryWithSenses }) {
 					{/* The lemma is the page's h1 and now sits in a banner, so it takes
 					    the display step of the scale rather than the section one. */}
 					<Heading variant="h1" className="mt-3 font-bold" lang="la">
-						{entry.lemma}
+						<Lemma entry={entry} />
 					</Heading>
 
 					<GrammarChips entry={entry} />
@@ -197,6 +244,8 @@ function WordBanner({ entry }: { entry: EntryWithSenses }) {
 							{core.meaningEn}
 						</p>
 					)}
+
+					<AlsoSpelled entry={entry} />
 				</>
 			}
 		/>

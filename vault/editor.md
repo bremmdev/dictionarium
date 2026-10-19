@@ -2,7 +2,7 @@
 
 There are two ways a word gets into the dictionary — `/admin` in a browser, `scripts/enrich-entries.ts` in a terminal — and they meet at the same two functions: one that says what a valid entry is, one that reads English Wiktionary. Neither end has rules of its own.
 
-Correcting a word already on file is the same desk, not a second one: `/admin?lemma=soror` is the form with that row read back into it.
+Correcting a word already on file is the same desk, not a second one: `/admin?id=42` is the form with that row read back into it.
 
 Proverbs have a desk of their own beside it — see [The proverb desk](#the-proverb-desk).
 
@@ -13,7 +13,7 @@ Two consequences worth naming up front:
 
 | File                                  | Responsibility                                                                     |
 | ------------------------------------- | ---------------------------------------------------------------------------------- |
-| `src/routes/admin.tsx`                | The one guarded page — see [auth.md](./auth.md). The desk switcher and both desks. `?lemma=` says which word, `?desk=proverbs` which desk. |
+| `src/routes/admin.tsx`                | The one guarded page — see [auth.md](./auth.md). The desk switcher and both desks. `?id=` says which word, `?desk=proverbs` which desk. |
 | `src/components/admin/Fields.tsx`     | The inputs, chips and messages both desks are built from.                          |
 | `src/components/admin/ProverbForm.tsx`| The proverb desk: add/edit switch, picker, fields.                                 |
 | `src/utils/proverbs/form.ts`          | `proverbFormReducer` — the proverb desk's transitions.                             |
@@ -70,13 +70,13 @@ On success the form calls `router.invalidate()`. The word count on the home page
 ### Correcting one already filed
 
 ```
-Ēmendā on /verbum/soror     → /admin?lemma=soror, the row read into the form
+Ēmendā on /verbum/soror     → /admin?id=42, the row read into the form
   ↓  read          the same fields, answered — Quaere still refills them from scratch
   ↓  Ēmenda        parseEntryDraft for the messages, then updateEntry for real
   ↓  Ēmendātum.    the desk empties and drops back to a new word's, the banner links to the result
 ```
 
-The edit link on the detail page is shown to an admin and to nobody else, which is presentation and not protection: `/admin` has its own `beforeLoad` guard and `updateEntry` has `authMiddleware`. The lemma is the whole address — the same key the detail page is read under — so an edit URL is bookmarkable and a lemma that no longer resolves is a `notFound`, not an empty create form.
+The edit link on the detail page is shown to an admin and to nobody else, which is presentation and not protection: `/admin` has its own `beforeLoad` guard and `updateEntry` has `authMiddleware`. The row id is the whole address, not the lemma: an edit may rename the word, and _cum_¹ and _cum_² share one. So an edit URL survives a rename, and an id that no longer resolves is a `notFound`, not an empty create form.
 
 `updateEntry` takes the **row id beside the draft** rather than inside it, because the lemma is one of the things an edit may change and so cannot be what identifies the row. In one transaction it checks the row still exists, refuses a rename onto another word's headword with a sentence, updates the columns, and then **deletes every sense and writes the submitted rows back**.
 

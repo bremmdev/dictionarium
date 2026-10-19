@@ -19,10 +19,21 @@ import { parsePeriod } from "#/utils/analytics/rules";
  * One visit to a word's detail page.
  */
 export const recordEntryView = createServerFn({ method: "POST" })
-	.validator((lemma: unknown) =>
-		typeof lemma === "string" ? lemma.trim().normalize("NFC") : "",
-	)
-	.handler(({ data: lemma }) => recordView(lemma));
+	.validator((input: unknown) => {
+		const raw = (
+			typeof input === "object" && input !== null ? input : {}
+		) as Record<string, unknown>;
+
+		return {
+			lemma:
+				typeof raw.lemma === "string" ? raw.lemma.trim().normalize("NFC") : "",
+			homonym:
+				typeof raw.homonym === "number" && Number.isInteger(raw.homonym)
+					? raw.homonym
+					: 0,
+		};
+	})
+	.handler(({ data: { lemma, homonym } }) => recordView(lemma, homonym));
 
 /**
  * The dashboard's one round trip.

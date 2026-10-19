@@ -129,11 +129,25 @@ CREATE VIRTUAL TABLE entries_fts USING fts5(
 
 Measured at 0.004 ms for 50k and 0.010 ms for 1M — effectively flat. Trigram matches substrings, so the results are identical to `%key%` rather than being narrowed to prefixes; the cost is a mirror table plus triggers to keep it in sync. **The trigger to revisit is search covering meanings, not an entry count.**
 
-### `getEntryByLemma(lemma)`
+### `getEntry({ lemma, homonym })`
 
-Powers the detail page. It looks up by **`lemma`**, the macronned form, not `lemma_plain` — `lemma` carries the UNIQUE constraint, and `lemma_plain` cannot identify a row on its own once _mālum_ and _malum_ are both in the table.
+Powers the detail page. It looks up by the URL key: **`lemma`**, the macronned form, and **`homonym`**, which homograph it is. Not `lemma_plain`, which cannot identify a row once _mālum_ and _malum_ are both in the table; and not `lemma` alone, which cannot once _cum_¹ and _cum_² are. The pair carries the UNIQUE constraint — see [schema.md](./schema.md#unique-on-lemma-homonym).
+
+The route is `/verbum/$lemma/{-$homonym}`. Homonym 1 is the bare URL, so `/verbum/cum` is cum¹ and every link from before homographs still resolves; `/verbum/cum/2` is cum², and `/verbum/cum/1` is a 301 to the bare one. A segment that is not a positive integer is a `notFound`. Build these links with `entryLink(entry, q?)` from `src/utils/entries/links.ts`, never by hand: it is what keeps homonym 1 bare.
+
+`getEntryById(id)` is the same read by row id, for the `/admin` desk — see [editor.md](./editor.md#correcting-one-already-filed).
 
 It normalises to NFC before comparing. A macron in a URL can arrive as one codepoint (`ō`) or as `o` + U+0304, depending on where the link was copied from; without the normalise, `/verbum/ambulo%CC%84` would 404 while looking identical to the working URL.
+
+### Showing the homograph number
+
+The superscript appears only where it tells two words apart. A lone _cum_ is set plain; once _cum_² exists, both show their number, _cum_¹ included. The rule is `showsHomonym` in `src/utils/entries/links.ts`. `<Lemma entry>` sets it as a `<sup>`, and `homonymLabel` as Unicode superscripts where markup cannot go (the stats table).
+
+To know whether a lemma has company, `searchEntries`, `listEntries`, `getEntry`, `getEntryById` and the stats page's top views carry `homographs`: the number of entries spelled the same, the row itself included. It is a correlated `count(*)` from `homographCount` in `src/db/homographs.ts`, answered from the `(lemma, homonym)` index. The function takes the outer **table** rather than its `lemma` column, because a relational query renders a selected column unqualified, so `h.lemma = "lemma"` would compare the subquery's row with itself and count the whole table.
+
+Results sort by `lemma_plain, lemma, homonym`, so _cum_¹ is always listed above _cum_².
+
+When `homographs > 1`, `getEntry` also returns `siblings`: each other entry with this lemma, with its part of speech and core sense. The page prints them as an "Also spelled _cum_:" line under the core meaning. `/verbum/cum` is _cum_¹, so a reader looking for the conjunction lands on the preposition, and this line is their one-click way over. `entryLink` sets `activeOptions: { exact: true }`. Without it, the router would count `/verbum/cum` as the parent path of `/verbum/cum/2` and mark the link back `aria-current="page"`.
 
 ## Loader behaviour
 
@@ -218,7 +232,7 @@ Router state, not match state. The obvious reach is `route.useMatch({ select: (m
 
 The flag does work for a reload of the _same_ match id — `router.invalidate()`, or a stale reload with unchanged deps. Search never does that, because the whole point of the deps is that a new query is a new cache entry. The two features are in direct tension, and the deps win.
 
-`s.isLoading` is `status === "pending"` on the router itself. It is set on the navigation rather than on any one match, so it flips at both the right moments. The cost is that it is router-wide: it is also true while a click through to `/verbum/$lemma` loads, so the list pulses on the way out. That reads as correct here — something _is_ loading — but if it ever needs narrowing, the scope has to come from comparing the pending location, not from the match.
+`s.isLoading` is `status === "pending"` on the router itself. It is set on the navigation rather than on any one match, so it flips at both the right moments. The cost is that it is router-wide: it is also true while a click through to a detail page loads, so the list pulses on the way out. That reads as correct here — something _is_ loading — but if it ever needs narrowing, the scope has to come from comparing the pending location, not from the match.
 
 ## Structure and announcements
 
@@ -253,7 +267,7 @@ Focus is never moved to the results. The polite announcement is the affordance; 
 
 ## Results link out
 
-Each row links to `/verbum/$lemma`, carrying the current query along: `/verbum/ambulō?q=am`. The detail page uses it for a back link that restores the search you came from rather than dumping you on an empty page.
+Each row links to the word's detail page through `entryLink`, carrying the current query along: `/verbum/ambulō?q=am`. The detail page uses it for a back link that restores the search you came from rather than dumping you on an empty page.
 
 Only the lemma is the anchor. Wrapping the whole row was the first attempt and gave every link this accessible name:
 
