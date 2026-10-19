@@ -8,37 +8,43 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { nowSeconds } from "../utils/analytics/rules";
 
-export const entries = sqliteTable("entries", {
-	id: integer("id").primaryKey({ autoIncrement: true }),
-	// display form, with macrons: "labōrō"
-	lemma: text("lemma").notNull().unique(),
-	// search key, macrons stripped: "laboro"
-	lemmaPlain: text("lemma_plain").notNull(),
-	partOfSpeech: text("part_of_speech").notNull(), // 'verb' | 'noun' | 'adverb' | ...
-	// verbs: "labōrō, labōrāre, labōrāvī, labōrātum"
-	// nouns: the genitive, e.g. "puellae"
-	// adjectives: the other terminations, e.g. "ācer, ācris, ācre"
-	principalParts: text("principal_parts"),
-	gender: text("gender"), // nouns: 'm' | 'f' | 'n'
-	declension: text("declension"), // nouns/adjectives: '1'..'5'
-	// 3rd-declension adjectives: '1' | '2' | '3' — how many nominative
-	// terminations it files with. NULL wherever the question does not apply.
-	terminations: text("terminations"),
-	conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
-	// prepositions: the case or cases it takes, e.g. "accusative,ablative".
-	// NULL for every other part of speech — see hasGoverns.
-	governs: text("governs"),
-	notes: text("notes"),
-	/**
-	 * Nullable, and the NULLs are the point: NULL signifies 'added before we added analytics'
-	 *
-	 * Stamped in JS rather than by a DDL default because SQLite refuses a
-	 * non-constant DEFAULT in ALTER TABLE ADD COLUMN — `DEFAULT (unixepoch())`
-	 * is rejected outright there. The consequence: an insert that bypasses
-	 * Drizzle (the sqlite3 CLI, Studio's row editor) gets NULL
-	 */
-	createdAt: integer("created_at").$defaultFn(nowSeconds),
-});
+export const entries = sqliteTable(
+	"entries",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		// display form, with macrons: "labōrō"
+		lemma: text("lemma").notNull(),
+		// homographs: cum¹ the preposition, cum² the conjunction. Runs 1..n per lemma.
+		homonym: integer("homonym").notNull().default(1),
+		// search key, macrons stripped: "laboro"
+		lemmaPlain: text("lemma_plain").notNull(),
+		partOfSpeech: text("part_of_speech").notNull(), // 'verb' | 'noun' | 'adverb' | ...
+		// verbs: "labōrō, labōrāre, labōrāvī, labōrātum"
+		// nouns: the genitive, e.g. "puellae"
+		// adjectives: the other terminations, e.g. "ācer, ācris, ācre"
+		principalParts: text("principal_parts"),
+		gender: text("gender"), // nouns: 'm' | 'f' | 'n'
+		declension: text("declension"), // nouns/adjectives: '1'..'5'
+		// 3rd-declension adjectives: '1' | '2' | '3' — how many nominative
+		// terminations it files with. NULL wherever the question does not apply.
+		terminations: text("terminations"),
+		conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
+		// prepositions: the case or cases it takes, e.g. "accusative,ablative".
+		// NULL for every other part of speech — see hasGoverns.
+		governs: text("governs"),
+		notes: text("notes"),
+		/**
+		 * Nullable, and the NULLs are the point: NULL signifies 'added before we added analytics'
+		 *
+		 * Stamped in JS rather than by a DDL default because SQLite refuses a
+		 * non-constant DEFAULT in ALTER TABLE ADD COLUMN — `DEFAULT (unixepoch())`
+		 * is rejected outright there. The consequence: an insert that bypasses
+		 * Drizzle (the sqlite3 CLI, Studio's row editor) gets NULL
+		 */
+		createdAt: integer("created_at").$defaultFn(nowSeconds),
+	},
+	(t) => [uniqueIndex("entries_lemma_homonym_unique").on(t.lemma, t.homonym)],
+);
 
 export type Entry = typeof entries.$inferSelect;
 
@@ -135,6 +141,8 @@ export const viewEvents = sqliteTable(
 		 * History should not change when the dictionary does.
 		 */
 		lemma: text("lemma").notNull(),
+		/** With lemma, the URL key. Every view before homographs was of homonym 1. */
+		homonym: integer("homonym").notNull().default(1),
 	},
 	(t) => [
 		index("view_events_created_at").on(t.createdAt),

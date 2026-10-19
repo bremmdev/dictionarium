@@ -45,27 +45,23 @@ Display _labōrō_; search for `laboro`. Two columns, always:
 
 `lemma_plain` is deliberately **not** unique: different words can share it — _liber_ (book) and _līber_ (free) both search as `liber` — and search should return both.
 
-## Unique on `lemma`
+## Unique on `(lemma, homonym)`
 
-`lemma` — the macronned form — carries a unique constraint, so seed scripts can be idempotent:
+A few words are spelled identically, macrons included, yet are different words: _cum_ the preposition and _cum_ the conjunction; _volō, velle_ (to want) and _volō, volāre_ (to fly). Part of speech cannot tell them apart — both _volō_s are verbs — so each carries a `homonym` number, the superscript a printed dictionary sets: cum¹, cum².
 
-```ts
-await db.insert(entries).values([...])
-  .onConflictDoUpdate({ target: [entries.lemma], set: { /* excluded.* */ } });
-```
+- **Unique on `(lemma, homonym)`**, never on `lemma` alone. An upsert targets both columns: `onConflictDoNothing({ target: [entries.lemma, entries.homonym] })`.
+- **`homonym` defaults to 1**, so a word with no homograph is homonym 1 and every row filed before the column existed already is.
+- **Homonyms run 1..n per lemma with no gaps**, the same promise sense ranks make. The bare `/verbum/cum` is homonym 1, so a lone cum² would leave that URL pointing at nothing. The index cannot say this; `npm run check:homonyms` does.
 
-The seed is a statement of what a word **is**, so re-running it has to overwrite the row it finds, not skip it. Otherwise every correction made to a lemma already in the table is silently ignored. The `set` reads from `excluded.`
-
-Run it as often as you like, extend it, rerun it; no duplicates. A caveat:
-
-- **True homographs will eventually break this.** A few words are spelled identically, macrons included, yet are different words: _volō, velle_ (to want) vs _volō, volāre_ (to fly); _cum_ the preposition vs _cum_ the conjunction. Planned fix when the first one actually shows up: a `homonym` integer column (default 1 — the dictionary superscripts volō¹ / volō²), unique becomes `(lemma, homonym)`.
+The column exists; filing a second homograph does not yet. `createEntry` and `suggestEntry` still refuse a lemma already on file.
 
 ## `entries`
 
 | Column            | Required | Notes                                                                                                                 |
 | ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
 | `id`              | yes      | surrogate key                                                                                                         |
-| `lemma`           | yes      | display lemma, macrons kept; **unique**                                                                               |
+| `lemma`           | yes      | display lemma, macrons kept; unique with `homonym`                                                                    |
+| `homonym`         | yes      | default 1; cum¹ / cum². Runs 1..n per lemma — see [Unique on `(lemma, homonym)`](#unique-on-lemma-homonym)            |
 | `lemma_plain`     | yes      | macron-stripped search key                                                                                            |
 | `part_of_speech`  | yes      | `verb`, `noun`, `adverb`, …                                                                                           |
 | `principal_parts` | no       | four parts (verb), genitive (noun), or the terminations (adjective)                                                   |
@@ -270,7 +266,7 @@ Adjectives are asked what verbs are asked: _dignus_ "worthy of" + ablative, _sim
 
 ### Words that are also adverbs
 
-_ante_, _post_, _circum_, _super_, _clam_, _contrā_ are prepositions and adverbs both. This dictionary files the preposition, and the adverbial use goes in `notes`. A preposition's senses are its prepositional meanings; that is what lets every one of _super_'s say which case it takes. _cum_ the conjunction is different: a true homograph, parked with the [`homonym` column](#unique-on-lemma).
+_ante_, _post_, _circum_, _super_, _clam_, _contrā_ are prepositions and adverbs both. This dictionary files the preposition, and the adverbial use goes in `notes`. A preposition's senses are its prepositional meanings; that is what lets every one of _super_'s say which case it takes. _cum_ the conjunction is different: a true homograph, numbered by the [`homonym` column](#unique-on-lemma-homonym).
 
 ### What is deliberately not here
 
@@ -343,7 +339,7 @@ The same pattern governs meanings — `senses` did exactly this, and is [done](#
 1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool. With senses in place, adding a second meaning means editing a seed file and re-running it, which is friction that will quietly stop words getting added at all.
 2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: four of the five read the database, so anything running `npm run check` has to migrate and seed before it can open the gate.
 
-Parked: the `homonym` column (above), synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
+Parked: synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
 ## Operations
 

@@ -136,7 +136,7 @@ if (write && rows.length > 0) {
     const inserted = await db
         .insert(entries)
         .values(rows.map(({ senses: _senses, ...columns }) => columns))
-        .onConflictDoNothing({ target: [entries.lemma] })
+        .onConflictDoNothing({ target: [entries.lemma, entries.homonym] })
         .returning({ id: entries.id, lemma: entries.lemma });
 
     const sensesByLemma = new Map(rows.map((row) => [row.lemma, row.senses]));
