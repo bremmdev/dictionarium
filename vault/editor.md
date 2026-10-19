@@ -55,15 +55,16 @@ This is [auth.md](./auth.md#the-boundary-guards-are-ux-middleware-is-the-gate)'s
 ```
 type a lemma
   ↓  Quaere       suggestEntry → Wiktionary. Fills every field. Submits nothing.
-                  Already filed? “Iam inest.” with a link to edit it; Wiktionary is not asked.
+                  Words already filed under the spelling are skipped, so cum finds the
+                  conjunction once the preposition is in. All of them filed? “Iam inest.”
   ↓  read         chips, senses, notes — cut what a learner's dictionary does not want
   ↓  Adde         parseEntryDraft for the messages, then createEntry for real
   ↓  Additum.     the new lemma links to its page; the form empties, ready for the next
 ```
 
-`createEntry` writes the entry and its senses in **one transaction** — an entry with no senses is not an entry. It asks whether the lemma is already on file before inserting, purely so the answer is a sentence (*“capiō” is already in the dictionary.*) rather than a constraint name; `UNIQUE` on `lemma` is what actually stops the duplicate.
+`createEntry` writes the entry and its senses in **one transaction** — an entry with no senses is not an entry. Where the word goes under its lemma is [Words spelled alike](#words-spelled-alike) below: homonym 1 for a new spelling, the next number for a homograph, a sentence for a word already filed. `UNIQUE` on `(lemma, homonym)` is what actually stops a collision.
 
-`suggestEntry` makes the same check before it reaches Wiktionary and returns `{ kind: "exists" }` instead of a draft, so a duplicate is caught at Quaere rather than at Adde. It matches the exact lemma, macrons included (malum and mālum share `lemma_plain`), and skips the entry being edited, so an edit can still look its own word up again.
+`suggestEntry` passes Wiktionary everything filed under the spelling, and gets back a word that is not among them — so a duplicate is caught at Quaere rather than at Adde. When none is left it returns `{ kind: "exists", entries }` and the form lists them, each with a link to edit it. It skips the entry being edited, so an edit can still look its own word up again.
 
 On success the form calls `router.invalidate()`. The word count on the home page comes from a loader and is cached until something says otherwise — this is that something, for the same reason login and logout invalidate in [auth.md](./auth.md#where-the-answer-is-cached).
 
@@ -78,7 +79,7 @@ On success the form calls `router.invalidate()`. The word count on the home page
 
 The edit link on the detail page is shown to an admin and to nobody else, which is presentation and not protection: `/admin` has its own `beforeLoad` guard and `updateEntry` has `authMiddleware`. The row id is the whole address, not the lemma: an edit may rename the word, and _cum_¹ and _cum_² share one. So an edit URL survives a rename, and an id that no longer resolves is a `notFound`, not an empty create form.
 
-`updateEntry` takes the **row id beside the draft** rather than inside it, because the lemma is one of the things an edit may change and so cannot be what identifies the row. In one transaction it checks the row still exists, refuses a rename onto another word's headword with a sentence, updates the columns, and then **deletes every sense and writes the submitted rows back**.
+`updateEntry` takes the **row id beside the draft** rather than inside it, because the lemma is one of the things an edit may change and so cannot be what identifies the row. In one transaction it checks the row still exists, files a rename under its new lemma by the rules a create follows, renumbers the lemma it left (see [Words spelled alike](#words-spelled-alike)), updates the columns, and then **deletes every sense and writes the submitted rows back**.
 
 That replacement is the design, not an optimisation. Position *is* the rank, so a merge would have to decide which filed row each edited row *is* — and it cannot, because the editor may have reordered them, cut one from the middle, or rewritten a meaning outright. Deleting first is also what makes the new ranks run 1..n by construction, exactly as they do for a create.
 
@@ -112,6 +113,23 @@ A sense's `governs` is a row of case chips, and whether they show follows [who i
 | everything else, and _ad_              | not there                                                                       |
 
 The examples' invariant holds here too: **hidden always means empty.** "Remove case" clears as it closes, and "Add case" reopens empty. Unticking a case under Governs takes it off every sense in the same pass, because those chips stop rendering — and unticking down to one case empties them all, because a one-case preposition's senses are not asked. Ticking it again does not bring the old answers back.
+
+### Words spelled alike
+
+_cum_ the preposition and _cum_ the conjunction are two entries, numbered by the `homonym` column — see [schema.md](./schema.md#unique-on-lemma-homonym). What makes two entries spelled alike **the same word** is their identity: lemma, part of speech, conjugation, declension and gender (`sameWord` in `src/utils/entries/homographs.ts`). Principal parts are left out: they are hand-edited text, and would stop matching Wiktionary's. A blank is unknown rather than different, so a fill that could not read the declension still matches the word on file.
+
+The rules live in `src/server/filing.ts`, shared by both server functions:
+
+| Filing under a lemma that…            | Result                                                            |
+| ------------------------------------- | ----------------------------------------------------------------- |
+| has no words                          | homonym 1                                                         |
+| has a word with the same identity     | refused with a sentence: *cum is already filed as this preposition.* |
+| has only other words, no `homograph`  | `{ kind: "unconfirmed", siblings }` — nothing is written          |
+| has only other words, `homograph: true` | the next number: cum²                                          |
+
+`homograph` is the editor's say-so that this is a new word, because without it a second _capiō_ with a mistyped conjugation would quietly become _capiō_². A Quaere fill that skipped words on file gives it, and the form says so: *Also filed under this spelling: cum (preposition). Adde files this one as cum².* An unconfirmed save puts the question in the summary instead, with a **File as cum²** button. Typing a different lemma takes the say-so back, along with the notice and the question.
+
+An edit that keeps its lemma keeps its number; it is refused if its new grammar makes it a sibling's twin. A rename leaves a gap behind, so `closeGaps` renumbers the old lemma 1..n — rename _cum_¹ away and _cum_² becomes the bare `/verbum/cum`. Its page views stay recorded under the number they had.
 
 ## The form is a reducer
 
@@ -187,7 +205,7 @@ Each one marks a place where the fill made a choice or fell short. Read them; th
 Both ends can name a part of speech — `capio#verb` in the terminal, the chips in the form — and they mean different things by it:
 
 - **Pinned** (`LookupSpec.pinned`, what the script passes): no verb section is a mistake worth stopping for.
-- **Preferred** (what `suggestEntry` passes): the chips hold whatever the *last* fill wrote into them, and a radio cannot be unpicked. Pinning there would mean that looking up a verb once left you unable to look up a noun. So an unsatisfiable preference falls back to what the page does have, and warns.
+- **Preferred** (what `suggestEntry` passes): the chips hold whatever the *last* fill wrote into them, and a radio cannot be unpicked. Pinning there would mean that looking up a verb once left you unable to look up a noun. So an unsatisfiable preference falls back to what the page does have, and warns — including when the part of speech asked for is the one already filed.
 
 ## The same thing in bulk
 
@@ -197,7 +215,7 @@ npx tsx scripts/enrich-entries.ts --file lemmas.txt --json
 npx tsx scripts/enrich-entries.ts --file lemmas.txt --write
 ```
 
-`--write` inserts directly, `onConflictDoNothing` on `lemma`: a word already on file keeps its row and whatever senses someone has curated for it. Use the script to bring in a batch you intend to read through afterwards; use the form when you are filing one word properly. The script's own footer is the honest summary — *Read the glosses before trusting them.*
+`--write` inserts directly, `onConflictDoNothing` on `(lemma, homonym)`: a word already on file keeps its row and whatever senses someone has curated for it. The script never files a homograph; those go through the form, where the editor confirms them. Use the script to bring in a batch you intend to read through afterwards; use the form when you are filing one word properly. The script's own footer is the honest summary — *Read the glosses before trusting them.*
 
 ## What the form says, and to whom
 

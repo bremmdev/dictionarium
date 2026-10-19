@@ -53,7 +53,7 @@ A few words are spelled identically, macrons included, yet are different words: 
 - **`homonym` defaults to 1**, so a word with no homograph is homonym 1 and every row filed before the column existed already is.
 - **Homonyms run 1..n per lemma with no gaps**, the same promise sense ranks make. The bare `/verbum/cum` is homonym 1, so a lone cum² would leave that URL pointing at nothing. The index cannot say this; `npm run check:homonyms` does.
 
-Reading homographs is complete: URLs, search and display are covered in [search.md](./search.md#showing-the-homograph-number). Filing them is not yet: `createEntry` and `suggestEntry` still refuse a lemma that is already on file.
+Showing them is in [search.md](./search.md#showing-the-homograph-number); filing them, and when two entries spelled alike are one word, in [editor.md](./editor.md#words-spelled-alike).
 
 ## `entries`
 

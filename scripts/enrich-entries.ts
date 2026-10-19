@@ -133,6 +133,7 @@ if (write && rows.length > 0) {
 
     // Nothing here overwrites: a lemma already on file keeps its row and the
     // senses someone has curated for it, and is reported as already present.
+    // That includes a homograph of it (cum the conjunction): file those at /admin.
     const inserted = await db
         .insert(entries)
         .values(rows.map(({ senses: _senses, ...columns }) => columns))
@@ -150,7 +151,7 @@ if (write && rows.length > 0) {
     if (newSenses.length > 0) await db.insert(senses).values(newSenses);
 
     console.error(
-        `${inserted.length} inserted with ${newSenses.length} senses, ${rows.length - inserted.length} already present.`,
+        `${inserted.length} inserted with ${newSenses.length} senses, ${rows.length - inserted.length} already present. A homograph of a filed word is filed at /admin.`,
     );
 }
 

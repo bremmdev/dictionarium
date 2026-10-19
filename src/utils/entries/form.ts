@@ -10,7 +10,7 @@
  *     adding or removing a row throws them away.
  */
 import type { EntryWithSenses } from "#/db/schema";
-import type { EntryRef } from "#/utils/entries/links";
+import type { FiledWord } from "#/utils/entries/homographs";
 import {
 	formatCases,
 	hasGoverns,
@@ -79,8 +79,15 @@ export type SubmitStatus =
 	| { kind: "idle" }
 	| { kind: "pending" }
 	/** `created` is the difference between “Additum” and “Ēmendātum”. Both empty the desk. */
-	| { kind: "saved"; entry: EntryRef; created: boolean }
+	| { kind: "saved"; entry: FiledWord; created: boolean }
+	/** The lemma is already filed as other words; the editor is asked whether this is a new one. */
+	| { kind: "unconfirmed"; siblings: Array<FiledWord> }
 	| { kind: "failed"; message: string };
+
+/** What Adde and Ēmenda get back. A duplicate of a filed word is a thrown sentence instead. */
+export type FilingResult =
+	| { kind: "filed"; entry: FiledWord }
+	| { kind: "unconfirmed"; siblings: Array<FiledWord> };
 
 /**
  * Which word this desk is filing, and whether it is already on file.
@@ -108,10 +115,17 @@ export type EntrySuggestion = {
 	warnings: Array<string>;
 };
 
-/** What Quaere gets back: a draft to read, or the word already on file. */
+/**
+ * What Quaere gets back: a draft to read, or the words already on file.
+ * `homographOf` is the words the draft's lemma already names: cum¹ when the fill is cum².
+ */
 export type LookupResult =
-	| { kind: "suggested"; suggestion: EntrySuggestion }
-	| { kind: "exists"; entry: EntryRef };
+	| {
+			kind: "suggested";
+			suggestion: EntrySuggestion;
+			homographOf: Array<FiledWord>;
+	  }
+	| { kind: "exists"; entries: Array<FiledWord> };
 
 /** Where the last lookup got to. Separate from the submit: they can overlap. */
 export type LookupStatus =
@@ -123,9 +137,9 @@ export type LookupStatus =
 	 * is still waiting for that very request.
 	 */
 	| { kind: "pending"; request: number }
-	| { kind: "filled"; warnings: Array<string> }
-	/** The lemma is already filed, so Wiktionary was not asked and the draft is untouched. */
-	| { kind: "exists"; entry: EntryRef }
+	| { kind: "filled"; warnings: Array<string>; homographOf: Array<FiledWord> }
+	/** Every word under this spelling is already filed, so the draft is untouched. */
+	| { kind: "exists"; entries: Array<FiledWord> }
 	| { kind: "failed"; message: string };
 
 export type FormState = {
@@ -144,6 +158,12 @@ export type FormState = {
 	errors: Record<string, string>;
 	status: SubmitStatus;
 	lookup: LookupStatus;
+	/**
+	 * The editor's say-so that this is a new word under a lemma already filed,
+	 * sent as `homograph` with the save. A Quaere fill that found cum¹ gives it;
+	 * so does "File as cum²". Typing a different lemma takes it back.
+	 */
+	homograph: boolean;
 };
 
 export type FormAction =
@@ -162,11 +182,18 @@ export type FormAction =
 	| { type: "entry-loaded"; entry: EntryWithSenses | null }
 	| { type: "submit-started" }
 	| { type: "submit-invalid"; fields: Record<string, string> }
-	| { type: "submit-succeeded"; entry: EntryRef }
+	| { type: "submit-succeeded"; entry: FiledWord }
+	| { type: "submit-unconfirmed"; siblings: Array<FiledWord> }
+	| { type: "homograph-confirmed" }
 	| { type: "submit-failed"; message: string }
 	| { type: "lookup-started"; request: number }
-	| { type: "lookup-filled"; request: number; suggestion: EntrySuggestion }
-	| { type: "lookup-exists"; request: number; entry: EntryRef }
+	| {
+			type: "lookup-filled";
+			request: number;
+			suggestion: EntrySuggestion;
+			homographOf: Array<FiledWord>;
+	  }
+	| { type: "lookup-exists"; request: number; entries: Array<FiledWord> }
 	| { type: "lookup-failed"; request: number; message: string };
 
 const EMPTY_SENSE = {
@@ -202,6 +229,7 @@ export const initialFormState: FormState = {
 	errors: {},
 	status: { kind: "idle" },
 	lookup: { kind: "idle" },
+	homograph: false,
 };
 
 /**
@@ -375,6 +403,24 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 			// `indeclinable` leaves a filing that no longer has forms. The cases a
 			// preposition governs are the third, and they strand answers on the
 			// senses rather than on the entry.
+			// The say-so was about the lemma it was given for, as are the fill's
+			// notice and the question "File as cum²" answers.
+			if (action.name === "lemma") {
+				return {
+					...state,
+					draft: typed,
+					homograph: false,
+					status:
+						state.status.kind === "unconfirmed"
+							? { kind: "idle" }
+							: state.status,
+					lookup:
+						state.lookup.kind === "filled"
+							? { ...state.lookup, homographOf: [] }
+							: state.lookup,
+				};
+			}
+
 			if (!STRANDS_ANSWERS.has(action.name)) {
 				return { ...state, draft: typed };
 			}
@@ -491,6 +537,15 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				},
 			};
 
+		case "submit-unconfirmed":
+			return {
+				...state,
+				status: { kind: "unconfirmed", siblings: action.siblings },
+			};
+
+		case "homograph-confirmed":
+			return { ...state, homograph: true };
+
 		case "submit-failed":
 			return { ...state, status: { kind: "failed", message: action.message } };
 
@@ -532,14 +587,16 @@ export function formReducer(state: FormState, action: FormAction): FormState {
 				// They were written about the draft that has just been replaced.
 				errors: {},
 				status: { kind: "idle" },
-				lookup: { kind: "filled", warnings },
+				lookup: { kind: "filled", warnings, homographOf: action.homographOf },
+				// Quaere skipped the words on file to find this one, so it is new.
+				homograph: action.homographOf.length > 0,
 			};
 		}
 
 		case "lookup-exists":
 			if (!isAwaited(state, action.request)) return state;
 
-			return { ...state, lookup: { kind: "exists", entry: action.entry } };
+			return { ...state, lookup: { kind: "exists", entries: action.entries } };
 
 		case "lookup-failed":
 			if (!isAwaited(state, action.request)) return state;

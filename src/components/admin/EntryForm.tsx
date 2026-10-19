@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 import { useEffect, useId, useReducer, useRef } from "react";
 import { flushSync } from "react-dom";
+import { Lemma } from "#/components/Lemma";
 import type { EntryWithSenses } from "#/db/schema";
 import { createEntry, suggestEntry, updateEntry } from "#/server/entries";
 import {
@@ -30,7 +31,8 @@ import {
 	senseGoverns,
 	TERMINATIONS,
 } from "#/utils/entries/rules";
-import { entryLink } from "#/utils/entries/links";
+import type { FiledWord } from "#/utils/entries/homographs";
+import { entryLink, homonymLabel } from "#/utils/entries/links";
 import { normalizeLemma } from "#/utils/search/rules";
 import {
 	CHIP,
@@ -159,6 +161,37 @@ function CaseChips({
 	);
 }
 
+/** "cum²": the number the next word filed under these siblings' lemma takes. */
+function nextLabel(siblings: Array<FiledWord>) {
+	const homonym = Math.max(0, ...siblings.map((s) => s.homonym)) + 1;
+	return homonymLabel({
+		lemma: siblings[0]?.lemma ?? "",
+		homonym,
+		homographs: homonym,
+	});
+}
+
+/** "cum¹ (preposition), cum² (conjunction)", for an announcement. */
+function spokenList(words: Array<FiledWord>) {
+	return words.map((w) => `${homonymLabel(w)} (${w.partOfSpeech})`).join(", ");
+}
+
+/** A filed word, linked to its page and to its own desk. */
+function FiledWordItem({ word }: { word: FiledWord }) {
+	return (
+		<>
+			<TextLink {...entryLink(word)} lang="la">
+				<Lemma entry={word} />
+			</TextLink>{" "}
+			<span className="text-ink-600">({word.partOfSpeech})</span>{" "}
+			<TextLink to="/admin" search={{ id: word.id }}>
+				Edit
+				<span className="sr-only"> {homonymLabel(word)}</span>
+			</TextLink>
+		</>
+	);
+}
+
 /**
  * The editor's desk: one word, the way `scripts/seed.ts` used to spell it out.
  *
@@ -189,7 +222,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const [state, dispatch] = useReducer(formReducer, entry, (from) =>
 		from ? entryFormState(from) : initialFormState,
 	);
-	const { draft, senses, errors, status, lookup, mode } = state;
+	const { draft, senses, errors, status, lookup, mode, homograph } = state;
 
 	const editing = mode.kind === "edit";
 
@@ -197,6 +230,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 	const exampleRefs = useRef(new Map<number, HTMLInputElement>());
 	const caseRefs = useRef(new Map<number, HTMLInputElement>());
 	const addSenseRef = useRef<HTMLButtonElement>(null);
+	const lemmaRef = useRef<HTMLInputElement>(null);
 	const summaryRef = useRef<HTMLDivElement>(null);
 	/** Numbers each Quaere press, so the reducer can tell a late answer from the awaited one. */
 	const lookupRequest = useRef(0);
@@ -248,8 +282,8 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		if (status.kind !== "saved") return;
 		announce(
 			status.created
-				? `Additum. ${status.entry.lemma} is in the dictionary.`
-				: `Ēmendātum. ${status.entry.lemma} is filed as it now reads.`,
+				? `Additum. ${homonymLabel(status.entry)} is in the dictionary.`
+				: `Ēmendātum. ${homonymLabel(status.entry)} is filed as it now reads.`,
 		);
 	}, [status, announce]);
 
@@ -257,10 +291,20 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		if (lookup.kind === "filled") {
 			// The filled fields are the confirmation, and they are right there —
 			// but only to someone looking at them.
-			announce(["Wiktionary filled the form.", ...lookup.warnings].join(" "));
+			const homographs =
+				lookup.homographOf.length > 0
+					? [
+							`Also filed under this spelling: ${spokenList(lookup.homographOf)}.`,
+						]
+					: [];
+			announce(
+				["Wiktionary filled the form.", ...homographs, ...lookup.warnings].join(
+					" ",
+				),
+			);
 		} else if (lookup.kind === "exists") {
 			announce(
-				`Iam inest. ${lookup.entry.lemma} is already in the dictionary.`,
+				`Iam inest. Already in the dictionary: ${spokenList(lookup.entries)}.`,
 			);
 		} else if (lookup.kind === "failed") {
 			announce(`Nihil inventum. ${lookup.message}`);
@@ -308,8 +352,13 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			});
 			dispatch(
 				result.kind === "exists"
-					? { type: "lookup-exists", request, entry: result.entry }
-					: { type: "lookup-filled", request, suggestion: result.suggestion },
+					? { type: "lookup-exists", request, entries: result.entries }
+					: {
+							type: "lookup-filled",
+							request,
+							suggestion: result.suggestion,
+							homographOf: result.homographOf,
+						},
 			);
 		} catch (err) {
 			dispatch({
@@ -324,12 +373,16 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 		// the editor is about to read. Both outcomes are announced.
 	};
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		if (status.kind === "pending") return;
+	/**
+	 * Files the draft. `asHomograph` is the editor's say-so that a lemma already
+	 * on file is a new word here. Resolves true once the word is filed.
+	 */
+	const file = async (asHomograph: boolean) => {
+		if (status.kind === "pending") return false;
 
 		const filing = {
 			...draft,
+			homograph: asHomograph,
 			// Named rather than spread: `id` and `showExamples` are this form's own
 			// bookkeeping and have no business crossing to the server. Anything a
 			// sense actually carries has to be listed here — a column added to the
@@ -357,22 +410,32 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// after this handler, into a summary already focused and read empty.
 			flushSync(() => dispatch({ type: "submit-invalid", fields: err.fields }));
 			summaryRef.current?.focus();
-			return;
+			return false;
 		}
 
 		dispatch({ type: "submit-started" });
 
 		try {
-			const saved =
+			const result =
 				mode.kind === "edit"
 					? await updateEntry({ data: { ...filing, id: mode.id } })
 					: await createEntry({ data: filing });
+
+			// Nothing was written: the lemma is other words' too, and only the
+			// editor can say this is a new one. The question is read out by focus.
+			if (result.kind === "unconfirmed") {
+				flushSync(() =>
+					dispatch({ type: "submit-unconfirmed", siblings: result.siblings }),
+				);
+				summaryRef.current?.focus();
+				return false;
+			}
 
 			// Ahead of the dispatch, because the dispatch is what empties the desk
 			// and drops it back to `create`: from here on the form is showing no
 			// word, and the navigation below must not be read as news.
 			shown.current = null;
-			dispatch({ type: "submit-succeeded", entry: saved });
+			dispatch({ type: "submit-succeeded", entry: result.entry });
 
 			// The desk is a new word's again, so the URL has to stop naming the old
 			// one — the heading above the form reads from it. Replace rather than
@@ -385,6 +448,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 			// until something says otherwise. So is the entry the detail page just
 			// showed, and this save is what makes it wrong. This is that something.
 			await router.invalidate();
+			return true;
 		} catch (err) {
 			flushSync(() =>
 				dispatch({
@@ -396,8 +460,26 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				}),
 			);
 			summaryRef.current?.focus();
+			return false;
 		}
 	};
+
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		file(homograph);
+	};
+
+	/** "File as cum²": the say-so, and the save it was asked for. */
+	const confirmHomograph = async () => {
+		dispatch({ type: "homograph-confirmed" });
+		// The button goes with the question, so focus waits in the emptied lemma.
+		if (await file(true)) {
+			lemmaRef.current?.focus();
+		}
+	};
+
+	// An edit keeping its lemma keeps its number; anything else files as the next one.
+	const keepsNumber = editing && entry?.lemma === draft.lemma;
 
 	const problems = Object.values(errors);
 	const searchKey = normalizeLemma(draft.lemma);
@@ -414,13 +496,48 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							{status.created ? "Additum." : "Ēmendātum."}
 						</span>{" "}
 						<TextLink {...entryLink(status.entry)} lang="la">
-							{status.entry.lemma}
+							<Lemma entry={status.entry} />
 						</TextLink>{" "}
 						<span className="text-ink-600">
 							{status.created
 								? "is in the dictionary."
 								: "is filed as it now reads."}
 						</span>
+					</div>
+				)}
+
+				{status.kind === "unconfirmed" && (
+					<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
+						<p className="font-bold text-accent" lang="la">
+							Iam inest.
+						</p>
+						<p className="mt-2 text-ink-700 text-sm">
+							<span lang="la">{status.siblings[0]?.lemma}</span> is already
+							filed as:
+						</p>
+						<ul className="mt-1 list-disc space-y-1 pl-5 text-ink-700 text-sm">
+							{status.siblings.map((word) => (
+								<li key={word.id}>
+									<FiledWordItem word={word} />
+								</li>
+							))}
+						</ul>
+						<p className="mt-3 text-ink-700 text-sm">
+							If this is a different word spelled the same way, file it under
+							the next number. Words spelled alike are told apart by part of
+							speech, conjugation, declension or gender.
+						</p>
+						<Button
+							type="button"
+							variant="secondary"
+							className="mt-3"
+							onClick={confirmHomograph}
+						>
+							File as{" "}
+							<span lang="la" className="ml-1">
+								{nextLabel(status.siblings)}
+							</span>
+						</Button>
 					</div>
 				)}
 
@@ -450,20 +567,45 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 					</ul>
 				)}
 
+				{/* The fill is a word still to file, and these are the ones it skipped. */}
+				{lookup.kind === "filled" && lookup.homographOf.length > 0 && (
+					<div className="rounded-lg border border-parchment-300 bg-parchment-100 px-4 py-3 text-ink-700 text-sm">
+						<p>Also filed under this spelling:</p>
+						<ul className="mt-1 list-disc space-y-1 pl-5">
+							{lookup.homographOf.map((word) => (
+								<li key={word.id}>
+									<FiledWordItem word={word} />
+								</li>
+							))}
+						</ul>
+						{!keepsNumber && (
+							<p className="mt-2">
+								<span lang="la">{editing ? "Ēmenda" : "Adde"}</span> files this
+								one as{" "}
+								<span lang="la" className="font-bold">
+									{nextLabel(lookup.homographOf)}
+								</span>
+								.
+							</p>
+						)}
+					</div>
+				)}
+
 				{lookup.kind === "exists" && (
 					<div className="rounded-lg border border-accent bg-parchment-100 px-4 py-3">
 						<p className="font-bold text-accent" lang="la">
 							Iam inest.
 						</p>
 						<p className="mt-2 text-ink-700 text-sm">
-							<TextLink {...entryLink(lookup.entry)} lang="la">
-								{lookup.entry.lemma}
-							</TextLink>{" "}
-							is already in the dictionary.{" "}
-							<TextLink to="/admin" search={{ id: lookup.entry.id }}>
-								Edit it instead
-							</TextLink>
+							Already in the dictionary under this spelling:
 						</p>
+						<ul className="mt-1 list-disc space-y-1 pl-5 text-ink-700 text-sm">
+							{lookup.entries.map((word) => (
+								<li key={word.id}>
+									<FiledWordItem word={word} />
+								</li>
+							))}
+						</ul>
 					</div>
 				)}
 
@@ -489,6 +631,7 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 				<div className="flex flex-wrap items-start gap-3">
 					<input
 						id={`${fieldId}-lemma`}
+						ref={lemmaRef}
 						type="text"
 						lang="la"
 						autoComplete="off"

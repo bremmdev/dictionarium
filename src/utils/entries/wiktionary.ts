@@ -18,6 +18,7 @@
  * part of speech. Unpinned, it takes the first and says which others it saw.
  */
 import type { DraftFields, EntrySuggestion } from "#/utils/entries/form";
+import { type Identity, sameWord } from "#/utils/entries/homographs";
 import {
 	CONJUGATIONS,
 	declensionsFor,
@@ -82,7 +83,16 @@ export type LookupSpec = {
 	 * up a verb once left you unable to look up a noun.
 	 */
 	pinned?: boolean;
+	/** Words already filed under this spelling: a section matching one is not offered again. */
+	taken?: Array<Identity>;
 };
+
+/** Every word on this page is already filed, so there is nothing new to suggest. */
+export class AlreadyFiled extends Error {
+	constructor() {
+		super("Every word Wiktionary has under this spelling is already filed.");
+	}
+}
 
 /**
  * Wiktionary will happily list twenty senses for a common verb. Past the first
@@ -1061,6 +1071,20 @@ function chooseCandidate(
 
 	let pool = candidates;
 
+	// A word already on file is not suggested again, so Quaere on cum finds the
+	// conjunction once the preposition is in. An inflected form left over is not
+	// a word of its own, so it does not count as something still to file.
+	const taken = spec.taken ?? [];
+	const free = pool.filter(
+		(c) => !taken.some((t) => sameWord(identityOf(c), t)),
+	);
+	if (free.length < pool.length) {
+		if (!free.some((c) => !c.isInflectedForm)) {
+			throw new AlreadyFiled();
+		}
+		pool = free;
+	}
+
 	if (spec.partOfSpeech) {
 		// This dictionary has no separate filing for proper nouns, so asking for
 		// a noun has to keep Rōma in the running — nor for postpositions, so
@@ -1075,6 +1099,10 @@ function chooseCandidate(
 
 		if (asked.length > 0) {
 			pool = asked;
+		} else if (candidates.some((c) => wanted.includes(c.partOfSpeech))) {
+			warn(
+				`The ${spec.partOfSpeech} spelled this way is already filed, so the part of speech below is the other word's`,
+			);
 		} else if (spec.pinned) {
 			const available = [
 				...new Set(candidates.map((c) => c.partOfSpeech)),
@@ -1159,33 +1187,25 @@ export async function lookupEntry(spec: LookupSpec): Promise<Lookup> {
 }
 
 /**
- * The same lookup, in the shape the admin form holds a half-filled entry in.
- *
- * Anything Wiktionary says that this dictionary has no vocabulary for is left
- * blank and said out loud rather than passed through: an unrecognised value
- * would only be rejected by parseEntryDraft later, with the editor wondering
- * where it came from.
+ * A row in the form's vocabulary. Anything Wiktionary says that this dictionary
+ * has no word for is blanked and said out loud rather than passed through.
  */
-export async function suggestFromWiktionary(
-	spec: LookupSpec,
-): Promise<EntrySuggestion> {
-	const { row, warnings } = await lookupEntry(spec);
-
+function toDraft(row: WiktionaryRow, warn: (message: string) => void) {
 	let partOfSpeech = row.partOfSpeech;
 
 	if (partOfSpeech === "proper noun") {
 		// This dictionary has one filing for both; the reader sees "noun".
 		partOfSpeech = "noun";
-		warnings.push("Wiktionary calls this a proper noun; filed here as a noun");
+		warn("Wiktionary calls this a proper noun; filed here as a noun");
 	} else if (partOfSpeech === "postposition") {
 		// The grammars list tenus with the prepositions; where it stands is a
 		// note, which readNotes has already written (vault/schema.md).
 		partOfSpeech = "preposition";
-		warnings.push(
+		warn(
 			"Wiktionary calls this a postposition; filed here as a preposition, with “follows its noun” in the notes",
 		);
 	} else if (!isPartOfSpeech(partOfSpeech)) {
-		warnings.push(
+		warn(
 			`Wiktionary calls this ${partOfSpeech ? `a ${partOfSpeech}` : "nothing this dictionary files"}, so the part of speech is for you to pick`,
 		);
 		partOfSpeech = "";
@@ -1225,11 +1245,42 @@ export async function suggestFromWiktionary(
 		["conjugation", CONJUGATIONS],
 	] as const) {
 		if (read[field] !== "" && draft[field] === "") {
-			warnings.push(
+			warn(
 				`“${read[field]}” is not one of ${vocabulary.join(" | ")}, so the ${field} is unanswered`,
 			);
 		}
 	}
+
+	return draft;
+}
+
+/** What a section would be filed as, to compare with the words already on file. */
+function identityOf(candidate: Candidate): Identity {
+	const ignore = () => {};
+	const draft = toDraft(toRow(candidate, ignore), ignore);
+	return {
+		lemma: draft.lemma,
+		partOfSpeech: draft.partOfSpeech,
+		conjugation: draft.conjugation,
+		declension: draft.declension,
+		gender: draft.gender,
+	};
+}
+
+/**
+ * The same lookup, in the shape the admin form holds a half-filled entry in.
+ *
+ * Anything Wiktionary says that this dictionary has no vocabulary for is left
+ * blank and said out loud rather than passed through: an unrecognised value
+ * would only be rejected by parseEntryDraft later, with the editor wondering
+ * where it came from.
+ */
+export async function suggestFromWiktionary(
+	spec: LookupSpec,
+): Promise<EntrySuggestion> {
+	const { row, warnings } = await lookupEntry(spec);
+	const draft = toDraft(row, (message) => warnings.push(message));
+	const { partOfSpeech } = draft;
 
 	// The question that applies has to be answered, and Wiktionary's headword
 	// line does not always say: nothing on quisque's says how it declines.

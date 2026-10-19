@@ -32,7 +32,7 @@ The consequence: **an insert that bypasses Drizzle gets NULL.** The `sqlite3` CL
 
 `view_events.lemma` and `view_events.homonym` store the URL key — the macronned lemma and which homograph it is, cum¹ or cum² — as plain values, with no reference to `entries.id`. `homonym` defaults to 1, which is right for every view recorded before homographs existed.
 
-A foreign key with `onDelete: "cascade"` would erase a word's entire readership at the moment you deleted the word, which is backwards: the visits happened. History should not change when the dictionary does. The trade-off accepted in return is that **renaming a lemma splits its history** across the old and new spelling, and the old key shows in the dashboard as itself.
+A foreign key with `onDelete: "cascade"` would erase a word's entire readership at the moment you deleted the word, which is backwards: the visits happened. History should not change when the dictionary does. The trade-off accepted in return is that **renaming a lemma splits its history** across the old and new spelling, and the old key shows in the dashboard as itself. Renumbering does the same to a homograph: rename cum¹ away and cum² becomes cum¹, while its past views stay recorded under 2 ([editor.md](./editor.md#words-spelled-alike)).
 
 ## What counts as a visit
 
