@@ -10,14 +10,21 @@ import {
 	MIN_QUERY_LENGTH,
 	normalizeLemma,
 } from "#/utils/search/rules";
+import { maxEditsFor, suggestLemmas } from "#/utils/search/suggestions";
+
+export type SearchOutcome = {
+	results: Array<ShownEntry>;
+	/** Macronned lemmas close to the query. Only filled when results is empty. */
+	suggestions: Array<string>;
+};
 
 export const searchEntries = createServerFn({ method: "GET" })
 	.validator((q: unknown) => (typeof q === "string" ? q.trim() : ""))
-	.handler(async ({ data: q }): Promise<Array<ShownEntry>> => {
+	.handler(async ({ data: q }): Promise<SearchOutcome> => {
 		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
 		const key = normalizeLemma(q);
 		if (key.length < MIN_QUERY_LENGTH) {
-			return [];
+			return { results: [], suggestions: [] };
 		}
 
 		const results = await db.query.entries.findMany({
@@ -52,8 +59,20 @@ export const searchEntries = createServerFn({ method: "GET" })
 		// floating promise here would be an unhandled rejection waiting to happen.
 		await recordSearch(key, results.length);
 
-		return results;
+		return { results, suggestions: findSuggestions(key, results.length) };
 	});
+
+/** Read only on a miss; every lemma is compared in JS — see vault/search.md. */
+function findSuggestions(key: string, resultCount: number) {
+	if (resultCount > 0 || maxEditsFor(key) === 0) {
+		return [];
+	}
+	const candidates = db
+		.selectDistinct({ lemma: entries.lemma, lemmaPlain: entries.lemmaPlain })
+		.from(entries)
+		.all();
+	return suggestLemmas(key, candidates);
+}
 
 function findEntry(where: SQL | undefined) {
 	return db.query.entries

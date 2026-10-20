@@ -289,6 +289,21 @@ It is the count of what the row is *not* showing, not the total, so it answers t
 
 The count sits inside the meaning's own `<p>`, so a screen reader reads it as part of that line rather than as a fragment stranded after it.
 
+## "Did you mean …?"
+
+When a search finds nothing, `searchEntries` also returns `suggestions`: up to `MAX_SUGGESTIONS` macronned lemmas close to the key, in the same response. The rules are in `src/utils/search/suggestions.ts`:
+
+- **Distance is OSA** (Levenshtein plus a swap of two neighbouring letters as one edit), so _amcius_ is one edit from _amīcus_, not two. How it works: [concepts/levenshtein.md](./concepts/levenshtein.md).
+- **The limit scales with the key**: under 4 letters no suggestions (a short key is one edit from too many words), 4–7 letters one edit, 8 or more two.
+- **Two edits only when nothing is one edit away.** The closest distance found wins, so a long key never mixes one- and two-edit suggestions.
+- **Ranked** same first letter first, then alphabetically; homographs appear once.
+
+It compares every distinct lemma in JS rather than in SQL, and only on a miss. That is a few milliseconds at the dictionary's expected size.
+
+A suggestion links to `/?q=<lemma>`, so following it is an ordinary search. Its link unmounts once the new results land, so `Search` hands focus back to the input, as _dēlē_ does. The announcement adds the suggestions to the result count.
+
+Inflected forms are not typos: _amābat_ is four edits from _amō_ and gets no suggestion.
+
 ## Gotchas
 
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.

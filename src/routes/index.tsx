@@ -50,22 +50,22 @@ export const Route = createFileRoute("/")({
 		};
 	},
 	loader: async ({ deps: { q } }) => {
-		const [results, total] = await Promise.all([
+		const [outcome, total] = await Promise.all([
 			searchEntries({ data: q }),
 			getTotal(),
 		]);
 
-		// searchEntries always returns an array — as long as it actually ran. A
+		// searchEntries always returns its results — as long as it actually ran. A
 		// server function whose response carries no result resolves to undefined
 		// instead of throwing, so a server that dies mid-response lands here as
 		// undefined and takes the render down on `results.length`.
-		if (!Array.isArray(results)) {
+		if (!Array.isArray(outcome?.results)) {
 			throw new Error(
 				`The server did not answer the search for "${q}". It may be restarting — try again in a moment.`,
 			);
 		}
 
-		return { results, total };
+		return { ...outcome, total };
 	},
 	// Cache helps when users click back/forward in their browser or refresh the page.
 	staleTime: 60_000,

@@ -1,18 +1,32 @@
 import { useAnnounce } from "@bremmdev/m7kit";
-import { useEffect, useId, useRef } from "react";
+import { Fragment, useEffect, useId, useRef } from "react";
+import { TextLink } from "#/components/TextLink";
 import type { ShownEntry } from "#/db/schema";
 import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
 	results: Array<ShownEntry>;
+	/** Lemmas close to the query, offered when it found nothing. */
+	suggestions: Array<string>;
+	/** Following a suggestion unmounts its link, so the caller gets focus back. */
+	onSuggestion: () => void;
 	/** Every lemma in the dictionary is one word, so this is the word count. */
 	total: number;
 	isFetching: boolean;
 	query: string;
 };
 
-export function Results({ results, total, isFetching, query }: ResultsProps) {
+const orList = new Intl.ListFormat("en", { type: "disjunction" });
+
+export function Results({
+	results,
+	suggestions,
+	onSuggestion,
+	total,
+	isFetching,
+	query,
+}: ResultsProps) {
 	const trimmed = query.trim();
 	// Measured the way searchEntries measures it — on the key, not the typing —
 	// so "a." or "ā!" is too short here exactly when the server skipped it,
@@ -30,6 +44,9 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 			announcement = `${results.length} ${
 				results.length === 1 ? "result" : "results"
 			} for ${trimmed}.`;
+			if (results.length === 0 && suggestions.length > 0) {
+				announcement += ` Did you mean ${orList.format(suggestions)}?`;
+			}
 		}
 	}
 
@@ -75,6 +92,31 @@ export function Results({ results, total, isFetching, query }: ResultsProps) {
 					</span>
 				</p>
 			)}
+
+			{!isTooShort &&
+				trimmed !== "" &&
+				results.length === 0 &&
+				suggestions.length > 0 &&
+				!isFetching && (
+					<p className="mt-3 text-center text-ink-600 text-lg">
+						Did you mean{" "}
+						{suggestions.map((lemma, i) => (
+							<Fragment key={lemma}>
+								{i > 0 && (i === suggestions.length - 1 ? " or " : ", ")}
+								<TextLink
+									to="/"
+									search={{ q: lemma }}
+									resetScroll={false}
+									onClick={onSuggestion}
+									lang="la"
+								>
+									{lemma}
+								</TextLink>
+							</Fragment>
+						))}
+						?
+					</p>
+				)}
 
 			{results.length > 0 && (
 				<ul className="divide-y divide-parchment-200 rounded-sm border border-parchment-200 bg-surface-subtle/50">

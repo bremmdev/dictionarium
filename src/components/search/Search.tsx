@@ -14,7 +14,7 @@ const route = getRouteApi("/");
 export function Search() {
 	const q = route.useSearch({ select: (search) => search.q ?? "" });
 	const navigate = useNavigate({ from: "/" });
-	const { results, total } = route.useLoaderData();
+	const { results, suggestions, total } = route.useLoaderData();
 	// Not `useMatch().isFetching`: loaderDeps puts q in the match id, so each
 	// query is a *new* match rather than a refetch of the presented one, and the
 	// router only ever writes isFetching onto the match already on screen.
@@ -112,6 +112,8 @@ export function Search() {
 				</Heading>
 				<Results
 					results={results}
+					suggestions={suggestions}
+					onSuggestion={() => inputRef.current?.focus()}
 					total={total}
 					isFetching={isFetching}
 					query={q}
