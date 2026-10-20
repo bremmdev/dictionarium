@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { CaseTag } from "#/components/CaseTag";
+import { FrequencyTag } from "#/components/FrequencyTag";
 import { Heading } from "#/components/Heading";
 import { Lemma } from "#/components/Lemma";
 import type { Entry, ShownEntry } from "#/db/schema";
@@ -109,6 +110,7 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 				<p className="text-gold-600 uppercase text-sm font-semibold tracking-[0.18em]">
 					{grammarLabel(entry)}
 				</p>
+				<FrequencyTag frequency={entry.frequency} />
 			</div>
 
 			{/* Centred on the whole card rather than on the first line, so it stays

@@ -7,6 +7,7 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { nowSeconds } from "../utils/analytics/rules";
+import type { Frequency } from "../utils/entries/frequency";
 
 export const entries = sqliteTable(
 	"entries",
@@ -86,8 +87,14 @@ export type Sense = typeof senses.$inferSelect;
 /** An entry with its senses attached, in rank order — what the detail page reads. */
 export type EntryWithSenses = Entry & { senses: Array<Sense> };
 
-/** As read for display: homographs counts the entries spelled this way, itself included. */
-export type ShownEntry = EntryWithSenses & { homographs: number };
+/**
+ * As read for display: homographs counts the entries spelled this way, itself
+ * included. frequency is looked up in LASLA on read; null when we have no data.
+ */
+export type ShownEntry = EntryWithSenses & {
+	homographs: number;
+	frequency: Frequency | null;
+};
 
 export const proverbs = sqliteTable("proverbs", {
 	id: integer("id").primaryKey({ autoIncrement: true }),

@@ -25,7 +25,8 @@
     "check:senses": "tsx scripts/check-senses.ts",
     "check:inflection": "tsx scripts/check-inflection.ts",
     "check:governs": "tsx scripts/check-governs.ts",
-    "check:conjugations": "tsx scripts/check-conjugations.ts"
+    "check:conjugations": "tsx scripts/check-conjugations.ts",
+    "report:frequency": "tsx scripts/frequency-report.ts"
   },
   "dependencies": {
     "@bremmdev/m7kit": "^0.66.0",

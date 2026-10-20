@@ -4,6 +4,7 @@ import { and, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { entries, type ShownEntry } from "#/db/schema";
+import { withFrequency } from "#/server/frequency";
 import {
 	findConjugation,
 	findDeclension,
@@ -83,7 +84,7 @@ export const listEntries = createServerFn({ method: "GET" })
 		});
 
 		return {
-			entries: rows.slice(0, MAX_LIST_RESULTS),
+			entries: rows.slice(0, MAX_LIST_RESULTS).map(withFrequency),
 			truncated: rows.length > MAX_LIST_RESULTS,
 		};
 	});

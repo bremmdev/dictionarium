@@ -22,15 +22,17 @@ import scroll from "#/assets/scroll-sketch.svg";
 import sundial from "#/assets/sundial-sketch.svg";
 import temple from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
+import { frequencySource } from "#/components/FrequencyTag";
 import { Heading } from "#/components/Heading";
 import { Lemma } from "#/components/Lemma";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarFacts } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
 import { TextLink } from "#/components/TextLink";
-import type { Entry, EntryWithSenses } from "#/db/schema";
+import type { EntryWithSenses, ShownEntry } from "#/db/schema";
 import { recordEntryView } from "#/server/analytics";
 import { type EntryPage, getEntry } from "#/server/search";
+import { bandLabel } from "#/utils/entries/frequency";
 import { entryLink, parseHomonym } from "#/utils/entries/links";
 
 export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
@@ -158,19 +160,50 @@ function EditLink({ entry }: { entry: EntryWithSenses }) {
 	);
 }
 
+const CHIP =
+	"rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]";
+
 /** The grammar as separate pills, so "noun" and "2nd decl." read as two facts. */
-function GrammarChips({ entry }: { entry: Entry }) {
+function GrammarChips({ entry }: { entry: ShownEntry }) {
 	return (
 		<ul className="mt-5 flex flex-wrap justify-center gap-2 md:justify-start">
 			{grammarFacts(entry).map((fact) => (
-				<li
-					key={fact}
-					className="rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]"
-				>
+				<li key={fact} className={CHIP}>
 					{fact}
 				</li>
 			))}
+			<FrequencyChip entry={entry} />
 		</ul>
+	);
+}
+
+/** How common the word is, with where that comes from a tap away. */
+function FrequencyChip({ entry: { frequency } }: { entry: ShownEntry }) {
+	if (frequency === null) {
+		return null;
+	}
+
+	return (
+		// flex and h-full, so the button fills the row instead of sitting on the text baseline
+		<li className="flex">
+			<Tooltip hoverDelay={200} touchBehavior="tap">
+				<TooltipTrigger
+					className={`${CHIP} my-0 flex h-full items-center gap-1.5 transition-colors hover:border-accent hover:text-accent`}
+				>
+					<span className="sr-only">Frequency: </span>
+					{bandLabel(frequency.band)}
+					<Info className="h-3.5 w-3.5" aria-hidden="true" />
+				</TooltipTrigger>
+				<TooltipContent
+					placement="bottom right"
+					className="w-72 p-3 text-left text-base normal-case tracking-normal shadow-md shadow-ink-900/10"
+				>
+					<p className="text-ink-700 leading-relaxed">
+						{frequencySource(frequency)}
+					</p>
+				</TooltipContent>
+			</Tooltip>
+		</li>
 	);
 }
 

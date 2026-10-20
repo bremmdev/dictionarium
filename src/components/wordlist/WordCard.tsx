@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { CaseTag } from "#/components/CaseTag";
+import { FrequencyTag } from "#/components/FrequencyTag";
 import { Lemma } from "#/components/Lemma";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
 import { grammarLabel } from "#/components/search/EntryCard";
@@ -40,6 +41,7 @@ export function WordCard({ entry }: { entry: ShownEntry }) {
 					<span className="font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]">
 						{grammarLabel(entry)}
 					</span>
+					<FrequencyTag frequency={entry.frequency} />
 				</span>
 
 				{/* Closed, the card leads with the parts and the core meaning; open,

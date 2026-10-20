@@ -4,6 +4,7 @@ import { and, count, eq, like, ne, type SQL, sql } from "drizzle-orm";
 import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { type Entry, entries, type ShownEntry } from "#/db/schema";
+import { withFrequency } from "#/server/frequency";
 import { recordSearch } from "#/server/recording";
 import {
 	MAX_RESULTS,
@@ -59,7 +60,10 @@ export const searchEntries = createServerFn({ method: "GET" })
 		// floating promise here would be an unhandled rejection waiting to happen.
 		await recordSearch(key, results.length);
 
-		return { results, suggestions: findSuggestions(key, results.length) };
+		return {
+			results: results.map(withFrequency),
+			suggestions: findSuggestions(key, results.length),
+		};
 	});
 
 /** Read only on a miss; every lemma is compared in JS — see vault/search.md. */
@@ -81,7 +85,7 @@ function findEntry(where: SQL | undefined) {
 			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
 			extras: { homographs: homographCount(entries).as("homographs") },
 		})
-		.then((entry) => entry ?? null);
+		.then((entry) => (entry ? withFrequency(entry) : null));
 }
 
 /** Another entry spelled the same way, as the detail page's "Also spelled" line names it. */
