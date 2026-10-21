@@ -4,7 +4,7 @@ import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
 import { TenseLabel } from "./Labels";
 
-// Checked against Allen & Greenough §§ 160–161, 205, 465–466, 470–471, 473,
+// Checked against Allen & Greenough §§ 160–161, 205, 449 b, 465–466, 470–473,
 // 477, 543 and Gildersleeve & Lodge §§ 227, 235–241, 561.
 
 const COLUMNS = [
@@ -49,6 +49,15 @@ const ROWS = [
 			latin: <LatinWord>salūtābam</LatinWord>,
 			english: "I tried to greet, I began to greet",
 			when: "started or attempted, but not carried through",
+		},
+	},
+	{
+		id: "future",
+		cells: {
+			tense: <TenseLabel tense="future" />,
+			latin: <LatinWord>salūtābō</LatinWord>,
+			english: "I will greet, I shall greet",
+			when: "at some time still to come",
 		},
 	},
 	{
@@ -106,7 +115,7 @@ export function Translating() {
 			<div className="overflow-x-auto">
 				<img
 					src={tenseTimeline}
-					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now."
+					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now, and the future, salūtābō, lies ahead of it."
 					className="mx-auto w-full min-w-140 max-w-4xl"
 				/>
 			</div>
@@ -195,9 +204,28 @@ export function Translating() {
 					<LatinWord>nōveram</LatinWord>, <em>I knew</em> — not{" "}
 					<em>I had hated</em>, <em>I had known</em>.
 				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						Latin is stricter about the future than English.
+					</strong>{" "}
+					When an <em>if</em> or <em>when</em> clause looks ahead, Latin puts it
+					in the future as well, where English is content with a present:{" "}
+					<LatinWord>sānābimur sī volēmus</LatinWord>,{" "}
+					<em>we shall be healed if we wish</em> — literally{" "}
+					<em>if we shall wish</em>, since the wishing is still to come. A
+					present is found there too, but the future is the rule.
+				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						The future can give an order,
+					</strong>{" "}
+					as English <em>you will</em> can:{" "}
+					<LatinWord>sī quid acciderit novī, faciēs ut sciam</LatinWord>,{" "}
+					<em>you will let me know if anything new happens</em>.
+				</p>
 				<p className="text-sm">
 					After Allen and Greenough, <cite>New Latin Grammar</cite>, §§ 160–161,
-					205, 465–466, 470–471, 473, 477 and 543, and Gildersleeve and Lodge,{" "}
+					205, 449 b, 465–466, 470–473, 477 and 543, and Gildersleeve and Lodge,{" "}
 					<cite>Latin Grammar</cite>, §§ 227, 235–241 and 561.
 				</p>
 			</div>

@@ -128,11 +128,12 @@ const STEPS = [
 			<>
 				Take the <LatinWord>-ō</LatinWord>, <LatinWord>-eō</LatinWord> or{" "}
 				<LatinWord>-iō</LatinWord> off the first part and add that group's
-				endings: <LatinWord>salūt-</LatinWord> + <LatinWord>-ās</LatinWord> or{" "}
-				<LatinWord>-ābam</LatinWord>, <LatinWord>mon-</LatinWord> +{" "}
-				<LatinWord>-ēs</LatinWord> or <LatinWord>-ēbam</LatinWord>,{" "}
-				<LatinWord>dūc-</LatinWord> + <LatinWord>-is</LatinWord> or{" "}
-				<LatinWord>-ēbam</LatinWord>.
+				endings: <LatinWord>salūt-</LatinWord> + <LatinWord>-ās</LatinWord>,{" "}
+				<LatinWord>-ābam</LatinWord> or <LatinWord>-ābō</LatinWord>,{" "}
+				<LatinWord>mon-</LatinWord> + <LatinWord>-ēs</LatinWord>,{" "}
+				<LatinWord>-ēbam</LatinWord> or <LatinWord>-ēbō</LatinWord>,{" "}
+				<LatinWord>dūc-</LatinWord> + <LatinWord>-is</LatinWord>,{" "}
+				<LatinWord>-ēbam</LatinWord> or <LatinWord>-am</LatinWord>.
 			</>
 		),
 	},
@@ -175,8 +176,8 @@ export function Filing() {
 				className="mx-auto max-w-4xl"
 			/>
 			<p>
-				So conjugating any regular verb in the present or the imperfect is two
-				steps:
+				So conjugating any regular verb in the present, the imperfect or the
+				future is two steps:
 			</p>
 			{/* The same numbered steps as Filing a noun on /declensions. */}
 			<ol className="mx-auto max-w-3xl space-y-3">

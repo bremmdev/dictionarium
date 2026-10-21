@@ -69,7 +69,12 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>-bā-</LatinWord>, whose <LatinWord>ā</LatinWord> shortens the
 			same way and before a final <LatinWord>-m</LatinWord> too:{" "}
 			<LatinWord>salūtābās</LatinWord> but <LatinWord>salūtābam</LatinWord>,{" "}
-			<LatinWord>salūtābat</LatinWord>, <LatinWord>salūtābant</LatinWord>.
+			<LatinWord>salūtābat</LatinWord>, <LatinWord>salūtābant</LatinWord>. The
+			future has the <LatinWord>b</LatinWord> too, followed by{" "}
+			<LatinWord>-ō</LatinWord>, <LatinWord>-i-</LatinWord> and{" "}
+			<LatinWord>-u-</LatinWord>, and there the <LatinWord>ā</LatinWord> stays
+			long in every person: <LatinWord>salūtābō</LatinWord>,{" "}
+			<LatinWord>salūtābit</LatinWord>, <LatinWord>salūtābunt</LatinWord>.
 		</>
 	),
 	moneō: (
@@ -78,8 +83,9 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>monēmus</LatinWord>, <LatinWord>monētis</LatinWord> against the
 			short <LatinWord>e</LatinWord> of <LatinWord>moneō</LatinWord>,{" "}
 			<LatinWord>monet</LatinWord> and <LatinWord>monent</LatinWord>. In the
-			imperfect the <LatinWord>ē</LatinWord> stays long in every person:{" "}
-			<LatinWord>monēbam</LatinWord>, <LatinWord>monēbant</LatinWord>.
+			imperfect and the future the <LatinWord>ē</LatinWord> stays long in every
+			person: <LatinWord>monēbam</LatinWord>, <LatinWord>monēbant</LatinWord>,{" "}
+			<LatinWord>monēbō</LatinWord>, <LatinWord>monēbunt</LatinWord>.
 		</>
 	),
 	dūcō: (
@@ -90,7 +96,12 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>dūcēbam</LatinWord> takes a long <LatinWord>ē</LatinWord>{" "}
 			exactly like <LatinWord>monēbam</LatinWord>. The <LatinWord>ū</LatinWord>{" "}
 			of <LatinWord>dūc-</LatinWord> is long all through the present system, but
-			not in the supine: <LatinWord>ductum</LatinWord>.
+			not in the supine: <LatinWord>ductum</LatinWord>. The future has no{" "}
+			<LatinWord>b</LatinWord>: <LatinWord>-am</LatinWord> and then a long{" "}
+			<LatinWord>ē</LatinWord>, short before <LatinWord>-t</LatinWord> and{" "}
+			<LatinWord>-nt</LatinWord>. So <LatinWord>dūcēs</LatinWord>,{" "}
+			<em>you will lead</em>, ends like the present <LatinWord>monēs</LatinWord>
+			, <em>you warn</em>, and only the conjugation tells you which tense it is.
 		</>
 	),
 	audiō: (
@@ -101,7 +112,11 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			vowel in front of another vowel is short in Latin. Everywhere else in the
 			present it is long. The imperfect puts an <LatinWord>ē</LatinWord> after
 			it, so the <LatinWord>i</LatinWord> is short all through:{" "}
-			<LatinWord>audiēbam</LatinWord>.
+			<LatinWord>audiēbam</LatinWord>. The future follows the third conjugation,
+			with the <LatinWord>i</LatinWord> in front: <LatinWord>audiam</LatinWord>,{" "}
+			<LatinWord>audiēs</LatinWord>. Early Latin also had{" "}
+			<LatinWord>audībō</LatinWord>, made like <LatinWord>monēbō</LatinWord>,
+			and the poets kept it.
 		</>
 	),
 	capiō: (
@@ -110,9 +125,10 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>capimus</LatinWord>, <LatinWord>capitis</LatinWord> are short
 			where <LatinWord>audīs</LatinWord>, <LatinWord>audīmus</LatinWord>,{" "}
 			<LatinWord>audītis</LatinWord> are long. In those three forms the vowel
-			length is all that separates the two groups. The imperfect is the fourth
-			conjugation's outright: <LatinWord>capiēbam</LatinWord> like{" "}
-			<LatinWord>audiēbam</LatinWord>.
+			length is all that separates the two groups. The imperfect and the future
+			are the fourth conjugation's outright: <LatinWord>capiēbam</LatinWord>,{" "}
+			<LatinWord>capiam</LatinWord> like <LatinWord>audiēbam</LatinWord>,{" "}
+			<LatinWord>audiam</LatinWord>.
 		</>
 	),
 };
