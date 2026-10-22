@@ -1,13 +1,19 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "@bremmdev/m7kit";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+	useAnnounce,
+} from "@bremmdev/m7kit";
 import {
 	createFileRoute,
 	Link,
 	notFound,
 	redirect,
 	useLoaderData,
+	useRouter,
 } from "@tanstack/react-router";
-import { ArrowLeft, Info, Pencil, Search } from "lucide-react";
-import { Fragment } from "react";
+import { ArrowLeft, Bookmark, Info, Pencil, Search } from "lucide-react";
+import { Fragment, useState } from "react";
 import abacus from "#/assets/abacus-sketch.svg";
 import acanthus from "#/assets/acanthus-sketch.svg";
 import amphora from "#/assets/amphora-sketch.svg";
@@ -31,9 +37,10 @@ import { SenseList } from "#/components/SenseList";
 import { TextLink } from "#/components/TextLink";
 import type { EntryWithSenses, ShownEntry } from "#/db/schema";
 import { recordEntryView } from "#/server/analytics";
+import { getIsDifficult, setDifficult } from "#/server/difficult";
 import { type EntryPage, getEntry } from "#/server/search";
 import { bandLabel } from "#/utils/entries/frequency";
-import { entryLink, parseHomonym } from "#/utils/entries/links";
+import { entryLink, homonymLabel, parseHomonym } from "#/utils/entries/links";
 
 export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 	// q is only carried so the back link can restore the search the user came
@@ -51,7 +58,7 @@ export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 			});
 		}
 	},
-	loader: async ({ params, cause }) => {
+	loader: async ({ params, cause, parentMatchPromise }) => {
 		const homonym = parseHomonym(params.homonym);
 		if (homonym === null) {
 			throw notFound();
@@ -71,7 +78,13 @@ export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 			}).catch(() => {});
 		}
 
-		return entry;
+		// null for everyone but the admin, who is the only one it is asked for.
+		const { loaderData: root } = await parentMatchPromise;
+		const difficult = root?.isAdmin
+			? await getIsDifficult({ data: entry.id })
+			: null;
+
+		return { ...entry, difficult };
 	},
 	component: WordDetail,
 	notFoundComponent: NotFound,
@@ -160,6 +173,72 @@ function EditLink({ entry }: { entry: EntryWithSenses }) {
 	);
 }
 
+/**
+ * The admin's mark on a word they find hard to remember, gathered on
+ * /word-list?difficult=true. Hidden from everyone else as EditLink is.
+ */
+function DifficultToggle({
+	entry,
+}: {
+	entry: ShownEntry & { difficult: boolean | null };
+}) {
+	const router = useRouter();
+	const announce = useAnnounce();
+	const [isPending, setIsPending] = useState(false);
+
+	if (entry.difficult === null) {
+		return null;
+	}
+
+	const toggle = async () => {
+		if (isPending) return;
+		setIsPending(true);
+		const difficult = !entry.difficult;
+		const word = homonymLabel(entry);
+
+		try {
+			await setDifficult({ data: { id: entry.id, difficult } });
+			await router.invalidate();
+			announce(
+				difficult
+					? `Notātum. ${word} is on your hard-to-remember list.`
+					: `${word} is off your hard-to-remember list.`,
+			);
+		} catch {
+			announce(`Could not save the mark on ${word}. Try again.`, {
+				politeness: "assertive",
+			});
+		} finally {
+			setIsPending(false);
+		}
+	};
+
+	return (
+		<button
+			type="button"
+			aria-pressed={entry.difficult}
+			aria-disabled={isPending}
+			onClick={toggle}
+			className={`focus-ring inline-flex items-center gap-2 rounded-full border px-4 py-1.5 font-semibold text-xs uppercase tracking-[0.18em] ${
+				entry.difficult
+					? "border-accent bg-accent text-parchment-50 hover:bg-accent/90"
+					: "border-parchment-300 bg-parchment-50 text-gold-600 hover:border-accent hover:text-accent"
+			}`}
+			lang="la"
+		>
+			<Bookmark
+				className="h-3.5 w-3.5"
+				fill={entry.difficult ? "currentColor" : "none"}
+				aria-hidden="true"
+			/>
+			Difficile
+			<span className="sr-only" lang="en">
+				{" (hard to remember)"}
+			</span>
+		</button>
+	);
+}
+
 const CHIP =
 	"rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]";
 
@@ -235,7 +314,11 @@ function AlsoSpelled({ entry }: { entry: EntryPage }) {
 	);
 }
 
-function WordBanner({ entry }: { entry: EntryPage }) {
+function WordBanner({
+	entry,
+}: {
+	entry: EntryPage & { difficult: boolean | null };
+}) {
 	const [core] = entry.senses;
 
 	return (
@@ -253,6 +336,7 @@ function WordBanner({ entry }: { entry: EntryPage }) {
 					<div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-start">
 						<BackLink />
 						<EditLink entry={entry} />
+						<DifficultToggle entry={entry} />
 					</div>
 
 					<p

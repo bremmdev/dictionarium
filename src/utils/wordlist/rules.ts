@@ -180,6 +180,8 @@ export type WordListSearch = {
 	/** Prepositions only: the cases to list them under, comma-joined — see selectedCases. */
 	cases?: string;
 	letters?: string;
+	/** Admin only: just the words marked hard to remember. The RPC enforces it. */
+	difficult?: true;
 };
 
 function isPartOfSpeech(value: unknown): value is WordListPartOfSpeech {
@@ -214,5 +216,6 @@ export function parseWordListSearch(search: unknown): WordListSearch {
 		conj: pos === "verb" ? findConjugation(raw.conj)?.param : undefined,
 		cases: pos === "preposition" ? parseCases(raw.cases) : undefined,
 		letters: letters && parseLetters(letters).ok ? letters : undefined,
+		difficult: raw.difficult === true ? true : undefined,
 	};
 }

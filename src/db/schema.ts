@@ -96,6 +96,17 @@ export type ShownEntry = EntryWithSenses & {
 	frequency: Frequency | null;
 };
 
+/**
+ * The admin's own study list: words they find hard to remember. Kept off
+ * entries because it is private — no public read touches this table.
+ */
+export const difficultWords = sqliteTable("difficult_words", {
+	entryId: integer("entry_id")
+		.primaryKey()
+		.references(() => entries.id, { onDelete: "cascade" }),
+	createdAt: integer("created_at").notNull().$defaultFn(nowSeconds),
+});
+
 export const proverbs = sqliteTable("proverbs", {
 	id: integer("id").primaryKey({ autoIncrement: true }),
 	// display form, with macrons; unique so one proverb is filed once

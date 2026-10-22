@@ -330,6 +330,12 @@ A table of their own because a proverb is a sentence, not a word: it has no part
 
 No link to `entries` yet. Showing "proverbs using this word" on a word's page would take a join table filled in by hand. _iacta_ files under _iaciō_, and no string match finds that.
 
+## `difficult_words`
+
+The admin's own study list: words they find hard to remember. One row per marked word, `entry_id` as primary key (FK → `entries.id`, `ON DELETE CASCADE`), plus `created_at`.
+
+A table rather than a column on `entries`, because it is private. No public read joins it, so no public read can leak it. Only `getIsDifficult`, `setDifficult` (`src/server/difficult.ts`) and `listDifficultEntries` (`src/server/wordlist.ts`) touch it, and all three carry `authMiddleware`. Marked from the detail page (*Difficile*), listed on `/word-list?difficult=true`.
+
 ## Later
 
 Inflected forms are not rows. When they arrive, they hang off a lemma — they do not replace it.

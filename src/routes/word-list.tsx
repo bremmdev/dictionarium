@@ -1,12 +1,12 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@bremmdev/m7kit";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Info } from "lucide-react";
 import lamp from "#/assets/lamp-sketch.svg";
 import tablet from "#/assets/tablet-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
 import { WordListBuilder } from "#/components/wordlist/WordListBuilder";
-import { listEntries } from "#/server/wordlist";
+import { listDifficultEntries, listEntries } from "#/server/wordlist";
 import { parseWordListSearch } from "#/utils/wordlist/rules";
 
 export const Route = createFileRoute("/word-list")({
@@ -14,8 +14,15 @@ export const Route = createFileRoute("/word-list")({
 	// the server would throw away.
 	validateSearch: parseWordListSearch,
 	loaderDeps: ({ search }) => search,
-	loader: async ({ deps }) => {
-		const list = await listEntries({ data: deps });
+	loader: async ({ deps, parentMatchPromise }) => {
+		// Courtesy only; listDifficultEntries has authMiddleware.
+		if (deps.difficult && !(await parentMatchPromise).loaderData?.isAdmin) {
+			throw redirect({ to: "/login" });
+		}
+
+		const list = deps.difficult
+			? await listDifficultEntries({ data: deps })
+			: await listEntries({ data: deps });
 
 		// A server function whose response carries no result resolves to
 		// undefined instead of throwing — see the home route.

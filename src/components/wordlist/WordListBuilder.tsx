@@ -1,6 +1,7 @@
 import { Button } from "@bremmdev/m7kit";
 import {
 	getRouteApi,
+	useLoaderData,
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
@@ -66,6 +67,7 @@ type Draft = {
 	conj: string;
 	cases: string;
 	letters: string;
+	difficult: boolean;
 };
 
 function draftFrom(search: WordListSearch): Draft {
@@ -75,6 +77,7 @@ function draftFrom(search: WordListSearch): Draft {
 		conj: search.conj ?? "",
 		cases: search.cases ?? "",
 		letters: search.letters ?? "",
+		difficult: search.difficult === true,
 	};
 }
 
@@ -89,6 +92,7 @@ function searchFrom(draft: Draft): WordListSearch {
 		...(draft.pos === "preposition" &&
 			draft.cases !== "" && { cases: draft.cases }),
 		...(letters !== "" && { letters }),
+		...(draft.difficult && { difficult: true }),
 	};
 }
 
@@ -117,6 +121,10 @@ function eitherCase(cases: ReadonlyArray<string>) {
 function describe(search: WordListSearch, count: number) {
 	const [one, many] = search.pos ? POS_NOUNS[search.pos] : ["word", "words"];
 	const qualifiers: Array<string> = [];
+
+	if (search.difficult) {
+		qualifiers.push("that you find hard to remember");
+	}
 
 	const declension = findDeclension(search.pos, search.decl);
 	if (declension) {
@@ -311,6 +319,7 @@ function CaseChipGroup({
 }
 
 export function WordListBuilder() {
+	const root = useLoaderData({ from: "__root__" });
 	const search = route.useSearch();
 	const navigate = useNavigate({ from: "/word-list" });
 	const { entries, truncated } = route.useLoaderData();
@@ -369,6 +378,24 @@ export function WordListBuilder() {
 				onSubmit={handleSubmit}
 				noValidate
 			>
+				{root?.isAdmin && (
+					<fieldset>
+						<legend className={LABEL}>Just for you</legend>
+						<div className="mt-2 flex flex-wrap gap-2">
+							<label className={CHIP}>
+								<input
+									type="checkbox"
+									className="sr-only"
+									name="difficult"
+									checked={draft.difficult}
+									onChange={(e) => update({ difficult: e.target.checked })}
+								/>
+								Hard to remember
+							</label>
+						</div>
+					</fieldset>
+				)}
+
 				<ChipGroup
 					legend="Part of speech"
 					name="pos"
