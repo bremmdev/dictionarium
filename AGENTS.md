@@ -105,3 +105,22 @@ tanstackIntent:
     run: "npx @tanstack/intent@latest load dotenv#dotenvx"
     for: "Use dotenvx to run commands with environment variables, manage multiple .env files, expand variables, and encrypt env files for safe commits and CI/CD."
 <!-- intent-skills:end -->
+
+## Secrets (arca)
+
+Secrets are stored outside the repo with arca and injected when commands run.
+`.env` files in this project contain only non-sensitive config, which you may read and edit.
+
+- Run the app, tests and tools through package scripts (`npm run dev`, `npm test`, …),
+  which wrap commands in `arca run`. Ad-hoc `arca run -- <cmd>` is refused for agents.
+  Output is always masked: secrets appear as `[arca:NAME]`.
+- `arca list` shows which variables exist. `arca check` verifies required ones are set.
+- Do not try to read secret values (`arca reveal`, printing `process.env`, reading the
+  arca store).
+- Only the user can set or change values. If a value is missing or wrong, ask the user
+  to run `arca set NAME` (or `arca set NAME --generate` for a random secret).
+- To add a secret: declare it in `arca.json` under `vars`, then ask the user to set it.
+  To add non-sensitive config: put it in `.env` and declare it with `"sensitive": false`.
+- Never put secrets (keys, tokens, passwords, connection strings with credentials) in
+  `.env` files. Don't change URLs that receive credentials. Those are declared sensitive
+  and live in arca.

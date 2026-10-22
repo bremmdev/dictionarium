@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/@bremmdev/arca-env/schema.json",
+  "id": "arc_rxoxylqwy3ahergg",
+  "name": "dictionarium",
+  "vars": {
+    "ADMIN_PASSWORD": {
+      "required": true
+    },
+    "ADMIN_SESSION_SECRET": {
+      "required": true
+    }
+  }
+}
