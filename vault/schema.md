@@ -336,6 +336,10 @@ The admin's own study list: words they find hard to remember. One row per marked
 
 A table rather than a column on `entries`, because it is private. No public read joins it, so no public read can leak it. Only `getIsDifficult`, `setDifficult` (`src/server/difficult.ts`) and `listDifficultEntries` (`src/server/wordlist.ts`) touch it, and all three carry `authMiddleware`. Marked from the detail page (*Difficile*), listed on `/word-list?difficult=true`.
 
+## `accepted_disagreements`
+
+LiLa disagreements the admin has marked fine as filed, for [the health page](./health.md#fine-as-filed). Primary key `(entry_id, field)`, `entry_id` FK → `entries.id` with `ON DELETE CASCADE`. `field` is `class` or `gender`. `ours` and `theirs` hold both values as they stood, so a row stops applying as soon as either changes. `created_at` as elsewhere.
+
 ## Later
 
 Inflected forms are not rows. When they arrive, they hang off a lemma — they do not replace it.
@@ -372,6 +376,8 @@ in (preposition): governs the accusative, but no sense takes it
 māter: ranks are [1, 3, 4, 5, 6] — must run 1..5 with no gaps
 deus: no senses — a word with no meaning is not an entry
 ```
+
+The rules themselves are pure functions in `src/utils/health/checks.ts`, which [`/admin/health`](./health.md) also runs against the live database.
 
 ### Migrations, not push
 

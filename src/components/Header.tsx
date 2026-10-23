@@ -1,6 +1,6 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link, useRouter } from "@tanstack/react-router";
-import { ChartNoAxesColumn, Plus } from "lucide-react";
+import { ChartNoAxesColumn, HeartPulse, Plus } from "lucide-react";
 import { useState } from "react";
 import mosaic from "#/assets/mosaic-bold.svg";
 import { ResourcesMenu } from "#/components/ResourcesMenu";
@@ -68,6 +68,15 @@ export function Header({ isAdmin }: { isAdmin: boolean }) {
 						>
 							<ChartNoAxesColumn className="h-3.5 w-3.5" aria-hidden="true" />
 							stats
+						</Button>
+						<Button
+							as={Link}
+							to="/admin/health"
+							variant="secondary"
+							className="uppercase max-sm:text-sm"
+						>
+							<HeartPulse className="h-3.5 w-3.5" aria-hidden="true" />
+							health
 						</Button>
 						<Button
 							variant="secondary"

@@ -37,7 +37,7 @@ type Filed = Pick<
 >;
 
 /** The universal POS tags LASLA files each of our parts of speech under. */
-const UPOS: Record<string, ReadonlyArray<string>> = {
+export const UPOS: Record<string, ReadonlyArray<string>> = {
 	noun: ["NOUN"],
 	verb: ["VERB", "AUX"],
 	adjective: ["ADJ", "DET"],
@@ -51,7 +51,7 @@ const UPOS: Record<string, ReadonlyArray<string>> = {
 };
 
 /** LASLA's inflection class for each of our conjugations and noun declensions. */
-const FLCAT: Record<string, string> = {
+export const FLCAT: Record<string, string> = {
 	"1": "1",
 	"2": "2",
 	"3": "3",
@@ -62,8 +62,8 @@ const FLCAT: Record<string, string> = {
 };
 
 /** A second word this close to the first means we cannot tell which one the entry is. */
-const AMBIGUOUS_SHARE = 0.02;
-const AMBIGUOUS_MIN = 5;
+export const AMBIGUOUS_SHARE = 0.02;
+export const AMBIGUOUS_MIN = 5;
 
 /** LASLA writes u for v and i for j: nouus, iacio. */
 export function laslaKey(lemma: string) {
@@ -109,7 +109,7 @@ function lengths(word: string, unmarked: "S" | "?") {
 }
 
 /** Our lemmas mark every long vowel, so mālum is not LiLa's mălum. */
-function sameLengths(lemma: string, prosody: string) {
+export function sameLengths(lemma: string, prosody: string) {
 	if (prosody === "") return true;
 	const ours = lengths(lemma, "S");
 	const theirs = lengths(prosody, "?");

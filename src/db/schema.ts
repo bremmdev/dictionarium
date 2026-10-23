@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
+	primaryKey,
 	sqliteTable,
 	text,
 	uniqueIndex,
@@ -106,6 +107,24 @@ export const difficultWords = sqliteTable("difficult_words", {
 		.references(() => entries.id, { onDelete: "cascade" }),
 	createdAt: integer("created_at").notNull().$defaultFn(nowSeconds),
 });
+
+/**
+ * LiLa disagreements the admin has looked at and kept as filed. Both values are
+ * stored, so editing the word or rebuilding the data asks again.
+ */
+export const acceptedDisagreements = sqliteTable(
+	"accepted_disagreements",
+	{
+		entryId: integer("entry_id")
+			.notNull()
+			.references(() => entries.id, { onDelete: "cascade" }),
+		field: text("field").notNull(), // 'class' | 'gender'
+		ours: text("ours").notNull(),
+		theirs: text("theirs").notNull(),
+		createdAt: integer("created_at").notNull().$defaultFn(nowSeconds),
+	},
+	(t) => [primaryKey({ columns: [t.entryId, t.field] })],
+);
 
 export const proverbs = sqliteTable("proverbs", {
 	id: integer("id").primaryKey({ autoIncrement: true }),

@@ -21,9 +21,14 @@ for (const row of lasla.lexemes as Array<LaslaRow>) {
 	byLemma.set(lexeme.lemma, [...(byLemma.get(lexeme.lemma) ?? []), lexeme]);
 }
 
+/** LASLA's words spelled like this lemma, for the matching to choose from. */
+export function laslaCandidates(lemma: string): ReadonlyArray<Lexeme> {
+	return byLemma.get(laslaKey(lemma)) ?? [];
+}
+
 export function withFrequency<T extends Omit<ShownEntry, "frequency">>(
 	entry: T,
 ): T & Pick<ShownEntry, "frequency"> {
-	const candidates = byLemma.get(laslaKey(entry.lemma)) ?? [];
+	const candidates = laslaCandidates(entry.lemma);
 	return { ...entry, frequency: frequencyOf(matchLexeme(entry, candidates)) };
 }
