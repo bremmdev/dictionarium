@@ -20,8 +20,18 @@ export type SearchOutcome = {
 };
 
 export const searchEntries = createServerFn({ method: "GET" })
-	.validator((q: unknown) => (typeof q === "string" ? q.trim() : ""))
-	.handler(async ({ data: q }): Promise<SearchOutcome> => {
+	.validator((input: unknown) => {
+		const raw = (
+			typeof input === "object" && input !== null ? input : {}
+		) as Record<string, unknown>;
+
+		return {
+			q: typeof raw.q === "string" ? raw.q.trim() : "",
+			// Opt-in, so a preload or any other read is never counted by default.
+			record: raw.record === true,
+		};
+	})
+	.handler(async ({ data: { q, record } }): Promise<SearchOutcome> => {
 		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
 		const key = normalizeLemma(q);
 		if (key.length < MIN_QUERY_LENGTH) {
@@ -49,16 +59,12 @@ export const searchEntries = createServerFn({ method: "GET" })
 		// `key` rather than `q` for the same reason lemma_plain exists: "Vīlla "
 		// and "villa" are one search.
 		//
-		// No preload guard is needed here, unlike the detail page. defaultPreload
-		// is "intent", so hovering a link does run a loader — but the only
-		// <Link to="/"> in the app (the header wordmark) carries no q, and an
-		// empty query is already dropped by the guard above. A search arrives by
-		// form submit into navigate(), which is never a preload.
-		//
 		// Awaited rather than left floating: the only asynchronous part is
 		// decrypting the session cookie, the insert itself is synchronous, and a
 		// floating promise here would be an unhandled rejection waiting to happen.
-		await recordSearch(key, results.length);
+		if (record) {
+			await recordSearch(key, results.length);
+		}
 
 		return {
 			results: results.map(withFrequency),

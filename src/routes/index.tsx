@@ -49,9 +49,10 @@ export const Route = createFileRoute("/")({
 			q: q ?? "",
 		};
 	},
-	loader: async ({ deps: { q } }) => {
+	loader: async ({ deps: { q }, preload }) => {
 		const [outcome, total] = await Promise.all([
-			searchEntries({ data: q }),
+			// Not `cause === "enter"`: a new q on this page arrives as "stay".
+			searchEntries({ data: { q, record: !preload } }),
 			getTotal(),
 		]);
 

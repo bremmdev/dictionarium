@@ -50,7 +50,9 @@ Without the gate, reading a page of search results with a mouse would count ever
 
 **Recording lives in the route, not in `getEntry`.** That function also runs for every preload, so making the read write would count a hover as a visit; the `/admin` editor reads through `getEntryById`, which must not count either. The cost of keeping them apart is one extra RPC on a client-side navigation, which is not awaited.
 
-Searches need no equivalent guard, and the reason is worth writing down so nobody adds one: the only `<Link to="/">` in the app is the header wordmark, which carries no `q`, and an empty query is already dropped by the `MIN_QUERY_LENGTH` check. A search arrives by form submit into `navigate()`, which is never a preload.
+**Searches take the same gate.** Several links point at `/?q=`: the detail page's "Back to results", its not-found "Search for", and the "Did you mean" suggestions. Under `defaultPreloadStaleTime: 0`, every hover over one of them re-ran the home loader, and every run recorded a search. So the home loader passes `record: !preload` to `searchEntries`, which only records when asked. The flag is opt-in, so any other caller reads without counting.
+
+The gate is `preload` rather than `cause === "enter"` because the router sets `cause` by route, not by match. With results on screen, a new `q` is the same route at the same position, so it arrives as `"stay"`, and an `"enter"` gate would drop every search typed on the home page. A click on a hovered link still counts once: `defaultPreloadStaleTime: 0` makes the click re-run the loader with `preload: false`.
 
 ## Who is not counted
 

@@ -10,7 +10,7 @@ The obvious alternative is to split it: the loader handles the first paint, then
 URL ?q=am
   ↓  validateSearch      normalise, drop empty
   ↓  loaderDeps          { q } becomes the cache key
-  ↓  loader              searchEntries({ data: q })
+  ↓  loader              searchEntries({ data: { q, record } })
   ↓  useLoaderData()     rendered as <Results>
 ```
 
@@ -45,13 +45,15 @@ Note what the check proves — that the stored key agrees with the current rule,
 
 `Entry` moved too, from the server module to `#/db/schema`, beside the table it is inferred from. A card that renders a row takes its type from the schema now instead of reaching through the module that queries it.
 
-### `searchEntries(q)`
+### `searchEntries({ q, record })`
 
 ```ts
 export const searchEntries = createServerFn({ method: "GET" })
-  .validator((q: unknown) => (typeof q === "string" ? q.trim() : ""))
-  .handler(async ({ data: q }) => { … });
+  .validator((input: unknown) => ({ q: /* trimmed string */, record: /* === true */ }))
+  .handler(async ({ data: { q, record } }) => { … });
 ```
+
+`record` says whether this run is a search someone made. The home loader sets it to `!preload`, so hovering a link to `/?q=` never counts. See [analytics.md](./analytics.md#what-counts-as-a-visit).
 
 Three things it does, in order — and the order is the change:
 
@@ -153,7 +155,8 @@ When `homographs > 1`, `getEntry` also returns `siblings`: each other entry with
 
 ```ts
 loaderDeps: ({ search: { q } }) => ({ q: q ?? "" }),
-loader: ({ deps: { q } }) => searchEntries({ data: q }),
+loader: ({ deps: { q }, preload }) =>
+  searchEntries({ data: { q, record: !preload } }),
 staleTime: 60_000,
 ```
 
