@@ -86,6 +86,22 @@ export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 
 		return { ...entry, difficult };
 	},
+	// No loaderData when the loader threw notFound, so the URL's lemma names the miss.
+	head: ({ loaderData, params }) => ({
+		meta: loaderData
+			? [
+					{ title: `${homonymLabel(loaderData)} — Dictionarium Latinum` },
+					{
+						name: "description",
+						content: `${loaderData.lemma} (${loaderData.partOfSpeech})${
+							loaderData.senses[0]
+								? `: ${loaderData.senses[0].meaningEn}`
+								: ""
+						}`,
+					},
+				]
+			: [{ title: `“${params.lemma}” not found — Dictionarium Latinum` }],
+	}),
 	component: WordDetail,
 	notFoundComponent: NotFound,
 });

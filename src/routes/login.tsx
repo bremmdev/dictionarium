@@ -12,6 +12,9 @@ import { login } from "#/server/auth";
 
 export const Route = createFileRoute("/login")({
 	component: RouteComponent,
+	head: () => ({
+		meta: [{ title: "Log in — Dictionarium Latinum" }],
+	}),
 });
 
 function RouteComponent() {

@@ -12,7 +12,7 @@ import { TextLink } from "#/components/TextLink";
 import { getIsAdmin } from "#/server/auth";
 import { getProverbs } from "#/server/proverbs";
 import { getEntryById } from "#/server/search";
-import { entryLink } from "#/utils/entries/links";
+import { entryLink, homonymLabel } from "#/utils/entries/links";
 
 /**
  * The two desks the switcher at the top moves between. Words is the default
@@ -63,6 +63,20 @@ export const Route = createFileRoute("/admin")({
 
 		return { entry, proverbs };
 	},
+	// Follows the desk on screen, the way the heading does.
+	head: ({ loaderData, match }) => ({
+		meta: [
+			{
+				title: `${
+					match.search.desk === "proverbs"
+						? "Proverb desk"
+						: loaderData?.entry
+							? `Editing ${homonymLabel(loaderData.entry)}`
+							: "New word"
+				} — Dictionarium Latinum`,
+			},
+		],
+	}),
 	component: RouteComponent,
 	notFoundComponent: NotFound,
 });

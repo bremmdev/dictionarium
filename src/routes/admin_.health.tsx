@@ -24,6 +24,9 @@ export const Route = createFileRoute("/admin_/health")({
 		}
 	},
 	loader: () => getHealth(),
+	head: () => ({
+		meta: [{ title: "Health — Dictionarium Latinum" }],
+	}),
 	component: Health,
 });
 

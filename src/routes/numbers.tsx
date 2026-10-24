@@ -41,6 +41,18 @@ const NUMERALS = [
 
 export const Route = createFileRoute("/numbers")({
 	component: RouteComponent,
+	head: () => ({
+		meta: [
+			{
+				title: "Numbers — Dictionarium Latinum",
+			},
+			{
+				name: "description",
+				content:
+					"Roman numerals and the Latin numbers: cardinals, ordinals, and how 1, 2 and 3 decline.",
+			},
+		],
+	}),
 });
 
 function NumbersBanner() {

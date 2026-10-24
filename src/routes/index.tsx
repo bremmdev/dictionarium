@@ -69,6 +69,15 @@ export const Route = createFileRoute("/")({
 	},
 	// Cache helps when users click back/forward in their browser or refresh the page.
 	staleTime: 60_000,
+	// A bare "/" keeps the root's title; a search names what was searched for.
+	head: ({ match }) =>
+		match.search.q
+			? {
+					meta: [
+						{ title: `Results for “${match.search.q}” — Dictionarium Latinum` },
+					],
+				}
+			: {},
 	component: Home,
 });
 

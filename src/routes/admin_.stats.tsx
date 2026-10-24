@@ -32,6 +32,9 @@ export const Route = createFileRoute("/admin_/stats")({
 	},
 	loaderDeps: ({ search: { days } }) => ({ days: days ?? DEFAULT_PERIOD }),
 	loader: ({ deps: { days } }) => getAnalyticsSummary({ data: days }),
+	head: () => ({
+		meta: [{ title: "Stats — Dictionarium Latinum" }],
+	}),
 	component: Stats,
 });
 
