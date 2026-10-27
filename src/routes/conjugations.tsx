@@ -14,8 +14,8 @@ import { type Section, SectionNav } from "#/components/SectionNav";
 const SECTIONS: Section[] = [
 	{ id: "persons", label: "Persōnae", gloss: "persons" },
 	{ id: "filing", label: "Filing a verb" },
-	{ id: "conjugations", label: "The conjugations" },
 	{ id: "translating", label: "Translating" },
+	{ id: "conjugations", label: "The conjugations" },
 ];
 
 export const Route = createFileRoute("/conjugations")({
@@ -59,8 +59,8 @@ function ConjugationsBanner() {
 									<span className="font-semibold text-ink-900">
 										&ldquo;Conjugations.&rdquo;
 									</span>{" "}
-									Literally a <em>yoking together</em> — person, number and
-									tense, all harnessed to one stem.
+									It literally means <em>yoking together</em>: person, number
+									and tense all tied to one stem.
 								</p>
 							</TooltipContent>
 						</Tooltip>
@@ -84,8 +84,8 @@ function RouteComponent() {
 			<div className="mx-auto max-w-page-width space-y-8 md:space-y-16 py-16 md:py-24">
 				<Persons />
 				<Filing />
-				<Paradigms />
 				<Translating />
+				<Paradigms />
 			</div>
 		</>
 	);

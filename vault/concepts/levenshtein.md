@@ -12,7 +12,6 @@ When a search finds nothing, the dictionary offers "Did you mean …?". To do th
 | Edit distance | The general name for "the fewest edits between two strings". Levenshtein is the most common kind |
 | OSA | Optimal string alignment: Levenshtein plus transposition as one edit. What this app uses |
 | Damerau–Levenshtein | Like OSA, but a swapped pair may be edited again afterwards. Slightly different from OSA, see [section 5](#5-swapped-letters-damerau-and-osa) |
-| Prefix | The first few letters of a word. _hab_ is a prefix of _habeo_ |
 | ε (empty string) | A word with no letters. The table starts from it |
 | Dynamic programming | Solving a big problem by first solving the small problems inside it and storing their answers in a table |
 | Threshold | The largest distance still worth suggesting |
@@ -274,7 +273,7 @@ There are two versions of "Levenshtein with swaps", and the names get mixed up a
 
 _ca_ → _abc_ is the classic example: swap to _ac_, then insert _b_ between them. Real Damerau–Levenshtein allows that and gets 2. OSA doesn't allow inserting a letter between the two it just swapped, so it gets 3.
 
-The rule above, the one in this app, is **OSA**. It is much simpler (one extra line, two rows of memory) and the difference only shows up when someone swaps two letters and **also** types something between them. For typo suggestions that's rare enough not to matter. OSA also breaks the triangle inequality in cases like this one, which only matters for index structures like BK-trees ([section 9](#9-alternatives)).
+The rule above, the one in this app, is **OSA**. It is much simpler (one extra line, two rows of memory) and the difference only shows up when someone swaps two letters and **also** types something between them. For typo suggestions that's rare enough not to matter.
 
 ---
 
@@ -382,9 +381,7 @@ The distances are always measured between **keys**, never display forms. `search
 | **D. Weighted edits** | Specific error patterns are known | E.g. neighbouring keys or vowel swaps cost 0.5 | More decisions to tune, harder to explain |
 | **E. Jaro–Winkler** | Short strings like names | Score 0–1, rewards a shared start | Not an edit count, so harder to pick a limit for |
 | **F. Trigrams** (SQLite FTS5 trigram, Postgres `pg_trgm`) | Large tables that need an index | Fast with an index, also finds partial matches | Weak on short words, which have few trigrams |
-| **G. Phonetic codes** (Soundex, Metaphone) | English names that sound alike | Catches spelling-by-ear | Built on English pronunciation, wrong for Latin |
-| **H. SQLite `spellfix1`** | Doing it all inside SQLite | Edit distance plus a phonetic index, in SQL | A loadable extension, not in the standard build. More moving parts |
-| **I. BK-tree, SymSpell** | Hundreds of thousands of words, or a check per keystroke | Skips most of the dictionary without comparing | Extra structure to build and keep in sync. Overkill at ~20,000 lemmas |
+| **G. SQLite `spellfix1`** | Doing it all inside SQLite | Edit distance plus a phonetic index, in SQL | A loadable extension, not in the standard build. More moving parts |
 
 At this dictionary's size, comparing every lemma ([section 6](#6-making-it-fast)) costs a few milliseconds, so B with no index is the simplest thing that works. F or I become worth it if suggestions ever run on every keystroke, or the dictionary grows well past its expected size.
 
@@ -410,15 +407,12 @@ At this dictionary's size, comparing every lemma ([section 6](#6-making-it-fast)
 - **Calling OSA "Damerau–Levenshtein".**
   - They give different answers for cases like _ca_ → _abc_ ([section 5](#5-swapped-letters-damerau-and-osa)). Code or tests copied from a source that means the other one will disagree.
   - Fix: name it OSA, as the code does.
-- **Expecting it to find inflected forms.**
-  - _amābat_ is not a typo for _amō_, it's four edits away. Edit distance doesn't know grammar.
-  - Fix: a separate form lookup (the "look up inflected forms" feature). Don't raise the limit to try to reach these.
 - **A fixed limit for every length.**
   - One edit on a 3-letter word suggests half the short words in the dictionary.
   - Fix: scale the limit with the length ([section 7](#7-choosing-a-threshold)).
 - **Running it on every search.**
   - The cost grows with the number of lemmas. On every keystroke, or on a much bigger dictionary, that adds up, and `better-sqlite3` blocks the server while it works.
-  - Fix: only on a search that found nothing, as now. Look at [section 9](#9-alternatives) F or I if that changes.
+  - Fix: only on a search that found nothing, as now.
 
 ---
 

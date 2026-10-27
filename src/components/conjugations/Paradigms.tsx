@@ -12,9 +12,8 @@ import { Verb } from "./Verb";
 const BLURBS: Record<string, React.ReactNode> = {
 	"First conjugation": (
 		<>
-			Verbs whose stem ends in a long <LatinWord>ā</LatinWord>, plain in the
-			infinitive <LatinWord>salūtāre</LatinWord>. It is the largest group and
-			the most regular, and the one Latin kept adding new verbs to.
+			Verbs whose stem ends in a long <LatinWord>ā</LatinWord>. It is the
+			largest group and the most regular.
 		</>
 	),
 	"Second conjugation": (
@@ -27,12 +26,9 @@ const BLURBS: Record<string, React.ReactNode> = {
 	),
 	"Third conjugation": (
 		<>
-			No stem vowel at all: <LatinWord>dūc-</LatinWord> ends in a consonant, and
-			a short vowel joins it to the endings — <LatinWord>i</LatinWord> in most
-			persons, <LatinWord>u</LatinWord> before <LatinWord>-nt</LatinWord>. Its
-			infinitive <LatinWord>dūcere</LatinWord> is spelled like{" "}
-			<LatinWord>monēre</LatinWord> with the macron taken off, and the macron is
-			the only thing that tells the two groups apart.
+			No stem vowel at all. Its infinitive <LatinWord>dūcere</LatinWord> is
+			spelled like <LatinWord>monēre</LatinWord> with the macron taken off, and
+			the macron is the only thing that tells the two groups apart.
 		</>
 	),
 	"Fourth conjugation": (
@@ -50,58 +46,30 @@ const BLURBS: Record<string, React.ReactNode> = {
 			of another vowel, as the fourth conjugation does —{" "}
 			<LatinWord>capiō</LatinWord>, <LatinWord>capiunt</LatinWord> like{" "}
 			<LatinWord>audiō</LatinWord>, <LatinWord>audiunt</LatinWord> — and are
-			third conjugation everywhere else, short vowels and the infinitive{" "}
-			<LatinWord>capere</LatinWord> included.
+			third conjugation everywhere else.
 		</>
 	),
 };
 
 // Keyed by lemma, one set per table. A verb without one follows its pattern.
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
-	salūtō: (
-		<>
-			The <LatinWord>ā</LatinWord> of the stem is swallowed by the{" "}
-			<LatinWord>-ō</LatinWord> — <LatinWord>salūtō</LatinWord>, not{" "}
-			<LatinWord>salūtāō</LatinWord> — and shortens before{" "}
-			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>:{" "}
-			<LatinWord>salūtās</LatinWord> but <LatinWord>salūtat</LatinWord>,{" "}
-			<LatinWord>salūtant</LatinWord>. The imperfect adds{" "}
-			<LatinWord>-bā-</LatinWord>, whose <LatinWord>ā</LatinWord> shortens the
-			same way and before a final <LatinWord>-m</LatinWord> too:{" "}
-			<LatinWord>salūtābās</LatinWord> but <LatinWord>salūtābam</LatinWord>,{" "}
-			<LatinWord>salūtābat</LatinWord>, <LatinWord>salūtābant</LatinWord>. The
-			future has the <LatinWord>b</LatinWord> too, followed by{" "}
-			<LatinWord>-ō</LatinWord>, <LatinWord>-i-</LatinWord> and{" "}
-			<LatinWord>-u-</LatinWord>, and there the <LatinWord>ā</LatinWord> stays
-			long in every person: <LatinWord>salūtābō</LatinWord>,{" "}
-			<LatinWord>salūtābit</LatinWord>, <LatinWord>salūtābunt</LatinWord>.
-		</>
-	),
+	salūtō: <></>,
 	moneō: (
 		<>
-			Long everywhere but at the edges: <LatinWord>monēs</LatinWord>,{" "}
-			<LatinWord>monēmus</LatinWord>, <LatinWord>monētis</LatinWord> against the
-			short <LatinWord>e</LatinWord> of <LatinWord>moneō</LatinWord>,{" "}
-			<LatinWord>monet</LatinWord> and <LatinWord>monent</LatinWord>. In the
-			imperfect and the future the <LatinWord>ē</LatinWord> stays long in every
-			person: <LatinWord>monēbam</LatinWord>, <LatinWord>monēbant</LatinWord>,{" "}
-			<LatinWord>monēbō</LatinWord>, <LatinWord>monēbunt</LatinWord>.
+			In the imperfect and the future the <LatinWord>ē</LatinWord> stays long in
+			every person: <LatinWord>monēbam</LatinWord>,{" "}
+			<LatinWord>monēbant</LatinWord>, <LatinWord>monēbō</LatinWord>,{" "}
+			<LatinWord>monēbunt</LatinWord>.
 		</>
 	),
 	dūcō: (
 		<>
-			Set it beside <LatinWord>moneō</LatinWord>: <LatinWord>dūcis</LatinWord>,{" "}
-			<LatinWord>dūcimus</LatinWord> against <LatinWord>monēs</LatinWord>,{" "}
-			<LatinWord>monēmus</LatinWord>. In the imperfect the two meet:{" "}
-			<LatinWord>dūcēbam</LatinWord> takes a long <LatinWord>ē</LatinWord>{" "}
-			exactly like <LatinWord>monēbam</LatinWord>. The <LatinWord>ū</LatinWord>{" "}
-			of <LatinWord>dūc-</LatinWord> is long all through the present system, but
-			not in the supine: <LatinWord>ductum</LatinWord>. The future has no{" "}
-			<LatinWord>b</LatinWord>: <LatinWord>-am</LatinWord> and then a long{" "}
-			<LatinWord>ē</LatinWord>, short before <LatinWord>-t</LatinWord> and{" "}
-			<LatinWord>-nt</LatinWord>. So <LatinWord>dūcēs</LatinWord>,{" "}
-			<em>you will lead</em>, ends like the present <LatinWord>monēs</LatinWord>
-			, <em>you warn</em>, and only the conjugation tells you which tense it is.
+			The future has no <LatinWord>b</LatinWord>: <LatinWord>-am</LatinWord> and
+			then a long <LatinWord>ē</LatinWord>, short before{" "}
+			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>. So{" "}
+			<LatinWord>dūcēs</LatinWord>, <em>you will lead</em>, ends like the
+			present <LatinWord>monēs</LatinWord>, <em>you warn</em>, and only the
+			conjugation tells you which tense it is.
 		</>
 	),
 	audiō: (
@@ -109,14 +77,11 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			The <LatinWord>i</LatinWord> of <LatinWord>audit</LatinWord> is short
 			because of the <LatinWord>-t</LatinWord>, and the one in{" "}
 			<LatinWord>audiō</LatinWord> and <LatinWord>audiunt</LatinWord> because a
-			vowel in front of another vowel is short in Latin. Everywhere else in the
-			present it is long. The imperfect puts an <LatinWord>ē</LatinWord> after
-			it, so the <LatinWord>i</LatinWord> is short all through:{" "}
-			<LatinWord>audiēbam</LatinWord>. The future follows the third conjugation,
-			with the <LatinWord>i</LatinWord> in front: <LatinWord>audiam</LatinWord>,{" "}
-			<LatinWord>audiēs</LatinWord>. Early Latin also had{" "}
-			<LatinWord>audībō</LatinWord>, made like <LatinWord>monēbō</LatinWord>,
-			and the poets kept it.
+			vowel in front of another vowel is short in Latin. The future follows the
+			third conjugation, with the <LatinWord>i</LatinWord> in front:{" "}
+			<LatinWord>audiam</LatinWord>, <LatinWord>audiēs</LatinWord>. Early Latin
+			also had <LatinWord>audībō</LatinWord>, made like{" "}
+			<LatinWord>monēbō</LatinWord>.
 		</>
 	),
 	capiō: (
@@ -126,9 +91,7 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			where <LatinWord>audīs</LatinWord>, <LatinWord>audīmus</LatinWord>,{" "}
 			<LatinWord>audītis</LatinWord> are long. In those three forms the vowel
 			length is all that separates the two groups. The imperfect and the future
-			are the fourth conjugation's outright: <LatinWord>capiēbam</LatinWord>,{" "}
-			<LatinWord>capiam</LatinWord> like <LatinWord>audiēbam</LatinWord>,{" "}
-			<LatinWord>audiam</LatinWord>.
+			are the the same as the fourth conjugation.
 		</>
 	),
 };
@@ -138,16 +101,11 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 		<>
 			The regular first-conjugation perfect: a <LatinWord>v</LatinWord> after
 			the stem vowel, <LatinWord>salūtā-</LatinWord> + <LatinWord>v-</LatinWord>
-			. Speech often dropped the <LatinWord>v</LatinWord> and ran the vowels
-			together, and writers kept the short forms:{" "}
-			<LatinWord>salūtāstī</LatinWord>, <LatinWord>salūtārunt</LatinWord>,{" "}
-			<LatinWord>salūtāram</LatinWord>. The pluperfect endings look like the
-			imperfect of <LatinWord>sum</LatinWord>, <LatinWord>eram</LatinWord>,{" "}
-			<LatinWord>erās</LatinWord>, <LatinWord>erat</LatinWord>, and their{" "}
-			<LatinWord>ā</LatinWord> shortens as the imperfect's{" "}
-			<LatinWord>-bā-</LatinWord> does: <LatinWord>salūtāverās</LatinWord> but{" "}
-			<LatinWord>salūtāveram</LatinWord>, <LatinWord>salūtāverat</LatinWord>,{" "}
-			<LatinWord>salūtāverant</LatinWord>.
+			. Speech often dropped the <LatinWord>v</LatinWord> and writers kept the
+			short forms: <LatinWord>salūtāstī</LatinWord>,{" "}
+			<LatinWord>salūtārunt</LatinWord>, <LatinWord>salūtāram</LatinWord>. The
+			pluperfect endings look like the imperfect of <LatinWord>sum</LatinWord> ({" "}
+			<LatinWord>eram</LatinWord>, <LatinWord>erās</LatinWord>...){" "}
 		</>
 	),
 	moneō: (
@@ -180,9 +138,7 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 		<>
 			The perfect changes the root itself: <LatinWord>cap-</LatinWord> becomes{" "}
 			<LatinWord>cēp-</LatinWord>, and the <LatinWord>i</LatinWord> of the
-			present is gone. In the perfect and the pluperfect the mixed conjugation
-			is no different from any other, because every verb takes the same endings
-			there.
+			present is gone.
 		</>
 	),
 };

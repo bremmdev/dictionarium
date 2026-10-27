@@ -60,9 +60,7 @@ export function Persons() {
 				<LatinWord>salūtāveram</LatinWord>. The future goes either way:{" "}
 				<LatinWord>-ō</LatinWord> where it has a <LatinWord>b</LatinWord>,{" "}
 				<LatinWord>salūtābō</LatinWord>, and <LatinWord>-m</LatinWord> where it
-				does not, <LatinWord>dūcam</LatinWord>. Everything after it is the same
-				in every conjugation, so the groups differ only in what comes in front
-				of the endings.
+				does not, <LatinWord>dūcam</LatinWord>.
 			</p>
 		</section>
 	);
