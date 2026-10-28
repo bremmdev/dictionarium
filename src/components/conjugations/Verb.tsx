@@ -44,8 +44,9 @@ export function Verb({ verb, notes }: VerbProps) {
 					{` — ${verb.english}`}
 				</span>
 			</Heading>
-			{/* Side by side from xl; recheck once the future perfect joins. */}
-			<div className="mx-auto grid max-w-4xl items-start gap-8 xl:max-w-6xl xl:grid-cols-2">
+			{/* Stacked at every width: with the future perfect the perfect system
+			    needs ~700px, more than half the page. */}
+			<div className="mx-auto grid max-w-4xl items-start gap-8">
 				{SYSTEMS_IN_ORDER.map((system) => (
 					<div key={system} className="min-w-0 space-y-3">
 						<SystemTable

@@ -5,7 +5,7 @@ import { Table } from "#/components/Table";
 import { TenseLabel } from "./Labels";
 
 // Checked against Allen & Greenough §§ 160–161, 205, 449 b, 465–466, 470–473,
-// 477, 543 and Gildersleeve & Lodge §§ 227, 235–241, 561.
+// 477–478, 543 and Gildersleeve & Lodge §§ 227, 235–241, 244, 561.
 
 const COLUMNS = [
 	{ key: "tense", label: "Tense" },
@@ -87,6 +87,15 @@ const ROWS = [
 			when: "done before some other moment in the past — the past of the past",
 		},
 	},
+	{
+		id: "future-perfect",
+		cells: {
+			tense: <TenseLabel tense="futurePerfect" />,
+			latin: <LatinWord>salūtāverō</LatinWord>,
+			english: "I will have greeted",
+			when: "done before some moment still to come — the past of the future",
+		},
+	},
 ];
 
 export function Translating() {
@@ -115,8 +124,8 @@ export function Translating() {
 			<div className="overflow-x-auto">
 				<img
 					src={tenseTimeline}
-					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now, and the future, salūtābō, lies ahead of it."
-					className="mx-auto w-full min-w-140 max-w-4xl"
+					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now. The future, salūtābō, lies furthest ahead, and the future perfect, salūtāverō, lies between now and the future."
+					className="mx-auto w-full min-w-160 max-w-4xl"
 				/>
 			</div>
 			<Table
@@ -223,10 +232,44 @@ export function Translating() {
 					<LatinWord>sī quid acciderit novī, faciēs ut sciam</LatinWord>,{" "}
 					<em>you will let me know if anything new happens</em>.
 				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						The future perfect is the perfect of the future,
+					</strong>{" "}
+					as the pluperfect is the perfect of the past: something already done
+					by a moment still to come. Its Latin name says as much,{" "}
+					<LatinWord>futūrum exāctum</LatinWord>, <em>the future completed</em>.
+					English <em>will have</em> matches it when the moment is spelled out:{" "}
+					<LatinWord>crās hōc tempore epistulam scrīpserō</LatinWord>,{" "}
+					<em>by this time tomorrow I will have written the letter</em>.
+				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						More often it is an English present.
+					</strong>{" "}
+					Where an <em>if</em> or <em>when</em> clause looks ahead to something
+					that must be done before the main verb happens, Latin puts it in the
+					future perfect and English in the present:{" "}
+					<LatinWord>ut sēmentem fēceris, ita metēs</LatinWord>,{" "}
+					<em>as you sow, so shall you reap</em> — literally{" "}
+					<em>as you will have sown</em>, since the sowing is over before the
+					reaping starts. It is the same strictness as the future above, one
+					step further on.
+				</p>
+				<p>
+					<strong className="font-semibold text-ink-900">
+						Some future perfects are a plain English future.
+					</strong>{" "}
+					The verbs whose perfect is a present state make their future from the
+					perfect stem as well: <LatinWord>meminerō</LatinWord>,{" "}
+					<em>I will remember</em>, <LatinWord>ōderō</LatinWord>,{" "}
+					<em>I will hate</em>, <LatinWord>nōverō</LatinWord>,{" "}
+					<em>I will know</em>.
+				</p>
 				<p className="text-sm">
 					After Allen and Greenough, <cite>New Latin Grammar</cite>, §§ 160–161,
-					205, 449 b, 465–466, 470–473, 477 and 543, and Gildersleeve and Lodge,{" "}
-					<cite>Latin Grammar</cite>, §§ 227, 235–241 and 561.
+					205, 449 b, 465–466, 470–473, 477–478 and 543, and Gildersleeve and
+					Lodge, <cite>Latin Grammar</cite>, §§ 227, 235–241, 244 and 561.
 				</p>
 			</div>
 		</section>

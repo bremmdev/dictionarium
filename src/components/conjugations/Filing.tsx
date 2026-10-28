@@ -198,9 +198,9 @@ export function Filing() {
 				own, and only in the first and fourth conjugations can you count on
 				guessing it. Take the third principal part and drop its{" "}
 				<LatinWord>-ī</LatinWord>: what is left is the perfect stem, and the
-				perfect and pluperfect endings go straight onto it:{" "}
-				<LatinWord>dūx-</LatinWord> + <LatinWord>-ī</LatinWord> or{" "}
-				<LatinWord>-eram</LatinWord>.
+				perfect, pluperfect and future perfect endings go straight onto it:{" "}
+				<LatinWord>dūx-</LatinWord> + <LatinWord>-ī</LatinWord>,{" "}
+				<LatinWord>-eram</LatinWord> or <LatinWord>-erō</LatinWord>.
 			</p>
 			<Table
 				caption="The perfect stem, read off the third principal part."

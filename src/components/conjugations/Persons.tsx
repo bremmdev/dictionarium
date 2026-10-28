@@ -60,7 +60,8 @@ export function Persons() {
 				<LatinWord>salūtāveram</LatinWord>. The future goes either way:{" "}
 				<LatinWord>-ō</LatinWord> where it has a <LatinWord>b</LatinWord>,{" "}
 				<LatinWord>salūtābō</LatinWord>, and <LatinWord>-m</LatinWord> where it
-				does not, <LatinWord>dūcam</LatinWord>.
+				does not, <LatinWord>dūcam</LatinWord>. The future perfect always has{" "}
+				<LatinWord>-ō</LatinWord>: <LatinWord>salūtāverō</LatinWord>.
 			</p>
 		</section>
 	);
