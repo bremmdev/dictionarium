@@ -94,9 +94,7 @@ export const Route = createFileRoute("/verbum/$lemma/{-$homonym}")({
 					{
 						name: "description",
 						content: `${loaderData.lemma} (${loaderData.partOfSpeech})${
-							loaderData.senses[0]
-								? `: ${loaderData.senses[0].meaningEn}`
-								: ""
+							loaderData.senses[0] ? `: ${loaderData.senses[0].meaningEn}` : ""
 						}`,
 					},
 				]
