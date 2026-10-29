@@ -103,9 +103,13 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			the stem vowel, <LatinWord>salūtā-</LatinWord> + <LatinWord>v-</LatinWord>
 			. Speech often dropped the <LatinWord>v</LatinWord> and writers kept the
 			short forms: <LatinWord>salūtāstī</LatinWord>,{" "}
-			<LatinWord>salūtārunt</LatinWord>, <LatinWord>salūtāram</LatinWord>. The
-			pluperfect endings look like the imperfect of <LatinWord>sum</LatinWord> ({" "}
-			<LatinWord>eram</LatinWord>, <LatinWord>erās</LatinWord>...){" "}
+			<LatinWord>salūtārunt</LatinWord>, <LatinWord>salūtāram</LatinWord>,{" "}
+			<LatinWord>salūtārō</LatinWord>. The pluperfect endings look like the
+			imperfect of <LatinWord>sum</LatinWord> (<LatinWord>eram</LatinWord>,{" "}
+			<LatinWord>erās</LatinWord>…) and the future perfect ones like its future
+			(<LatinWord>erō</LatinWord>, <LatinWord>eris</LatinWord>…), except in the
+			third person plural: <LatinWord>salūtāverint</LatinWord>, not{" "}
+			<LatinWord>-erunt</LatinWord>.
 		</>
 	),
 	moneō: (
@@ -131,14 +135,17 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			long <LatinWord>ī</LatinWord>. Forms without the <LatinWord>v</LatinWord>{" "}
 			are common as well: <LatinWord>audiī</LatinWord>,{" "}
 			<LatinWord>audiistī</LatinWord>, <LatinWord>audiit</LatinWord>, and in the
-			pluperfect <LatinWord>audieram</LatinWord>.
+			pluperfect and future perfect <LatinWord>audieram</LatinWord>,{" "}
+			<LatinWord>audierō</LatinWord>.
 		</>
 	),
 	capiō: (
 		<>
 			The perfect changes the root itself: <LatinWord>cap-</LatinWord> becomes{" "}
 			<LatinWord>cēp-</LatinWord>, and the <LatinWord>i</LatinWord> of the
-			present is gone.
+			present is gone. So <LatinWord>capiēs</LatinWord>, <em>you will take</em>,
+			and <LatinWord>cēperis</LatinWord>, <em>you will have taken</em>, share no
+			stem at all.
 		</>
 	),
 };

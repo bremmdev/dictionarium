@@ -34,14 +34,21 @@ export const TENSES = [
 export type Tense = (typeof TENSES)[number];
 
 /** The Latin name a table header shows, and the English it is glossed with. */
-export const TENSE_LABELS: Record<Tense, { la: string; en: string }> = {
+export const TENSE_LABELS: Record<
+	Tense,
+	{ la: string; en: string; short?: string }
+> = {
 	present: { la: "Praesēns", en: "present" },
 	imperfect: { la: "Imperfectum", en: "imperfect" },
 	future: { la: "Futūrum", en: "future" },
 	perfect: { la: "Perfectum", en: "perfect" },
 	// Short for Plūsquamperfectum, which made the column too wide.
-	pluperfect: { la: "Plūperfectum", en: "pluperfect" },
-	futurePerfect: { la: "Futūrum exāctum", en: "future perfect" },
+	pluperfect: { la: "Plūperfectum", en: "pluperfect", short: "Plūperf." },
+	futurePerfect: {
+		la: "Futūrum exāctum",
+		en: "future perfect",
+		short: "Fut. exāct.",
+	},
 };
 
 /** Which stem each tense is built on — one table per system on the page. */
@@ -285,6 +292,16 @@ export const PERFECT_ENDINGS: MoodEndings<"indicative"> = {
 			"2pl": "-erātis",
 			"3pl": "-erant",
 		},
+		// Short i in -eris, -erimus, -eritis, against the perfect subjunctive's
+		// -erīs, following Allen & Greenough; Roman usage mixed the two.
+		futurePerfect: {
+			"1sg": "-erō",
+			"2sg": "-eris",
+			"3sg": "-erit",
+			"1pl": "-erimus",
+			"2pl": "-eritis",
+			"3pl": "-erint",
+		},
 	},
 };
 
@@ -411,6 +428,14 @@ const SALUTO: Verb = {
 				"2pl": { form: "salūtāverātis" },
 				"3pl": { form: "salūtāverant" },
 			},
+			futurePerfect: {
+				"1sg": { form: "salūtāverō" },
+				"2sg": { form: "salūtāveris" },
+				"3sg": { form: "salūtāverit" },
+				"1pl": { form: "salūtāverimus" },
+				"2pl": { form: "salūtāveritis" },
+				"3pl": { form: "salūtāverint" },
+			},
 		},
 	},
 };
@@ -461,6 +486,14 @@ const MONEO: Verb = {
 				"1pl": { form: "monuerāmus" },
 				"2pl": { form: "monuerātis" },
 				"3pl": { form: "monuerant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "monuerō" },
+				"2sg": { form: "monueris" },
+				"3sg": { form: "monuerit" },
+				"1pl": { form: "monuerimus" },
+				"2pl": { form: "monueritis" },
+				"3pl": { form: "monuerint" },
 			},
 		},
 	},
@@ -513,6 +546,14 @@ const DUCO: Verb = {
 				"2pl": { form: "dūxerātis" },
 				"3pl": { form: "dūxerant" },
 			},
+			futurePerfect: {
+				"1sg": { form: "dūxerō" },
+				"2sg": { form: "dūxeris" },
+				"3sg": { form: "dūxerit" },
+				"1pl": { form: "dūxerimus" },
+				"2pl": { form: "dūxeritis" },
+				"3pl": { form: "dūxerint" },
+			},
 		},
 	},
 };
@@ -564,6 +605,14 @@ const AUDIO: Verb = {
 				"2pl": { form: "audīverātis" },
 				"3pl": { form: "audīverant" },
 			},
+			futurePerfect: {
+				"1sg": { form: "audīverō" },
+				"2sg": { form: "audīveris" },
+				"3sg": { form: "audīverit" },
+				"1pl": { form: "audīverimus" },
+				"2pl": { form: "audīveritis" },
+				"3pl": { form: "audīverint" },
+			},
 		},
 	},
 };
@@ -614,6 +663,14 @@ const CAPIO: Verb = {
 				"1pl": { form: "cēperāmus" },
 				"2pl": { form: "cēperātis" },
 				"3pl": { form: "cēperant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "cēperō" },
+				"2sg": { form: "cēperis" },
+				"3sg": { form: "cēperit" },
+				"1pl": { form: "cēperimus" },
+				"2pl": { form: "cēperitis" },
+				"3pl": { form: "cēperint" },
 			},
 		},
 	},
