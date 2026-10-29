@@ -21,7 +21,7 @@ export function SystemTable({ caption, tenses, forms }: SystemTableProps) {
 		{ key: "person", label: "Person" },
 		...filled.map(({ tense }) => ({
 			key: tense,
-			label: <TenseLabel tense={tense} />,
+			label: <TenseLabel tense={tense} abbreviate />,
 		})),
 	];
 

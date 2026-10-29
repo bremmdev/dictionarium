@@ -34,14 +34,21 @@ export const TENSES = [
 export type Tense = (typeof TENSES)[number];
 
 /** The Latin name a table header shows, and the English it is glossed with. */
-export const TENSE_LABELS: Record<Tense, { la: string; en: string }> = {
+export const TENSE_LABELS: Record<
+	Tense,
+	{ la: string; en: string; short?: string }
+> = {
 	present: { la: "Praesēns", en: "present" },
 	imperfect: { la: "Imperfectum", en: "imperfect" },
 	future: { la: "Futūrum", en: "future" },
 	perfect: { la: "Perfectum", en: "perfect" },
 	// Short for Plūsquamperfectum, which made the column too wide.
-	pluperfect: { la: "Plūperfectum", en: "pluperfect" },
-	futurePerfect: { la: "Futūrum exāctum", en: "future perfect" },
+	pluperfect: { la: "Plūperfectum", en: "pluperfect", short: "Plūperf." },
+	futurePerfect: {
+		la: "Futūrum exāctum",
+		en: "future perfect",
+		short: "Fut. exāct.",
+	},
 };
 
 /** Which stem each tense is built on — one table per system on the page. */

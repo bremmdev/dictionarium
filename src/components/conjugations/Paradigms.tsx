@@ -109,10 +109,7 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>erās</LatinWord>…) and the future perfect ones like its future
 			(<LatinWord>erō</LatinWord>, <LatinWord>eris</LatinWord>…), except in the
 			third person plural: <LatinWord>salūtāverint</LatinWord>, not{" "}
-			<LatinWord>-erunt</LatinWord>. The <LatinWord>i</LatinWord> of{" "}
-			<LatinWord>-eris</LatinWord>, <LatinWord>-erimus</LatinWord>,{" "}
-			<LatinWord>-eritis</LatinWord> is printed short, as Allen and Greenough
-			give it; Roman poets made it long as well.
+			<LatinWord>-erunt</LatinWord>.
 		</>
 	),
 	moneō: (

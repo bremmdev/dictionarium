@@ -17,11 +17,27 @@ export function PersonLabel({ person }: { person: Person }) {
 }
 
 /** The Latin tense name, glossed the way SectionNav glosses its Latin labels. */
-export function TenseLabel({ tense }: { tense: Tense }) {
-	const { la, en } = TENSE_LABELS[tense];
+export function TenseLabel({
+	tense,
+	abbreviate = false,
+}: {
+	tense: Tense;
+	/** Show the short name below md; a screen reader still hears the full one. */
+	abbreviate?: boolean;
+}) {
+	const { la, en, short } = TENSE_LABELS[tense];
 	return (
 		<>
-			<span lang="la">{la}</span>
+			{abbreviate && short ? (
+				<span lang="la">
+					<span aria-hidden="true" className="md:hidden">
+						{short}
+					</span>
+					<span className="max-md:sr-only">{la}</span>
+				</span>
+			) : (
+				<span lang="la">{la}</span>
+			)}
 			<span className="sr-only">{` (${en})`}</span>
 		</>
 	);
