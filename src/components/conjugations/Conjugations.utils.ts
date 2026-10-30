@@ -82,21 +82,26 @@ type MoodForms<M extends Mood> = Partial<
 	Record<Voice, Partial<Record<MoodTense<M>, TenseForms>>>
 >;
 
-export type Verb = {
+/** What a paradigm table needs, regular or irregular. */
+export type VerbParadigm = {
 	/** As the dictionary files them. The first part keys BLURBS and NOTES. */
 	principalParts: [
 		present: string,
 		infinitive: string,
 		perfect: string,
-		supine: string,
+		// sum has futūrus here instead, and possum and volō have nothing.
+		supine?: string,
 	];
 	english: string;
-	/** What the endings attach to. The thematic vowel is in ENDINGS, not here. */
-	base: string;
 	/** The third principal part without its -ī. */
 	perfectStem: string;
 	indicative: MoodForms<"indicative">;
 	subjunctive?: MoodForms<"subjunctive">;
+};
+
+export type Verb = VerbParadigm & {
+	/** What the endings attach to. The thematic vowel is in ENDINGS, not here. */
+	base: string;
 };
 
 export type RegularConjugation = Exclude<Conjugation, "irregular">;

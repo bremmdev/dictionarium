@@ -1,7 +1,8 @@
 /**
  * The paradigms on /conjugations and the endings sheet under them are typed out
  * separately, so a macron slip in either would go unnoticed. Every regular form
- * has to equal its verb's stem plus the sheet's ending, or this fails.
+ * has to equal its verb's stem plus the sheet's ending, or this fails. On
+ * /irregular-verbs only the perfect system is checked.
  */
 import {
 	CONJUGATION_GROUPS,
@@ -15,6 +16,7 @@ import {
 	type Verb,
 	type Voice,
 } from "#/components/conjugations/Conjugations.utils";
+import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 
 const MOODS: Mood[] = ["indicative", "subjunctive"];
 const VOICES: Voice[] = ["active", "passive"];
@@ -33,6 +35,37 @@ function checkStems(verb: Verb, firstEnding: string | undefined) {
 	}
 	if (perfect !== `${verb.perfectStem}ī`) {
 		problems.push(`${lemma}: perfect stem ${verb.perfectStem}- + -ī is not ${perfect}`);
+	}
+}
+
+/** Every cell of one tense against stem + the sheet's ending; irregular cells are skipped. */
+function checkForms(
+	where: string,
+	stem: string,
+	forms: TenseForms,
+	sheet: Record<string, string>,
+) {
+	for (const person of PERSONS) {
+		const { form, alt, irregular } = forms[person];
+		if (irregular) continue;
+		const [main, altEnding] = sheet[person].split(" / ");
+		const build = (ending: string) => stem + ending.replace(/^-/, "");
+
+		checked++;
+		if (form !== build(main)) {
+			problems.push(
+				`${where} ${person}: "${form}", but ${stem}- + ${main} gives "${build(main)}"`,
+			);
+		}
+		if (!alt) continue;
+		checked++;
+		if (!altEnding) {
+			problems.push(`${where} ${person}: alternative "${alt}" has no ending on the sheet`);
+		} else if (alt !== build(altEnding)) {
+			problems.push(
+				`${where} ${person}: alternative "${alt}", but ${stem}- + ${altEnding} gives "${build(altEnding)}"`,
+			);
+		}
 	}
 }
 
@@ -61,30 +94,25 @@ for (const { conjugation, verbs } of CONJUGATION_GROUPS) {
 						continue;
 					}
 
-					for (const person of PERSONS) {
-						const { form, alt, irregular } = forms[person];
-						if (irregular) continue;
-						const [main, altEnding] = sheet[person].split(" / ");
-						const build = (ending: string) => stem + ending.replace(/^-/, "");
-
-						checked++;
-						if (form !== build(main)) {
-							problems.push(
-								`${where} ${person}: "${form}", but ${stem}- + ${main} gives "${build(main)}"`,
-							);
-						}
-						if (!alt) continue;
-						checked++;
-						if (!altEnding) {
-							problems.push(`${where} ${person}: alternative "${alt}" has no ending on the sheet`);
-						} else if (alt !== build(altEnding)) {
-							problems.push(
-								`${where} ${person}: alternative "${alt}", but ${stem}- + ${altEnding} gives "${build(altEnding)}"`,
-							);
-						}
-					}
+					checkForms(where, stem, forms, sheet);
 				}
 			}
+		}
+	}
+}
+
+// No pattern to rebuild an irregular present system from, but the perfect
+// system is regular for most of them.
+for (const verb of IRREGULAR_VERBS) {
+	const [lemma, , perfect] = verb.principalParts;
+	if (perfect !== `${verb.perfectStem}ī`) {
+		problems.push(`${lemma}: perfect stem ${verb.perfectStem}- + -ī is not ${perfect}`);
+	}
+	for (const tense of SYSTEMS.perfect) {
+		const forms = verb.indicative.active?.[tense];
+		const sheet = PERFECT_ENDINGS.active?.[tense];
+		if (forms && sheet) {
+			checkForms(`${lemma} indicative active ${tense}`, verb.perfectStem, forms, sheet);
 		}
 	}
 }
