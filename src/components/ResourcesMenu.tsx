@@ -5,6 +5,7 @@ import {
 	Hash,
 	ListFilter,
 	Quote,
+	Shuffle,
 	Table2,
 	TableProperties,
 } from "lucide-react";
@@ -22,6 +23,12 @@ const RESOURCES = [
 		label: "Declensions",
 		description: "Nouns and adjectives by case",
 		Icon: Table2,
+	},
+	{
+		to: "/irregular-verbs",
+		label: "Irregular verbs",
+		description: "Verbs that break the pattern",
+		Icon: Shuffle,
 	},
 	{
 		to: "/numbers",

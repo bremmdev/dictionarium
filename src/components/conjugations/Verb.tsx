@@ -1,20 +1,22 @@
 import { Heading } from "../Heading";
 import { LatinWord } from "../LatinWord";
-import { SYSTEMS, type Verb as VerbData } from "./Conjugations.utils";
+import { SYSTEMS, type VerbParadigm } from "./Conjugations.utils";
 import { SystemTable } from "./SystemTable";
 
 type System = keyof typeof SYSTEMS;
 
 type VerbProps = {
-	verb: VerbData;
+	verb: VerbParadigm;
 	/** Sits under a system's table when the verb does something the pattern does not. */
 	notes?: Partial<Record<System, React.ReactNode>>;
+	/** h3 where the verb heads its own section, as on /irregular-verbs. */
+	headingAs?: "h3" | "h4";
 };
 
 const SYSTEMS_IN_ORDER: System[] = ["present", "perfect"];
 
 // Only the indicative active exists so far; Tabs arrive with the second set.
-export function Verb({ verb, notes }: VerbProps) {
+export function Verb({ verb, notes, headingAs = "h4" }: VerbProps) {
 	const [lemma, ...rest] = verb.principalParts;
 	const forms = verb.indicative.active ?? {};
 
@@ -36,7 +38,7 @@ export function Verb({ verb, notes }: VerbProps) {
 
 	return (
 		<div className="space-y-4">
-			<Heading variant="h4" className="mx-auto text-center">
+			<Heading variant="h4" as={headingAs} className="mx-auto text-center">
 				<LatinWord>{lemma}</LatinWord>
 				<span className="font-normal text-ink-600">
 					{", "}

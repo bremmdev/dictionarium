@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ConjugationsRouteImport } from './routes/conjugations'
 import { Route as DeclensionsRouteImport } from './routes/declensions'
+import { Route as IrregularVerbsRouteImport } from './routes/irregular-verbs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as ProverbsRouteImport } from './routes/proverbs'
@@ -39,6 +40,11 @@ const ConjugationsRoute = ConjugationsRouteImport.update({
 const DeclensionsRoute = DeclensionsRouteImport.update({
   id: '/declensions',
   path: '/declensions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IrregularVerbsRoute = IrregularVerbsRouteImport.update({
+  id: '/irregular-verbs',
+  path: '/irregular-verbs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
+  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
+  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/conjugations': typeof ConjugationsRoute
   '/declensions': typeof DeclensionsRoute
+  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/conjugations'
     | '/declensions'
+    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/conjugations'
     | '/declensions'
+    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/conjugations'
     | '/declensions'
+    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ConjugationsRoute: typeof ConjugationsRoute
   DeclensionsRoute: typeof DeclensionsRoute
+  IrregularVerbsRoute: typeof IrregularVerbsRoute
   LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
   ProverbsRoute: typeof ProverbsRoute
@@ -202,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/declensions'
       fullPath: '/declensions'
       preLoaderRoute: typeof DeclensionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/irregular-verbs': {
+      id: '/irregular-verbs'
+      path: '/irregular-verbs'
+      fullPath: '/irregular-verbs'
+      preLoaderRoute: typeof IrregularVerbsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -261,6 +281,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ConjugationsRoute: ConjugationsRoute,
   DeclensionsRoute: DeclensionsRoute,
+  IrregularVerbsRoute: IrregularVerbsRoute,
   LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
   ProverbsRoute: ProverbsRoute,
