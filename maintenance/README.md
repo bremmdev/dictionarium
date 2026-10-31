@@ -4,10 +4,8 @@ Each file here is the full instruction for one recurring task. The scheduled tas
 
 | Task                            | File                               | When            | Result        |
 | ------------------------------- | ---------------------------------- | --------------- | ------------- |
-| Dependency updates              | [deps.md](./deps.md)               | Monday 09:00    | PR            |
 | `vault/` agrees with the code   | [vault-drift.md](./vault-drift.md) | Tuesday 09:00   | PR            |
 | `AGENTS.md` and a11y rules hold | [a11y-rules.md](./a11y-rules.md)   | Wednesday 09:00 | PR            |
-| Dead code                       | [dead-code.md](./dead-code.md)     | Thursday 09:00  | PR            |
 | New LASLA data                  | [lasla.md](./lasla.md)             | every 30 days   | a note, no PR |
 
 One a day, so no two runs share the machine or edit `package.json` at the same time.
