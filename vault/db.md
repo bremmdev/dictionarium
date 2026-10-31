@@ -113,7 +113,7 @@ The delay has a one-minute floor, so an afternoon of deploys cannot write a back
 
 **Pruning only considers the `dictionarium-` prefix.** Anything you drop in that directory by hand — `backups/2026-09-05.db`, say — is never a candidate for deletion.
 
-**An empty database is not backed up.** better-sqlite3 creates the file when it is missing, and `src/db/index.ts` creates the directories above it, so a `DB_FILE_NAME` pointing somewhere unreachable does not fail — it quietly produces an empty database. Dumping that would report success and then evict a real copy from the retention window. So `createBackup` refuses a database with no tables at all: even a migrated-but-unseeded one has `__drizzle_migrations`, so an empty schema means the file was conjured rather than found. The scheduler logs the refusal and carries on.
+**An empty database is not backed up.** better-sqlite3 creates the file when it is missing, and `src/db/index.ts` creates the directories above it, so a `DB_FILE_NAME` pointing somewhere unreachable does not fail — it quietly produces an empty database. Dumping that would report success and then evict a real copy from the retention window. So `createBackup` refuses a database with no tables at all: even a migrated-but-empty one has `__drizzle_migrations`, so an empty schema means the file was conjured rather than found. The scheduler logs the refusal and carries on.
 
 Restoring is a file copy with the process stopped, and it is worth confirming what you copied first:
 

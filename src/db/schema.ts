@@ -71,7 +71,7 @@ export const senses = sqliteTable(
 		exampleLa: text("example_la"),
 		exampleEn: text("example_en"),
 	},
-	// One word cannot have two sense number 2s. Also what lets the seed be re-run idempotently.
+	// One word cannot have two sense number 2s.
 	(t) => [uniqueIndex("senses_entry_rank_unique").on(t.entryId, t.rank)],
 );
 

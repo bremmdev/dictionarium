@@ -9,11 +9,11 @@ The answer is sealed into a cookie and reduced to one boolean, `isAdmin`. Everyt
 | File                       | Responsibility                                                        |
 | -------------------------- | --------------------------------------------------------------------- |
 | `src/server/session.ts`    | Opens the sealed cookie. The only module that touches `useSession`.    |
-| `src/server/auth.ts`       | `login`, `logout`, `getIsAdmin`, `authMiddleware`, and guarded server fns. |
+| `src/server/auth.ts`       | `login`, `logout`, `getIsAdmin`, `authMiddleware`.                    |
 | `src/routes/login.tsx`     | The form. One password field, no username.                            |
 | `src/routes/__root.tsx`    | Reads the session once per page load, for the header.                 |
 | `src/components/Header.tsx`| Shows `exī` and performs the logout.                                  |
-| `src/routes/admin.tsx`     | The one guarded page.                                                 |
+| `src/routes/admin.tsx`     | The editor. One of four guarded pages, with `/admin/stats`, `/admin/health` and `/word-list`. |
 
 ## Two secrets
 
@@ -61,9 +61,9 @@ This is the rule the whole design turns on:
 
 > A route guard protects a **page**. It does not protect **data**.
 
-`createServerFn` compiles to an RPC endpoint reachable by its own URL with its own HTTP method. Nobody has to load `/admin` to call `adminStats` — they can hit the endpoint directly. So:
+`createServerFn` compiles to an RPC endpoint reachable by its own URL with its own HTTP method. Nobody has to load `/admin` to call `createEntry` — they can hit the endpoint directly. So:
 
-- **Every server function that touches admin data carries `authMiddleware`.** That middleware reads the session and throws `401` before the handler runs. `adminStats` is the worked example.
+- **Every server function that touches admin data carries `authMiddleware`.** That middleware reads the session and throws `401` before the handler runs. `createEntry` is the worked example.
 - **`beforeLoad` on `/admin` exists only so an anonymous visitor gets the login form instead of a raw 401.** It is a courtesy, not a control.
 
 Adding a new admin server function means adding `.middleware([authMiddleware])`. Forgetting it publishes the data, and no amount of route guarding will catch that.
@@ -89,7 +89,7 @@ The session changes at exactly two moments — login and logout — and the app 
 | Root `beforeLoad` (rejected)         | `beforeLoad` ignores `staleTime`, so **every** navigation pays an RPC before it renders — including each search submit on `/`. |
 | Root `loader` + `staleTime: Infinity` | One call per page load, resolved during SSR on a document request.    |
 
-So the root route uses a loader, the shell reads it with `useLoaderData()`, and `Header` takes `isAdmin` as a prop. `/admin` does **not** read that cached value — it calls `getIsAdmin()` in its own `beforeLoad`, so the one page whose behaviour turns on the answer gets a fresh one, and the rest of the app pays nothing.
+So the root route uses a loader, the shell reads it with `useLoaderData()`, and `Header` takes `isAdmin` as a prop. The guarded pages do **not** read that cached value — each calls `getIsAdmin()` in its own `beforeLoad`, so the pages whose behaviour turns on the answer get a fresh one, and the rest of the app pays nothing.
 
 The cache has one requirement: **login and logout must call `router.invalidate()`**, or the header keeps rendering the previous state. Both do.
 
@@ -121,7 +121,7 @@ Arriving at `/admin` directly:
 ```
 GET /admin
   ↓  beforeLoad → getIsAdmin()     false → 307 to /login
-  ↓  loader     → adminStats()     authMiddleware re-checks; 401 if forged
+  ↓  loader     → getProverbs()    authMiddleware re-checks; 401 if forged
   ↓  component
 ```
 

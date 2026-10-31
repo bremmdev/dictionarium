@@ -193,7 +193,7 @@ function FiledWordItem({ word }: { word: FiledWord }) {
 }
 
 /**
- * The editor's desk: one word, the way `scripts/seed.ts` used to spell it out.
+ * The editor's desk: one word at a time.
  *
  * Nothing here decides what is valid. parseEntryDraft does, and this form calls
  * it on submit for the messages only — the same function runs again as

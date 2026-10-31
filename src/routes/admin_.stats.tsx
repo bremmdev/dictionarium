@@ -163,7 +163,7 @@ function Stats() {
 						{untimedWords.toLocaleString()} older{" "}
 						{untimedWords === 1 ? "word carries" : "words carry"} no filing date
 						and {untimedWords === 1 ? "is" : "are"} never counted here — they
-						were seeded before the dictionary started keeping one.
+						were filed before the dictionary started keeping one.
 					</p>
 				)}
 			</section>

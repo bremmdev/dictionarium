@@ -66,7 +66,7 @@ function createBackup(client: Database.Database): string {
 	// creates the directories above it, so a DB_FILE_NAME pointing somewhere unreachable
 	// does not fail — it quietly produces an empty database. Backing that up would
 	// report success and then evict a real copy from the retention window. No tables at
-	// all is the tell: even a migrated-but-unseeded database has __drizzle_migrations.
+	// all is the tell: even a migrated-but-empty database has __drizzle_migrations.
 	const { tables } = client
 		.prepare(
 			"select count(*) as tables from sqlite_master where type = 'table'",

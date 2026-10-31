@@ -13,7 +13,7 @@ The thresholds are `BANDS` in `src/utils/entries/frequency.ts`. Changing them ne
 
 ## Looked up on read, not stored
 
-There's no column for this. `withFrequency` (`src/server/frequency.ts`) looks every entry up as it is read, for search results, the word list and the detail page. So a new or edited entry is right at once, nothing needs migrating, and improving the matching fixes every entry in one go. The lookup is a `Map` get. The data, `data/lasla-frequency.json` (~650 kB), is imported only by server code and marked `server-only`, so it never reaches the browser.
+There's no column for this. `withFrequency` (`src/server/frequency.ts`) looks every entry up as it is read, for search results, the word list and the detail page. So a new or edited entry is right at once, nothing needs migrating, and improving the matching fixes every entry in one go. The lookup is a `Map` get. The data, `data/lasla-frequency.json` (~710 kB), is imported only by server code and marked `server-only`, so it never reaches the browser.
 
 ## Where the data comes from
 

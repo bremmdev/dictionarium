@@ -18,7 +18,7 @@
  * fields, for a person to read. This file is the other end of the same thing:
  * many words at once, printed or written.
  *
- * The output is a paste-ready block of seed.ts rows. Treat it as a research
+ * The output is a block of rows to read. Treat it as a research
  * assistant, not an oracle — Wiktionary's senses are rarely the ones you would
  * write yourself, and it lists far more of them than a learner's dictionary
  * wants, so read and cut the rows before they become dictionary entries.
@@ -29,8 +29,7 @@ import { lookupEntry, type WiktionaryRow } from "#/utils/entries/wiktionary";
 /* ------------------------------------------------------------------ output */
 
 /**
- * lemma_plain is left out on purpose: seed.ts derives it from the lemma, so a
- * pasted row carrying its own could drift from the key the search reads.
+ * lemma_plain is left out on purpose: it is derived from the lemma, never typed.
  */
 const COLUMN_ORDER: Array<
     Exclude<keyof WiktionaryRow, "lemmaPlain" | "senses">
@@ -46,7 +45,7 @@ const COLUMN_ORDER: Array<
     "notes",
 ];
 
-/** Prints a row in the shape seed.ts uses, ready to paste into its array. */
+/** Prints a row as an object literal, senses included. */
 function formatRow(row: WiktionaryRow) {
     const columns = COLUMN_ORDER.filter((key) => row[key] !== undefined && row[key] !== "").map(
         (key) => `  ${key}: ${JSON.stringify(row[key])},`,
@@ -143,7 +142,7 @@ if (write && rows.length > 0) {
     const sensesByLemma = new Map(rows.map((row) => [row.lemma, row.senses]));
 
     // Senses ride along with the entry that was just created, in the order
-    // Wiktionary printed them: position is the rank, exactly as in seed.ts.
+    // Wiktionary printed them: position is the rank, exactly as in the form.
     const newSenses = inserted.flatMap(({ id, lemma }) =>
         (sensesByLemma.get(lemma) ?? []).map((sense, i) => ({ ...sense, entryId: id, rank: i + 1 })),
     );
