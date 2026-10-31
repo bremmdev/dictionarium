@@ -84,7 +84,7 @@ The two event tables that arrived with it, `search_events` and `view_events`, ar
 
 Making `declension` text rather than an integer was a bet on outliers, and _septem_ collected it.
 
-Before it, every NULL in the column happened to mean "not applicable" — all the nouns carried a declension, all the verbs a conjugation. That was true by luck of what had been seeded, not by design. _septem_ is the word that ends it: it is a numeral, it is the kind of word that declines, and it never changes shape. Filing it as NULL would make the column say two different things with one empty slot:
+Before it, every NULL in the column happened to mean "not applicable" — all the nouns carried a declension, all the verbs a conjugation. That was true by luck of what had been filed, not by design. _septem_ is the word that ends it: it is a numeral, it is the kind of word that declines, and it never changes shape. Filing it as NULL would make the column say two different things with one empty slot:
 
 | Word     | `declension` | What the NULL would mean                           |
 | -------- | ------------ | -------------------------------------------------- |
@@ -193,18 +193,18 @@ So they file as `adjective`, `1-2`, with the irregularity in `notes` — the sam
 
 ### The invariant this creates
 
-rNULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.
+NULL now carries exactly one meaning, and nothing in the schema enforces it. A part of speech that inflects must say **how** — with a number or with the word `indeclinable` — because a forgotten field is otherwise indistinguishable from a deliberate one.
 
-`scripts/check-inflection.ts` is what enforces it, and the fact it needs is not in the database: _which_ of the two questions applies is a property of the part of speech, not of the row. So the script writes that down.
+`scripts/check-inflection.ts` is what enforces it, and the fact it needs is not in the database: _which_ of the two questions applies is a property of the part of speech, not of the row. So `INFLECTS` in `src/utils/entries/rules.ts` writes that down.
 
 ```ts
-pconst INFLECTS: Record<string, "declension" | "conjugation" | "neither"> = {
+export const INFLECTS = {
 	noun: "declension",
 	numeral: "declension",
 	verb: "conjugation",
 	adverb: "neither",
 	// …
-};
+} as const satisfies Record<string, "declension" | "conjugation" | "neither">;
 ```
 
 Five rules fall out of that map — three from the map itself, two more from the filing:
@@ -287,7 +287,7 @@ One row per genuinely distinct meaning, one-to-many from `entries`. Shipped in m
 | `example_la` | no       | a quotation showing the sense                                                                 |
 | `example_en` | no       | its translation                                                                               |
 
-Unique on **(`entry_id`, `rank`)**: one word cannot have two sense number 2s. That single index is both the curation guard and what makes sense-seeding re-runnable.
+Unique on **(`entry_id`, `rank`)**: one word cannot have two sense number 2s. That single index is the curation guard.
 
 **Commas within a sense, rows between senses.** _rīdeō_ "to laugh, smile" is one meaning with two English words for it — a gloss, and it stays one string. _auxilium_ "help, aid, assistance" and "remedy, antidote" are two jobs the same word does, and the second one wants the label `medical` hung off it. A comma has nowhere to put that label. The dividing question is not "how many English words?" but "would I ever want to say something about one of these and not the other?" A sense is a unit of meaning. A gloss is a short label that points at one.
 
@@ -346,26 +346,28 @@ Inflected forms are not rows. When they arrive, they hang off a lemma — they d
 
 The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
-1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool. With senses in place, adding a second meaning means editing a seed file and re-running it, which is friction that will quietly stop words getting added at all.
-2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: four of the five read the database, so anything running `npm run check` has to migrate and seed before it can open the gate.
+1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: five of the seven read the database, so anything running `npm run check` has to migrate before it can open the gate.
 
 Parked: synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
 ## Operations
 
-The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FILE_NAME`); connection details in [db.md](./db.md). Schema: `src/db/schema.ts`. Seed: `npx tsx scripts/seed.ts`. Browse: `npm run db:studio`.
+The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FILE_NAME`); connection details in [db.md](./db.md). Schema: `src/db/schema.ts`. Browse: `npm run db:studio`.
 
 ### The check chain
 
-`npm run check` is the gate. It runs the five guards, then Biome:
+`npm run check` is the gate. It runs the seven guards, then Biome:
 
 | Guard                 | Alone                      | What it holds                                                                                                                    |
 | --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `check-macrons.ts`    | `npm run check:macrons`    | Latin text is precomposed Latin, never a combining mark or a lookalike — [a11y.md](./a11y.md)                                    |
 | `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)                                              |
+| `check-homonyms.ts`   | `npm run check:homonyms`   | the homonyms of a lemma run 1..n — [above](#unique-on-lemma-homonym)                                                             |
 | `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                                                              |
 | `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
 | `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
+| `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
 
 Each names the rows it objects to, and exits non-zero:
 
@@ -377,7 +379,7 @@ māter: ranks are [1, 3, 4, 5, 6] — must run 1..5 with no gaps
 deus: no senses — a word with no meaning is not an entry
 ```
 
-The rules themselves are pure functions in `src/utils/health/checks.ts`, which [`/admin/health`](./health.md) also runs against the live database.
+The database rules themselves are pure functions in `src/utils/health/checks.ts`, which [`/admin/health`](./health.md) also runs against the live database.
 
 ### Migrations, not push
 
@@ -407,13 +409,13 @@ INSERT INTO senses (entry_id, rank, meaning_en)
 SELECT id, 1, meaning_en FROM entries;
 ```
 
-Splitting `meaning_en` on commas is four characters away and it is the wrong thing to do — it would turn _rīdeō_ "to laugh, smile" into two senses of a word that has one, silently, across every row, with nothing to diff against. The comma is a judgement, not a delimiter. Splitting is editorial work, and it happens in `seed.ts` one word at a time, where the word is visible while the decision is made.
+Splitting `meaning_en` on commas is four characters away and it is the wrong thing to do — it would turn _rīdeō_ "to laugh, smile" into two senses of a word that has one, silently, across every row, with nothing to diff against. The comma is a judgement, not a delimiter. Splitting is editorial work, and it happens at the editor's desk one word at a time, where the word is visible while the decision is made.
 
-**`0000_baseline`.** The chain starts by describing the database that `push` had already built: generate the baseline, delete the `.db`, replay from zero, reseed. That trick works only because the data is derived — `seed.ts` holds every word. **It expires the day the admin panel ships**, when the `.db` becomes the only copy of anything hand-entered. Which is the reason for adopting migrations one lesson before needing them.
+**`0000_baseline`.** The chain starts by describing the database that `push` had already built: generate the baseline, delete the `.db`, replay from zero. That trick worked only while every word also lived in code. **It expired the day the admin panel shipped**, when the `.db` became the only copy of anything hand-entered. Which is the reason for adopting migrations one lesson before needing them.
 
 ### Backups
 
-Under WAL a committed write lives in the `-wal` sidecar until a checkpoint folds it in, so use VACCUUM for backups:
+Under WAL a committed write lives in the `-wal` sidecar until a checkpoint folds it in, so use `VACUUM INTO` for backups:
 
 ```sh
 sqlite3 src/db/dictionarium.db "VACUUM INTO 'src/db/dictionarium.db.bak'"
