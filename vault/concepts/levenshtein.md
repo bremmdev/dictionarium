@@ -26,7 +26,7 @@ When a search finds nothing, the dictionary offers "Did you mean …?". To do th
 3. [The idea: solve small problems first](#3-the-idea-solve-small-problems-first)
 4. [Filling the table by hand](#4-filling-the-table-by-hand)
 5. [Swapped letters: Damerau and OSA](#5-swapped-letters-damerau-and-osa)
-6. [How fast it](#6-how-fast-is-it)
+6. [How fast is it](#6-how-fast-is-it)
 7. [Choosing a threshold](#7-choosing-a-threshold)
 8. [Our implementation](#8-our-implementation)
 9. [Alternatives](#9-alternatives)
@@ -70,7 +70,7 @@ Some useful facts that follow from the definition:
 
 - **0 means equal.** Only identical strings are 0 apart.
 - **It is symmetric.** _a_ → _b_ costs the same as _b_ → _a_: every insertion one way is a deletion the other way.
-- **At least the length difference.** _puela_ (5) and _puella_ (6) can never be less than 1 apart, because something has to add a letter. This gives a free shortcut, see [section 6](#6-making-it-fast).
+- **At least the length difference.** _puela_ (5) and _puella_ (6) can never be less than 1 apart, because something has to add a letter. This gives a free shortcut, see [section 6](#6-how-fast-is-it).
 - **At most the longer length.** Substitute everything, then insert or delete the rest.
 - **The triangle inequality holds.** Going from _a_ to _c_ is never more expensive than going via _b_. Some fast lookup structures depend on this, see [section 9](#9-alternatives).
 
@@ -357,7 +357,7 @@ How it works:
 3. **`current = [i]`** is the first column: turning the first `i` letters of `a` into nothing.
 4. **The three `Math.min` arguments** are above +1, left +1 and diagonal +0/+1, the same as in the hand-worked tables. JavaScript strings are 0-based, so letter `i` of the table is `a[i - 1]`.
 5. **The `if` with four comparisons** is the swap rule from [section 5](#5-swapped-letters-damerau-and-osa). It reads `beforePrevious`, the row two up.
-6. **`rowMin`** tracks the smallest cell in this row, for the early exit from [section 6](#6-making-it-fast).
+6. **`rowMin`** tracks the smallest cell in this row, for the early exit from [section 6](#6-how-fast-is-it).
 7. **The return** is capped at `max + 1`, so callers only ever see "a distance within the limit" or "too far".
 
 Choosing what to suggest is `suggestLemmas(key, candidates)`:
@@ -383,7 +383,7 @@ The distances are always measured between **keys**, never display forms. `search
 | **F. Trigrams** (SQLite FTS5 trigram, Postgres `pg_trgm`) | Large tables that need an index | Fast with an index, also finds partial matches | Weak on short words, which have few trigrams |
 | **G. SQLite `spellfix1`** | Doing it all inside SQLite | Edit distance plus a phonetic index, in SQL | A loadable extension, not in the standard build. More moving parts |
 
-At this dictionary's size, comparing every lemma ([section 6](#6-making-it-fast)) costs a few milliseconds, so B with no index is the simplest thing that works. F or I become worth it if suggestions ever run on every keystroke, or the dictionary grows well past its expected size.
+At this dictionary's size, comparing every lemma ([section 6](#6-how-fast-is-it)) costs a few milliseconds, so B with no index is the simplest thing that works. F or G become worth it if suggestions ever run on every keystroke, or the dictionary grows well past its expected size.
 
 ---
 

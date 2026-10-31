@@ -53,7 +53,6 @@ const BLURBS: Record<string, React.ReactNode> = {
 
 // Keyed by lemma, one set per table. A verb without one follows its pattern.
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
-	salūtō: <></>,
 	moneō: (
 		<>
 			In the imperfect and the future the <LatinWord>ē</LatinWord> stays long in
@@ -91,7 +90,7 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			where <LatinWord>audīs</LatinWord>, <LatinWord>audīmus</LatinWord>,{" "}
 			<LatinWord>audītis</LatinWord> are long. In those three forms the vowel
 			length is all that separates the two groups. The imperfect and the future
-			are the the same as the fourth conjugation.
+			are the same as the fourth conjugation.
 		</>
 	),
 };

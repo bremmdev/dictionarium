@@ -27,19 +27,19 @@ What it no longer holds is the rules. How a query becomes a search key, how shor
 | Caller                    | What it needs the rule for                                 |
 | ------------------------- | ---------------------------------------------------------- |
 | `searchEntries`           | turning the typed query into the key it matches on          |
-| `scripts/seed.ts`         | deriving `lemma_plain` from `lemma` at insert time          |
+| `parseEntryDraft`         | deriving `lemma_plain` from `lemma` at insert time          |
 | `scripts/check-lemmas.ts` | asserting every stored `lemma_plain` still equals the rule  |
 | `Results.tsx`             | telling the user how many letters are needed                |
 
 The middle two are the reason it moved. `lemma_plain` is written down one path and read down another; when the two disagree nothing breaks loudly — the query returns nothing and a word has quietly stopped existing. That failure has been flagged here since the column was introduced, and until now it was being prevented by two copies of a four-line function agreeing with each other by hand.
 
-So the seed no longer carries `lemmaPlain` at all. It lists lemmas and derives the key on the way in:
+So no caller carries `lemmaPlain` at all. `parseEntryDraft` takes the lemma and derives the key on the way in:
 
 ```ts
-.values(words.map((w) => ({ ...w, lemmaPlain: normalizeLemma(w.lemma) })))
+lemmaPlain: normalizeLemma(lemma),
 ```
 
-and `scripts/check-lemmas.ts` — wired into `npm run check`, or run alone as `npm run check:lemmas` — re-derives every row in the table and names the ones that no longer match. That is cheap insurance now, when seeding is the only writer, and the actual point later: the admin panel will write rows no script has seen.
+and `scripts/check-lemmas.ts` — wired into `npm run check`, or run alone as `npm run check:lemmas` — re-derives every row in the table and names the ones that no longer match. That is the insurance for rows written around the form.
 
 Note what the check proves — that the stored key agrees with the current rule, not that the rule is right. Change `normalizeLemma` and it will report every row as stale, which is the correct answer. The fix then is to rewrite the column, not to soften the check.
 
@@ -310,7 +310,7 @@ Inflected forms are not typos: _amābat_ is four edits from _amō_ and gets no s
 ## Gotchas
 
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.
-- **There is one `normalizeLemma`, in `#/utils/search/rules.ts`.** Search, the seed and `check:lemmas` all call it; a second inlined copy is how `lemma_plain` starts lying. `scripts/enrich-entries.ts` keeps a deliberate copy so it can run standalone — change the rule and you have to change that too, and `npm run check:lemmas` is what catches you if you forget.
+- **There is one `normalizeLemma`, in `#/utils/search/rules.ts`.** Search, `parseEntryDraft`, the Wiktionary fill and `check:lemmas` all call it; a second inlined copy is how `lemma_plain` starts lying.
 - **In `normalizeLemma`, case-fold before filtering.** `[^a-z ]` deletes an uppercase letter rather than lowering it, so putting `.toLowerCase()` last turns `Roma` into `oma` — a query that silently finds nothing, and a `lemma_plain` that is silently wrong.
 - **The query is filtered, never escaped.** `%` and `_` cannot reach the `LIKE` pattern because the character class removes them. Widen that class and you have handed every user a wildcard.
 - **Macron normalisation is load-bearing in two places** — `normalizeLemma` for search, `normalize("NFC")` for detail lookup — and failures are silent misses, not errors.

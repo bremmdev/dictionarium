@@ -124,7 +124,7 @@ export function Translating() {
 			<div className="overflow-x-auto">
 				<img
 					src={tenseTimeline}
-					alt="A timeline from past to future. The pluperfect, salūtāveram, lies furthest back. The imperfect, salūtābam, covers a stretch of the past, and the perfect, salūtāvī, is a single point inside it. The present, salūtō, sits on now. The future, salūtābō, lies furthest ahead, and the future perfect, salūtāverō, lies between now and the future."
+					alt="A timeline from past to future. The pluperfect lies furthest back. The imperfect covers a stretch of the past, and the perfect is a single point inside it. The present sits on now. The future lies furthest ahead, and the future perfect lies between now and the future."
 					className="mx-auto w-full min-w-160 max-w-4xl"
 				/>
 			</div>

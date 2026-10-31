@@ -13,7 +13,7 @@ Two consequences worth naming up front:
 
 | File                                  | Responsibility                                                                     |
 | ------------------------------------- | ---------------------------------------------------------------------------------- |
-| `src/routes/admin.tsx`                | The one guarded page — see [auth.md](./auth.md). The desk switcher and both desks. `?id=` says which word, `?desk=proverbs` which desk. |
+| `src/routes/admin.tsx`                | A guarded page — see [auth.md](./auth.md). The desk switcher and both desks. `?id=` says which word, `?desk=proverbs` which desk. |
 | `src/components/admin/Fields.tsx`     | The inputs, chips and messages both desks are built from.                          |
 | `src/components/admin/ProverbForm.tsx`| The proverb desk: add/edit switch, picker, fields.                                 |
 | `src/utils/proverbs/form.ts`          | `proverbFormReducer` — the proverb desk's transitions.                             |
@@ -144,10 +144,11 @@ The state beyond the draft itself:
 | ------------- | ------------------------------------------------------------------------------------------ |
 | `mode`        | `create`, or `edit` with the row id. The only thing that differs between the two flows.     |
 | `nextSenseId` | Ids are handed out, never reused — a removed row must not be confused with its replacement. |
-| `focusSense`  | The row whose meaning should take focus once it has rendered.                              |
+| `focusSense`  | The row whose meaning should take focus once it has rendered. `focusExample` and `focusCase` do the same for its Latin example and first case chip. |
 | `errors`      | Keyed the way `parseEntryDraft` keys them, so each message sits by its input.               |
-| `status`      | Where the last **submit** got to: `idle` \| `pending` \| `saved` \| `failed`.                 |
-| `lookup`      | Where the last **lookup** got to: `idle` \| `pending` \| `filled` \| `failed`.                |
+| `status`      | Where the last **submit** got to: `idle` \| `pending` \| `saved` \| `unconfirmed` \| `failed`. |
+| `lookup`      | Where the last **lookup** got to: `idle` \| `pending` \| `filled` \| `exists` \| `failed`.     |
+| `homograph`   | The editor's say-so that this is a new word under a lemma already filed.                   |
 
 `saved` carries a `created` flag, which is the whole of the difference the banner shows: *Additum* or *Ēmendātum*. Both empty the desk.
 
@@ -169,7 +170,7 @@ What the parser makes of a page:
 | "indeclinable"                      | `declension: "indeclinable"` — an answer, not an absence               |
 | "third (-iō variant) conjugation"   | `conjugation: "3io"`                                                   |
 | a *Proper noun* section             | `part_of_speech: "noun"`, with a warning saying so                     |
-| a *Postposition* section (*tenus*)  | `part_of_speech: "preposition"`, with a warning, and "follows its noun" in `notes` — see [schema.md](./schema.md#postposition-is-not-one-of-them-either) |
+| a *Postposition* section (*tenus*)  | `part_of_speech: "preposition"`, with a warning, and "follows its noun" in `notes` |
 | a preposition's `(+ accusative, ablative)` | `governs`, in the one spelling: `accusative,ablative`             |
 | a second headword line — *in (+ ablative)* … *in (+ accusative)* | read too: its senses follow the first line's, each carrying its line's case |
 | a sense's case — `(with dative)`, `[with ablative]`, a `(with ablative):` heading over senses, or a case on the headword line (*meminī*) | that sense's `governs` — see [schema.md](./schema.md#governs-the-case-a-word-takes) |
@@ -210,7 +211,7 @@ Both ends can name a part of speech — `capio#verb` in the terminal, the chips 
 ## The same thing in bulk
 
 ```sh
-npx tsx scripts/enrich-entries.ts puella ambulo mater   # paste-ready seed.ts rows
+npx tsx scripts/enrich-entries.ts puella ambulo mater   # rows to read
 npx tsx scripts/enrich-entries.ts --file lemmas.txt --json
 npx tsx scripts/enrich-entries.ts --file lemmas.txt --write
 ```
@@ -241,7 +242,7 @@ Adding a sense leaves the caret in the new row's meaning. Removing one hands foc
 
 ## The proverb desk
 
-A switcher at the top of `/admin` moves between **Verba** and **Proverbia**. Words is the default and is never written into the URL; `?desk=proverbs` is the other desk, set *beside* `?lemma` rather than instead of it. Both desks stay mounted and only the inactive one is hidden, so a half-filed word is still there after a look at the proverbs, and the other way round. The loader reads both desks' data whatever is showing (`loaderDeps` is the lemma only), so switching never loads.
+A switcher at the top of `/admin` moves between **Verba** and **Proverbia**. Words is the default and is never written into the URL; `?desk=proverbs` is the other desk, set *beside* `?id` rather than instead of it. Both desks stay mounted and only the inactive one is hidden, so a half-filed word is still there after a look at the proverbs, and the other way round. The loader reads both desks' data whatever is showing (`loaderDeps` is the id only), so switching never loads.
 
 A proverb has no page to start an edit from, so the desk has its own **add / edit** switch and, in edit, a picker listing every proverb on file. The flow is the editor's choice, held in `proverbFormReducer`'s `mode`, and **a save keeps it**:
 

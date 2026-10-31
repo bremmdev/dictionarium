@@ -1,8 +1,7 @@
 /**
  * The rules a new entry has to satisfy, in one place.
  *
- * These rules were enforced by the seed file and the guard scripts after the fact
- * and are documented in vault/schema.md's filing conventions.
+ * These rules are documented in vault/schema.md's filing conventions.
  *
  * One function does it, and three callers share it: the form (for the messages),
  * the createEntry RPC (as its .validator, which is the actual gate — the form is

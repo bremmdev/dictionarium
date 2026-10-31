@@ -1,8 +1,7 @@
 /**
  * Normalizing lemmas "vīlla" -> "villa". Decomposing to NFD turns a macron into its own combining
  * mark, so dropping every mark strips it without touching the base letter. This
- * has to match how lemma_plain was written by the seed script, or lookups
- * silently miss.
+ * has to match how lemma_plain was written, or lookups silently miss.
  */
 export function normalizeLemma(value: string) {
 	return (

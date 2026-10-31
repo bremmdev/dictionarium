@@ -40,7 +40,7 @@ function filed(tx: Tx, id: number, lemma: string): FilingResult {
 }
 
 /**
- * What `npx tsx scripts/seed.ts` used to be, as one word at a time.
+ * Files one new word.
  *
  * .validator is the gate. It is the same function the form runs before it
  * submits, and running it again here is not belt and braces: the form is one
