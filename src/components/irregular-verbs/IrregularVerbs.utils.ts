@@ -113,4 +113,63 @@ const SUM: IrregularVerb = {
 	],
 };
 
-export const IRREGULAR_VERBS: IrregularVerb[] = [SUM];
+const POSSUM: IrregularVerb = {
+	id: "possum",
+	principalParts: ["possum", "posse", "potuī"],
+	english: "be able",
+	perfectStem: "potu",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "possum" },
+				"2sg": { form: "potes" },
+				"3sg": { form: "potest" },
+				"1pl": { form: "possumus" },
+				"2pl": { form: "potestis" },
+				"3pl": { form: "possunt" },
+			},
+			imperfect: {
+				"1sg": { form: "poteram" },
+				"2sg": { form: "poterās" },
+				"3sg": { form: "poterat" },
+				"1pl": { form: "poterāmus" },
+				"2pl": { form: "poterātis" },
+				"3pl": { form: "poterant" },
+			},
+			future: {
+				"1sg": { form: "poterō" },
+				"2sg": { form: "poteris" },
+				"3sg": { form: "poterit" },
+				"1pl": { form: "poterimus" },
+				"2pl": { form: "poteritis" },
+				"3pl": { form: "poterunt" },
+			},
+			perfect: {
+				"1sg": { form: "potuī" },
+				"2sg": { form: "potuistī" },
+				"3sg": { form: "potuit" },
+				"1pl": { form: "potuimus" },
+				"2pl": { form: "potuistis" },
+				"3pl": { form: "potuērunt", alt: "potuēre" },
+			},
+			pluperfect: {
+				"1sg": { form: "potueram" },
+				"2sg": { form: "potuerās" },
+				"3sg": { form: "potuerat" },
+				"1pl": { form: "potuerāmus" },
+				"2pl": { form: "potuerātis" },
+				"3pl": { form: "potuerant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "potuerō" },
+				"2sg": { form: "potueris" },
+				"3sg": { form: "potuerit" },
+				"1pl": { form: "potuerimus" },
+				"2pl": { form: "potueritis" },
+				"3pl": { form: "potuerint" },
+			},
+		},
+	},
+};
+
+export const IRREGULAR_VERBS: IrregularVerb[] = [SUM, POSSUM];

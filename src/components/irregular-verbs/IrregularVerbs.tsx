@@ -15,6 +15,16 @@ const BLURBS: Record<string, React.ReactNode> = {
 			<LatinWord>sum</LatinWord> has no supine and no passive.
 		</>
 	),
+	possum: (
+		<>
+			<LatinWord>pot-</LatinWord>, from the adjective{" "}
+			<LatinWord>potis</LatinWord>, <em>able</em>, joined to{" "}
+			<LatinWord>sum</LatinWord>: <em>I am able</em>, <em>I can</em>. It has no
+			supine, no future participle and no passive, so it files only three
+			principal parts. It usually takes an infinitive:{" "}
+			<LatinWord>venīre nōn possum</LatinWord>, <em>I cannot come</em>.
+		</>
+	),
 };
 
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
@@ -35,6 +45,19 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>*amāse</LatinWord>.
 		</>
 	),
+	possum: (
+		<>
+			Each form is <LatinWord>pot-</LatinWord> plus the same form of{" "}
+			<LatinWord>sum</LatinWord>. Before a vowel the <LatinWord>t</LatinWord>{" "}
+			stays: <LatinWord>potes</LatinWord>, <LatinWord>potest</LatinWord>,{" "}
+			<LatinWord>poteram</LatinWord>, <LatinWord>poterō</LatinWord>. Before{" "}
+			<LatinWord>s</LatinWord> it turns into <LatinWord>s</LatinWord> too, so{" "}
+			<LatinWord>*potsum</LatinWord> became <LatinWord>possum</LatinWord>, and
+			likewise <LatinWord>possumus</LatinWord>, <LatinWord>possunt</LatinWord>.
+			The infinitive <LatinWord>posse</LatinWord> comes from an older{" "}
+			<LatinWord>potesse</LatinWord>.
+		</>
+	),
 };
 
 const PERFECT_NOTES: Record<string, React.ReactNode> = {
@@ -42,6 +65,14 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 		<>
 			Regular throughout: <LatinWord>fu-</LatinWord> takes the endings every
 			perfect stem does.
+		</>
+	),
+	possum: (
+		<>
+			<LatinWord>potuī</LatinWord> is not <LatinWord>pot-</LatinWord> plus{" "}
+			<LatinWord>fuī</LatinWord>: it comes from an obsolete verb{" "}
+			<LatinWord>potēre</LatinWord>. From the stem <LatinWord>potu-</LatinWord>{" "}
+			on, the endings are the regular ones.
 		</>
 	),
 };
