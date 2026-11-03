@@ -32,7 +32,7 @@ Two consequences worth naming up front:
 
 ```ts
 { lemma: "A lemma is required — it is the headword.",
-  declension: "A noun inflects, so say how (1 | 2 | 3 | 4 | 5 | 1-2 | indeclinable).",
+  declension: "A noun inflects, so say how (1 | 2 | 3 | 4 | 5 | indeclinable).",
   "senses.1.meaningEn": "Sense 2 has no meaning." }
 ```
 
