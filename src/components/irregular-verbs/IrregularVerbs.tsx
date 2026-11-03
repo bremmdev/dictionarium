@@ -25,6 +25,15 @@ const BLURBS: Record<string, React.ReactNode> = {
 			<LatinWord>venīre nōn possum</LatinWord>, <em>I cannot come</em>.
 		</>
 	),
+	eō: (
+		<>
+			The verb of going, built on a bare root <LatinWord>i-</LatinWord> with no
+			stem vowel of its own. Being intransitive, it has a passive only in the
+			impersonal third person singular: <LatinWord>ītur</LatinWord>,{" "}
+			<em>people are going</em>; <LatinWord>itum est</LatinWord>,{" "}
+			<em>people went</em>.
+		</>
+	),
 };
 
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
@@ -58,6 +67,19 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>potesse</LatinWord>.
 		</>
 	),
+	eō: (
+		<>
+			The root is <LatinWord>ī-</LatinWord> before a consonant and{" "}
+			<LatinWord>e-</LatinWord> before a vowel: <LatinWord>īs</LatinWord>,{" "}
+			<LatinWord>īmus</LatinWord>, <LatinWord>ībam</LatinWord>, but{" "}
+			<LatinWord>eō</LatinWord>, <LatinWord>eunt</LatinWord>. The third singular{" "}
+			<LatinWord>it</LatinWord> is short because a long vowel shortens before a
+			final <LatinWord>t</LatinWord>, as in <LatinWord>amat</LatinWord>. The
+			future takes <LatinWord>-bō</LatinWord> like the first and second
+			conjugations, not the <LatinWord>-am</LatinWord> of the third and fourth:{" "}
+			<LatinWord>ībō</LatinWord>, <LatinWord>ībit</LatinWord>.
+		</>
+	),
 };
 
 const PERFECT_NOTES: Record<string, React.ReactNode> = {
@@ -75,6 +97,19 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			on, the endings are the regular ones.
 		</>
 	),
+	eō: (
+		<>
+			The stem is a bare <LatinWord>i-</LatinWord> and takes the regular
+			endings: <LatinWord>iī</LatinWord>, <LatinWord>iit</LatinWord>,{" "}
+			<LatinWord>ieram</LatinWord>, <LatinWord>ierō</LatinWord>. Before{" "}
+			<LatinWord>s</LatinWord> the two <LatinWord>i</LatinWord>s usually merge
+			into one long <LatinWord>ī</LatinWord>: <LatinWord>īstī</LatinWord>,{" "}
+			<LatinWord>īstis</LatinWord>, and the infinitive{" "}
+			<LatinWord>īsse</LatinWord>. Some grammars give a perfect{" "}
+			<LatinWord>īvī</LatinWord> as well (<LatinWord>īvit</LatinWord>,{" "}
+			<LatinWord>īverat</LatinWord>), but it is very rare in the simple verb.
+		</>
+	),
 };
 
 const COMPOUND_NOTES: Record<string, React.ReactNode> = {
@@ -89,6 +124,20 @@ const COMPOUND_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>prōsunt</LatinWord>, <LatinWord>prōfuī</LatinWord>. Most take a
 			dative: <LatinWord>adesse amīcō</LatinWord>, <em>to stand by a friend</em>
 			; <LatinWord>praeesse exercituī</LatinWord>, <em>to command the army</em>.
+		</>
+	),
+	eō: (
+		<>
+			The compounds conjugate like <LatinWord>eō</LatinWord>:{" "}
+			<LatinWord>abit</LatinWord>, <LatinWord>exībant</LatinWord>,{" "}
+			<LatinWord>rediērunt</LatinWord>. Like <LatinWord>prōsum</LatinWord>,{" "}
+			<LatinWord>prōdeō</LatinWord> keeps its old <LatinWord>d</LatinWord>, and
+			since every form of <LatinWord>eō</LatinWord> starts with a vowel it keeps
+			it throughout: <LatinWord>prōdīs</LatinWord>,{" "}
+			<LatinWord>prōdit</LatinWord>. Compounds that take an object, such as{" "}
+			<LatinWord>adeō</LatinWord>, <LatinWord>ineō</LatinWord> and{" "}
+			<LatinWord>trānseō</LatinWord>, have a full passive:{" "}
+			<LatinWord>urbs adītur</LatinWord>, <em>the city is approached</em>.
 		</>
 	),
 };

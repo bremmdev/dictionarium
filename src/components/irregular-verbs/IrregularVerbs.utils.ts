@@ -172,4 +172,110 @@ const POSSUM: IrregularVerb = {
 	},
 };
 
-export const IRREGULAR_VERBS: IrregularVerb[] = [SUM, POSSUM];
+const EO: IrregularVerb = {
+	id: "eo",
+	principalParts: ["eō", "īre", "iī", "itum"],
+	english: "go",
+	perfectStem: "i",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "eō" },
+				"2sg": { form: "īs" },
+				"3sg": { form: "it" },
+				"1pl": { form: "īmus" },
+				"2pl": { form: "ītis" },
+				"3pl": { form: "eunt" },
+			},
+			imperfect: {
+				"1sg": { form: "ībam" },
+				"2sg": { form: "ībās" },
+				"3sg": { form: "ībat" },
+				"1pl": { form: "ībāmus" },
+				"2pl": { form: "ībātis" },
+				"3pl": { form: "ībant" },
+			},
+			future: {
+				"1sg": { form: "ībō" },
+				"2sg": { form: "ībis" },
+				"3sg": { form: "ībit" },
+				"1pl": { form: "ībimus" },
+				"2pl": { form: "ībitis" },
+				"3pl": { form: "ībunt" },
+			},
+			// ii + s contracts to ī (A&G §203.c).
+			perfect: {
+				"1sg": { form: "iī" },
+				"2sg": { form: "īstī", alt: "iistī", irregular: true },
+				"3sg": { form: "iit" },
+				"1pl": { form: "iimus" },
+				"2pl": { form: "īstis", alt: "iistis", irregular: true },
+				"3pl": { form: "iērunt", alt: "iēre" },
+			},
+			pluperfect: {
+				"1sg": { form: "ieram" },
+				"2sg": { form: "ierās" },
+				"3sg": { form: "ierat" },
+				"1pl": { form: "ierāmus" },
+				"2pl": { form: "ierātis" },
+				"3pl": { form: "ierant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "ierō" },
+				"2sg": { form: "ieris" },
+				"3sg": { form: "ierit" },
+				"1pl": { form: "ierimus" },
+				"2pl": { form: "ieritis" },
+				"3pl": { form: "ierint" },
+			},
+		},
+	},
+	compounds: [
+		{
+			principalParts: "abeō, abīre, abiī, abitum",
+			english: "go away",
+		},
+		{
+			principalParts: "adeō, adīre, adiī, aditum",
+			english: "go to, approach",
+		},
+		{
+			principalParts: "exeō, exīre, exiī, exitum",
+			english: "go out, leave",
+		},
+		{
+			principalParts: "ineō, inīre, iniī, initum",
+			english: "go into, begin",
+		},
+		{
+			principalParts: "obeō, obīre, obiī, obitum",
+			english: "go to meet, meet (death)",
+		},
+		{
+			principalParts: "pereō, perīre, periī, peritum",
+			english: "perish, be lost",
+		},
+		{
+			principalParts: "praetereō, praeterīre, praeteriī, praeteritum",
+			english: "go past, pass over",
+		},
+		{
+			principalParts: "prōdeō, prōdīre, prōdiī, prōditum",
+			english: "come forth, advance",
+		},
+		{
+			principalParts: "redeō, redīre, rediī, reditum",
+			english: "go back, return",
+		},
+		{
+			principalParts: "subeō, subīre, subiī, subitum",
+			english: "go under, undergo",
+		},
+		{
+			principalParts: "trānseō, trānsīre, trānsiī, trānsitum",
+			english: "go across, cross",
+		},
+	],
+};
+
+export const IRREGULAR_VERBS: IrregularVerb[] = [SUM, POSSUM, EO];
