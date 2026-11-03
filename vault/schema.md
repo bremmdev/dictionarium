@@ -119,7 +119,7 @@ It is not a numeral problem, either. The grammar has a named class for it: "A fe
 
 Nor an adjective one. A&G §103a lists the native indeclinable nouns — _fās, nefās, īnstar, nihil, opus_ ("need"), _secus_ — "used only as nominative and accusative singular" ([A&G §103](https://dcc.dickinson.edu/node/26676)). Lewis & Short files them with a gender and no genitive ("fas, indecl. n."), and so does this dictionary: `indeclinable`, a gender, and NULL `principal_parts`. Borrowed names (_Abraham_, _alpha_) are the same class in larger numbers.
 
-**Follow the dictionary's label.** "indecl." means `indeclinable`. A _defective_ noun the dictionary still files with a genitive (_fors_, _vicis_; A&G §103b–h) keeps its numbered declension, and the missing cases go in `notes`. _nihil_ is indeclinable, with "gen. _nihilī_, abl. _nihilō_ (from _nihilum_)" in `notes`. _opus_ "need" is a sense of _opus, operis_ (_opus est_), not a second row — `lemma` is unique.
+**Follow the dictionary's label.** "indecl." means `indeclinable`. A _defective_ noun the dictionary still files with a genitive (_fors_, _vicis_; A&G §103b–h) keeps its numbered declension, and the missing cases go in `notes`. _nihil_ is indeclinable, with "gen. _nihilī_, abl. _nihilō_ (from _nihilum_)" in `notes`. _opus_ "need" is a sense of _opus, operis_ (_opus est_), not a second row.
 
 ### `terminations`, and why counting the forms cannot replace it
 
@@ -372,7 +372,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 Each names the rows it objects to, and exits non-zero:
 
 ```sh
-soror (noun): declension is NULL — this word inflects, so say how (1 | 2 | 3 | 4 | 5 | 1-2 | indeclinable)
+soror (noun): declension is NULL — this word inflects, so say how (1 | 2 | 3 | 4 | 5 | indeclinable)
 uxor (noun): conjugation is "2" — this part of speech does not conjugate, so it must be NULL
 in (preposition): governs the accusative, but no sense takes it
 māter: ranks are [1, 3, 4, 5, 6] — must run 1..5 with no gaps
