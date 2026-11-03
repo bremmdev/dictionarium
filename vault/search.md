@@ -78,10 +78,12 @@ This is the same function that wrote `lemma_plain` — see [above](#rulests-one-
 
 ```ts
 const key = normalizeLemma(q);
-if (key.length < MIN_QUERY_LENGTH) return [];
+if (key.length < MIN_QUERY_LENGTH) {
+  return { results: [], suggestions: [] };
+}
 ```
 
-Below `MIN_QUERY_LENGTH` (2) it returns `[]` without touching the database, because a single letter matches a large fraction of the dictionary. Measuring the raw query measures how much arrived, never what is in it: `a%` is two characters and one letter, and guarding it first let it through to run a full scan for `a`. Normalising first makes the guard measure the thing that actually reaches SQL.
+Below `MIN_QUERY_LENGTH` (2) it returns no results and no suggestions without touching the database, because a single letter matches a large fraction of the dictionary. Measuring the raw query measures how much arrived, never what is in it: `a%` is two characters and one letter, and guarding it first let it through to run a full scan for `a`. Normalising first makes the guard measure the thing that actually reaches SQL.
 
 The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
 

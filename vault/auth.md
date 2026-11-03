@@ -13,7 +13,7 @@ The answer is sealed into a cookie and reduced to one boolean, `isAdmin`. Everyt
 | `src/routes/login.tsx`     | The form. One password field, no username.                            |
 | `src/routes/__root.tsx`    | Reads the session once per page load, for the header.                 |
 | `src/components/Header.tsx`| Shows `exī` and performs the logout.                                  |
-| `src/routes/admin.tsx`     | The editor. One of four guarded pages, with `/admin/stats`, `/admin/health` and `/word-list`. |
+| `src/routes/admin.tsx`     | The editor. One of three guarded pages, with `/admin/stats` and `/admin/health`. |
 
 ## Two secrets
 
