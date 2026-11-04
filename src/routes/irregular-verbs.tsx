@@ -6,7 +6,15 @@ import mosaic from "#/assets/mosaic-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
 import { IrregularVerbs } from "#/components/irregular-verbs/IrregularVerbs";
+import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 import { LatinWord } from "#/components/LatinWord";
+import { type Section, SectionNav } from "#/components/SectionNav";
+
+const SECTIONS: Section[] = IRREGULAR_VERBS.map((verb) => ({
+	id: verb.id,
+	label: verb.principalParts[0],
+	gloss: `to ${verb.english}`,
+}));
 
 export const Route = createFileRoute("/irregular-verbs")({
 	component: RouteComponent,
@@ -70,6 +78,7 @@ function RouteComponent() {
 	return (
 		<>
 			<IrregularVerbsBanner />
+			<SectionNav sections={SECTIONS} />
 			<div className="mx-auto max-w-page-width space-y-8 md:space-y-16 py-16 md:py-24">
 				<IrregularVerbs />
 			</div>
