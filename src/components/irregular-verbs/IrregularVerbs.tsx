@@ -34,6 +34,17 @@ const BLURBS: Record<string, React.ReactNode> = {
 			<em>people went</em>.
 		</>
 	),
+	ferō: (
+		<>
+			<em>Bear</em>, <em>carry</em>, <em>bring</em>. Its parts come from two
+			roots: <LatinWord>ferō</LatinWord> from one, <LatinWord>tulī</LatinWord>{" "}
+			and <LatinWord>lātum</LatinWord> from the root of{" "}
+			<LatinWord>tollō</LatinWord>, <em>raise</em>. Unlike{" "}
+			<LatinWord>sum</LatinWord> and <LatinWord>eō</LatinWord> it has a full
+			passive: <LatinWord>feror</LatinWord>, <LatinWord>ferris</LatinWord>,{" "}
+			<LatinWord>fertur</LatinWord>, <em>I am carried</em> and so on.
+		</>
+	),
 };
 
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
@@ -80,6 +91,16 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>ībō</LatinWord>, <LatinWord>ībit</LatinWord>.
 		</>
 	),
+	ferō: (
+		<>
+			A third-conjugation verb that drops the connecting vowel before{" "}
+			<LatinWord>s</LatinWord>, <LatinWord>t</LatinWord> and{" "}
+			<LatinWord>r</LatinWord>: <LatinWord>fers</LatinWord>,{" "}
+			<LatinWord>fert</LatinWord>, <LatinWord>fertis</LatinWord> and the
+			infinitive <LatinWord>ferre</LatinWord>. The passive does the same.
+			Elsewhere it is regular.
+		</>
+	),
 };
 
 const PERFECT_NOTES: Record<string, React.ReactNode> = {
@@ -110,6 +131,14 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>īverat</LatinWord>), but it is very rare in the simple verb.
 		</>
 	),
+	ferō: (
+		<>
+			<LatinWord>tulī</LatinWord> belongs to another verb, but from the stem{" "}
+			<LatinWord>tul-</LatinWord> on the endings are the regular ones. Early
+			Latin had a reduplicated perfect <LatinWord>tetulī</LatinWord>, like{" "}
+			<LatinWord>tetigī</LatinWord> from <LatinWord>tangō</LatinWord>.
+		</>
+	),
 };
 
 const COMPOUND_NOTES: Record<string, React.ReactNode> = {
@@ -138,6 +167,21 @@ const COMPOUND_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>adeō</LatinWord>, <LatinWord>ineō</LatinWord> and{" "}
 			<LatinWord>trānseō</LatinWord>, have a full passive:{" "}
 			<LatinWord>urbs adītur</LatinWord>, <em>the city is approached</em>.
+		</>
+	),
+	ferō: (
+		<>
+			The compounds conjugate like <LatinWord>ferō</LatinWord>, but the prefix
+			often takes on the next consonant, so it changes with the stem:{" "}
+			<LatinWord>afferō</LatinWord>, <LatinWord>attulī</LatinWord>,{" "}
+			<LatinWord>allātum</LatinWord>; <LatinWord>īnferō</LatinWord>,{" "}
+			<LatinWord>intulī</LatinWord>, <LatinWord>illātum</LatinWord>.{" "}
+			<LatinWord>ab-</LatinWord> becomes <LatinWord>au-</LatinWord> and{" "}
+			<LatinWord>abs-</LatinWord>: <LatinWord>auferō</LatinWord>,{" "}
+			<LatinWord>abstulī</LatinWord>, <LatinWord>ablātum</LatinWord>.
+			Unassimilated spellings such as <LatinWord>adferō</LatinWord> occur too.{" "}
+			<LatinWord>referō</LatinWord> keeps the old reduplication as a double{" "}
+			<LatinWord>t</LatinWord>: <LatinWord>rettulī</LatinWord>.
 		</>
 	),
 };

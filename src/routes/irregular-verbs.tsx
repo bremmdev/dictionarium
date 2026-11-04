@@ -18,7 +18,7 @@ export const Route = createFileRoute("/irregular-verbs")({
 			{
 				name: "description",
 				content:
-					"The Latin irregular verbs in full, with macrons: sum, possum and eō, with their compounds.",
+					"The Latin irregular verbs in full, with macrons: sum, possum, eō and ferō, with their compounds.",
 			},
 		],
 	}),

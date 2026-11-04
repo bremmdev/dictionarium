@@ -278,4 +278,118 @@ const EO: IrregularVerb = {
 	],
 };
 
-export const IRREGULAR_VERBS: IrregularVerb[] = [SUM, POSSUM, EO];
+const FERO: IrregularVerb = {
+	id: "fero",
+	principalParts: ["ferō", "ferre", "tulī", "lātum"],
+	english: "carry",
+	perfectStem: "tul",
+	indicative: {
+		active: {
+			present: {
+				"1sg": { form: "ferō" },
+				"2sg": { form: "fers" },
+				"3sg": { form: "fert" },
+				"1pl": { form: "ferimus" },
+				"2pl": { form: "fertis" },
+				"3pl": { form: "ferunt" },
+			},
+			imperfect: {
+				"1sg": { form: "ferēbam" },
+				"2sg": { form: "ferēbās" },
+				"3sg": { form: "ferēbat" },
+				"1pl": { form: "ferēbāmus" },
+				"2pl": { form: "ferēbātis" },
+				"3pl": { form: "ferēbant" },
+			},
+			future: {
+				"1sg": { form: "feram" },
+				"2sg": { form: "ferēs" },
+				"3sg": { form: "feret" },
+				"1pl": { form: "ferēmus" },
+				"2pl": { form: "ferētis" },
+				"3pl": { form: "ferent" },
+			},
+			perfect: {
+				"1sg": { form: "tulī" },
+				"2sg": { form: "tulistī" },
+				"3sg": { form: "tulit" },
+				"1pl": { form: "tulimus" },
+				"2pl": { form: "tulistis" },
+				"3pl": { form: "tulērunt", alt: "tulēre" },
+			},
+			pluperfect: {
+				"1sg": { form: "tuleram" },
+				"2sg": { form: "tulerās" },
+				"3sg": { form: "tulerat" },
+				"1pl": { form: "tulerāmus" },
+				"2pl": { form: "tulerātis" },
+				"3pl": { form: "tulerant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "tulerō" },
+				"2sg": { form: "tuleris" },
+				"3sg": { form: "tulerit" },
+				"1pl": { form: "tulerimus" },
+				"2pl": { form: "tuleritis" },
+				"3pl": { form: "tulerint" },
+			},
+		},
+	},
+	// sufferō is left out: its sustulī, sublātum also serve tollō.
+	compounds: [
+		{
+			principalParts: "afferō, afferre, attulī, allātum",
+			english: "bring to, bring (news)",
+		},
+		{
+			principalParts: "auferō, auferre, abstulī, ablātum",
+			english: "carry off, take away",
+		},
+		{
+			principalParts: "cōnferō, cōnferre, contulī, collātum",
+			english: "bring together, compare",
+		},
+		{
+			principalParts: "dēferō, dēferre, dētulī, dēlātum",
+			english: "carry down, report",
+		},
+		{
+			principalParts: "differō, differre, distulī, dīlātum",
+			english: "spread, put off",
+		},
+		{
+			principalParts: "efferō, efferre, extulī, ēlātum",
+			english: "carry out, lift up",
+		},
+		{
+			principalParts: "īnferō, īnferre, intulī, illātum",
+			english: "bring in, inflict",
+		},
+		{
+			principalParts: "offerō, offerre, obtulī, oblātum",
+			english: "offer, present",
+		},
+		{
+			principalParts: "perferō, perferre, pertulī, perlātum",
+			english: "carry through, endure",
+		},
+		{
+			principalParts: "praeferō, praeferre, praetulī, praelātum",
+			english: "carry before, prefer",
+		},
+		{
+			principalParts: "prōferō, prōferre, prōtulī, prōlātum",
+			english: "bring forward, extend",
+		},
+		{
+			principalParts: "referō, referre, rettulī, relātum",
+			english: "bring back, report",
+		},
+		{
+			principalParts: "trānsferō, trānsferre, trānstulī, trānslātum",
+			english: "carry across, transfer",
+		},
+	],
+};
+
+export const IRREGULAR_VERBS: IrregularVerb[] = [SUM, POSSUM, EO, FERO];
