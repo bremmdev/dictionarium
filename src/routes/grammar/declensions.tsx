@@ -20,7 +20,7 @@ const SECTIONS: Section[] = [
 	{ id: "adjectives", label: "Adiectīva", gloss: "adjectives" },
 ];
 
-export const Route = createFileRoute("/declensions")({
+export const Route = createFileRoute("/grammar/declensions")({
 	component: RouteComponent,
 	head: () => ({
 		meta: [

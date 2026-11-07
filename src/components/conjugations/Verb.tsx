@@ -15,7 +15,7 @@ type VerbProps = {
 	verb: VerbParadigm;
 	/** Sits under a system's table when the verb does something the pattern does not. */
 	notes?: Partial<Record<Mood, Partial<Record<System, React.ReactNode>>>>;
-	/** h3 where the verb heads its own section, as on /irregular-verbs. */
+	/** h3 where the verb heads its own section, as on /grammar/irregular-verbs. */
 	headingAs?: "h3" | "h4";
 };
 

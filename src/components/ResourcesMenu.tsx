@@ -1,35 +1,11 @@
 import { Button } from "@bremmdev/m7kit";
 import { Link } from "@tanstack/react-router";
-import {
-	ChevronDown,
-	Hash,
-	ListFilter,
-	Quote,
-	Shuffle,
-	Table2,
-	TableProperties,
-} from "lucide-react";
+import { ChevronDown, Hash, ListFilter, Quote } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { GRAMMAR_TOPICS } from "#/components/grammar/topics";
+import { TextLink } from "#/components/TextLink";
 
-const RESOURCES = [
-	{
-		to: "/conjugations",
-		label: "Conjugations",
-		description: "Verbs by person and tense",
-		Icon: TableProperties,
-	},
-	{
-		to: "/declensions",
-		label: "Declensions",
-		description: "Nouns and adjectives by case",
-		Icon: Table2,
-	},
-	{
-		to: "/irregular-verbs",
-		label: "Irregular verbs",
-		description: "Verbs that break the pattern",
-		Icon: Shuffle,
-	},
+const MORE = [
 	{
 		to: "/numbers",
 		label: "Numbers",
@@ -50,6 +26,11 @@ const RESOURCES = [
 	},
 ] as const;
 
+type MenuItem = (typeof GRAMMAR_TOPICS)[number] | (typeof MORE)[number];
+
+const GROUP_LABEL =
+	"font-semibold text-ink-700 text-xs uppercase tracking-wider";
+
 const linksIn = (panel: HTMLElement | null) =>
 	Array.from(panel?.querySelectorAll("a") ?? []);
 
@@ -63,6 +44,8 @@ export function ResourcesMenu() {
 	// yet at the moment the key is pressed.
 	const focusOnOpen = useRef<"first" | "last" | null>(null);
 	const panelId = useId();
+	const grammarId = useId();
+	const moreId = useId();
 
 	const open = (focus: "first" | "last" | null = null) => {
 		focusOnOpen.current = focus;
@@ -145,6 +128,31 @@ export function ResourcesMenu() {
 		items[next].focus();
 	};
 
+	const renderItem = ({ to, label, description, Icon }: MenuItem) => (
+		<li key={to}>
+			<Link
+				to={to}
+				activeProps={{ "aria-current": "page" }}
+				onClick={() => setIsOpen(false)}
+				onKeyDown={handleLinkKeyDown}
+				onBlur={handleBlur}
+				className="focus-ring flex items-center gap-3 rounded-xl px-3 py-2.5 normal-case hover:bg-parchment-100 aria-[current=page]:bg-parchment-100"
+			>
+				<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-parchment-300 bg-parchment-50 text-accent">
+					<Icon aria-hidden="true" className="h-5 w-5" />
+				</span>
+				<span>
+					<span className="block font-semibold text-accent leading-snug">
+						{label}
+					</span>
+					<span className="block text-ink-700 text-sm italic leading-snug">
+						{description}
+					</span>
+				</span>
+			</Link>
+		</li>
+	);
+
 	return (
 		<div ref={containerRef} className="resources relative ms-3 sm:ms-6">
 			<Button
@@ -172,31 +180,31 @@ export function ResourcesMenu() {
 					id={panelId}
 					className="absolute end-0 top-full z-10 mt-2 w-80 rounded-2xl border border-parchment-200 bg-parchment-50 p-2 shadow-xl"
 				>
-					<ul className="space-y-1">
-						{RESOURCES.map(({ to, label, description, Icon }) => (
-							<li key={to}>
-								<Link
-									to={to}
-									activeProps={{ "aria-current": "page" }}
-									onClick={() => setIsOpen(false)}
-									onKeyDown={handleLinkKeyDown}
-									onBlur={handleBlur}
-									className="focus-ring flex items-center gap-3 rounded-xl px-3 py-2.5 normal-case hover:bg-parchment-100 aria-[current=page]:bg-parchment-100"
-								>
-									<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-parchment-300 bg-parchment-50 text-accent">
-										<Icon aria-hidden="true" className="h-5 w-5" />
-									</span>
-									<span>
-										<span className="block font-semibold text-accent leading-snug">
-											{label}
-										</span>
-										<span className="block text-ink-700 text-sm italic leading-snug">
-											{description}
-										</span>
-									</span>
-								</Link>
-							</li>
-						))}
+					<div className="flex items-baseline justify-between px-3 pt-1 pb-1.5">
+						<span id={grammarId} className={GROUP_LABEL}>
+							Grammar
+						</span>
+						<TextLink
+							to="/grammar"
+							activeOptions={{ exact: true }}
+							activeProps={{ "aria-current": "page" }}
+							onClick={() => setIsOpen(false)}
+							onKeyDown={handleLinkKeyDown}
+							onBlur={handleBlur}
+							className="text-sm normal-case"
+						>
+							Overview<span className="sr-only"> of grammar</span>
+						</TextLink>
+					</div>
+					<ul aria-labelledby={grammarId} className="space-y-1">
+						{GRAMMAR_TOPICS.map(renderItem)}
+					</ul>
+					<div className="mx-3 my-2 border-parchment-200 border-t" />
+					<span id={moreId} className={`${GROUP_LABEL} block px-3 pt-1 pb-1.5`}>
+						More
+					</span>
+					<ul aria-labelledby={moreId} className="space-y-1">
+						{MORE.map(renderItem)}
 					</ul>
 				</div>
 			)}

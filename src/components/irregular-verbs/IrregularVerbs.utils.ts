@@ -14,7 +14,7 @@ export type Compound = {
 };
 
 export type IrregularVerb = VerbParadigm & {
-	/** The section's anchor, the lemma without macrons: /irregular-verbs#sum. */
+	/** The section's anchor, the lemma without macrons: /grammar/irregular-verbs#sum. */
 	id: string;
 	compounds?: Compound[];
 };

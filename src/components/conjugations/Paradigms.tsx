@@ -6,7 +6,7 @@ import {
 } from "./Conjugations.utils";
 import { Verb } from "./Verb";
 
-// JSX rather than strings for the reason Paradigms.tsx on /declensions gives:
+// JSX rather than strings for the reason Paradigms.tsx on /grammar/declensions gives:
 // nearly every sentence names a Latin form, and each needs lang="la".
 
 const BLURBS: Record<string, React.ReactNode> = {

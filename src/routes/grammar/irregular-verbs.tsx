@@ -16,7 +16,7 @@ const SECTIONS: Section[] = IRREGULAR_VERBS.map((verb) => ({
 	gloss: `to ${verb.english}`,
 }));
 
-export const Route = createFileRoute("/irregular-verbs")({
+export const Route = createFileRoute("/grammar/irregular-verbs")({
 	component: RouteComponent,
 	head: () => ({
 		meta: [

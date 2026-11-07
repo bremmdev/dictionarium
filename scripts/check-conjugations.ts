@@ -1,8 +1,8 @@
 /**
- * The paradigms on /conjugations and the endings sheet under them are typed out
+ * The paradigms on /grammar/conjugations and the endings sheet under them are typed out
  * separately, so a macron slip in either would go unnoticed. Every regular form
  * has to equal its verb's stem plus the sheet's ending, or this fails. On
- * /irregular-verbs only the perfect system is checked.
+ * /grammar/irregular-verbs only the perfect system is checked.
  */
 import {
 	CONJUGATION_GROUPS,

@@ -20,7 +20,7 @@ const SECTIONS: Section[] = [
 	{ id: "conjugations", label: "The conjugations" },
 ];
 
-export const Route = createFileRoute("/conjugations")({
+export const Route = createFileRoute("/grammar/conjugations")({
 	component: RouteComponent,
 	head: () => ({
 		meta: [

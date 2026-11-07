@@ -11,15 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as ConjugationsRouteImport } from './routes/conjugations'
-import { Route as DeclensionsRouteImport } from './routes/declensions'
-import { Route as IrregularVerbsRouteImport } from './routes/irregular-verbs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as ProverbsRouteImport } from './routes/proverbs'
 import { Route as WordListRouteImport } from './routes/word-list'
 import { Route as AdminHealthRouteImport } from './routes/admin_.health'
 import { Route as AdminStatsRouteImport } from './routes/admin_.stats'
+import { Route as GrammarIndexRouteImport } from './routes/grammar/index'
+import { Route as GrammarConjugationsRouteImport } from './routes/grammar/conjugations'
+import { Route as GrammarDeclensionsRouteImport } from './routes/grammar/declensions'
+import { Route as GrammarIrregularVerbsRouteImport } from './routes/grammar/irregular-verbs'
 import { Route as VerbumLemmaChar123HomonymChar125RouteImport } from './routes/verbum.$lemma.{-$homonym}'
 
 const IndexRoute = IndexRouteImport.update({
@@ -30,21 +31,6 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConjugationsRoute = ConjugationsRouteImport.update({
-  id: '/conjugations',
-  path: '/conjugations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DeclensionsRoute = DeclensionsRouteImport.update({
-  id: '/declensions',
-  path: '/declensions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IrregularVerbsRoute = IrregularVerbsRouteImport.update({
-  id: '/irregular-verbs',
-  path: '/irregular-verbs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -77,6 +63,26 @@ const AdminStatsRoute = AdminStatsRouteImport.update({
   path: '/admin/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrammarIndexRoute = GrammarIndexRouteImport.update({
+  id: '/grammar/',
+  path: '/grammar/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarConjugationsRoute = GrammarConjugationsRouteImport.update({
+  id: '/grammar/conjugations',
+  path: '/grammar/conjugations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarDeclensionsRoute = GrammarDeclensionsRouteImport.update({
+  id: '/grammar/declensions',
+  path: '/grammar/declensions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarIrregularVerbsRoute = GrammarIrregularVerbsRouteImport.update({
+  id: '/grammar/irregular-verbs',
+  path: '/grammar/irregular-verbs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerbumLemmaChar123HomonymChar125Route =
   VerbumLemmaChar123HomonymChar125RouteImport.update({
     id: '/verbum/$lemma/{-$homonym}',
@@ -87,44 +93,47 @@ const VerbumLemmaChar123HomonymChar125Route =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/conjugations': typeof ConjugationsRoute
-  '/declensions': typeof DeclensionsRoute
-  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/grammar/conjugations': typeof GrammarConjugationsRoute
+  '/grammar/declensions': typeof GrammarDeclensionsRoute
+  '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar/': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/conjugations': typeof ConjugationsRoute
-  '/declensions': typeof DeclensionsRoute
-  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/grammar/conjugations': typeof GrammarConjugationsRoute
+  '/grammar/declensions': typeof GrammarDeclensionsRoute
+  '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/conjugations': typeof ConjugationsRoute
-  '/declensions': typeof DeclensionsRoute
-  '/irregular-verbs': typeof IrregularVerbsRoute
   '/login': typeof LoginRoute
   '/numbers': typeof NumbersRoute
   '/proverbs': typeof ProverbsRoute
   '/word-list': typeof WordListRoute
   '/admin_/health': typeof AdminHealthRoute
   '/admin_/stats': typeof AdminStatsRoute
+  '/grammar/conjugations': typeof GrammarConjugationsRoute
+  '/grammar/declensions': typeof GrammarDeclensionsRoute
+  '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar/': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
 export interface FileRouteTypes {
@@ -132,58 +141,62 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/conjugations'
-    | '/declensions'
-    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
     | '/word-list'
     | '/admin/health'
     | '/admin/stats'
+    | '/grammar/conjugations'
+    | '/grammar/declensions'
+    | '/grammar/irregular-verbs'
+    | '/grammar/'
     | '/verbum/$lemma/{-$homonym}'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
-    | '/conjugations'
-    | '/declensions'
-    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
     | '/word-list'
     | '/admin/health'
     | '/admin/stats'
+    | '/grammar/conjugations'
+    | '/grammar/declensions'
+    | '/grammar/irregular-verbs'
+    | '/grammar'
     | '/verbum/$lemma/{-$homonym}'
   id:
     | '__root__'
     | '/'
     | '/admin'
-    | '/conjugations'
-    | '/declensions'
-    | '/irregular-verbs'
     | '/login'
     | '/numbers'
     | '/proverbs'
     | '/word-list'
     | '/admin_/health'
     | '/admin_/stats'
+    | '/grammar/conjugations'
+    | '/grammar/declensions'
+    | '/grammar/irregular-verbs'
+    | '/grammar/'
     | '/verbum/$lemma/{-$homonym}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  ConjugationsRoute: typeof ConjugationsRoute
-  DeclensionsRoute: typeof DeclensionsRoute
-  IrregularVerbsRoute: typeof IrregularVerbsRoute
   LoginRoute: typeof LoginRoute
   NumbersRoute: typeof NumbersRoute
   ProverbsRoute: typeof ProverbsRoute
   WordListRoute: typeof WordListRoute
   AdminHealthRoute: typeof AdminHealthRoute
   AdminStatsRoute: typeof AdminStatsRoute
+  GrammarConjugationsRoute: typeof GrammarConjugationsRoute
+  GrammarDeclensionsRoute: typeof GrammarDeclensionsRoute
+  GrammarIrregularVerbsRoute: typeof GrammarIrregularVerbsRoute
+  GrammarIndexRoute: typeof GrammarIndexRoute
   VerbumLemmaChar123HomonymChar125Route: typeof VerbumLemmaChar123HomonymChar125Route
 }
 
@@ -201,27 +214,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/conjugations': {
-      id: '/conjugations'
-      path: '/conjugations'
-      fullPath: '/conjugations'
-      preLoaderRoute: typeof ConjugationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/declensions': {
-      id: '/declensions'
-      path: '/declensions'
-      fullPath: '/declensions'
-      preLoaderRoute: typeof DeclensionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/irregular-verbs': {
-      id: '/irregular-verbs'
-      path: '/irregular-verbs'
-      fullPath: '/irregular-verbs'
-      preLoaderRoute: typeof IrregularVerbsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -266,6 +258,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grammar/': {
+      id: '/grammar/'
+      path: '/grammar'
+      fullPath: '/grammar/'
+      preLoaderRoute: typeof GrammarIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar/conjugations': {
+      id: '/grammar/conjugations'
+      path: '/grammar/conjugations'
+      fullPath: '/grammar/conjugations'
+      preLoaderRoute: typeof GrammarConjugationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar/declensions': {
+      id: '/grammar/declensions'
+      path: '/grammar/declensions'
+      fullPath: '/grammar/declensions'
+      preLoaderRoute: typeof GrammarDeclensionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar/irregular-verbs': {
+      id: '/grammar/irregular-verbs'
+      path: '/grammar/irregular-verbs'
+      fullPath: '/grammar/irregular-verbs'
+      preLoaderRoute: typeof GrammarIrregularVerbsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verbum/$lemma/{-$homonym}': {
       id: '/verbum/$lemma/{-$homonym}'
       path: '/verbum/$lemma/{-$homonym}'
@@ -279,15 +299,16 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  ConjugationsRoute: ConjugationsRoute,
-  DeclensionsRoute: DeclensionsRoute,
-  IrregularVerbsRoute: IrregularVerbsRoute,
   LoginRoute: LoginRoute,
   NumbersRoute: NumbersRoute,
   ProverbsRoute: ProverbsRoute,
   WordListRoute: WordListRoute,
   AdminHealthRoute: AdminHealthRoute,
   AdminStatsRoute: AdminStatsRoute,
+  GrammarConjugationsRoute: GrammarConjugationsRoute,
+  GrammarDeclensionsRoute: GrammarDeclensionsRoute,
+  GrammarIrregularVerbsRoute: GrammarIrregularVerbsRoute,
+  GrammarIndexRoute: GrammarIndexRoute,
   VerbumLemmaChar123HomonymChar125Route: VerbumLemmaChar123HomonymChar125Route,
 }
 export const routeTree = rootRouteImport

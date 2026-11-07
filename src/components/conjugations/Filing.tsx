@@ -179,7 +179,7 @@ export function Filing() {
 				So conjugating any regular verb in the present, the imperfect, the
 				future or the present subjunctive is two steps:
 			</p>
-			{/* The same numbered steps as Filing a noun on /declensions. */}
+			{/* The same numbered steps as Filing a noun on /grammar/declensions. */}
 			<ol className="mx-auto max-w-3xl space-y-3">
 				{STEPS.map(({ id, body }, i) => (
 					<li
