@@ -7,6 +7,7 @@ import { Banner } from "#/components/Banner";
 import { Filing } from "#/components/conjugations/Filing";
 import { Paradigms } from "#/components/conjugations/Paradigms";
 import { Persons } from "#/components/conjugations/Persons";
+import { Subjunctive } from "#/components/conjugations/Subjunctive";
 import { Translating } from "#/components/conjugations/Translating";
 import { Heading } from "#/components/Heading";
 import { type Section, SectionNav } from "#/components/SectionNav";
@@ -15,6 +16,7 @@ const SECTIONS: Section[] = [
 	{ id: "persons", label: "Persōnae", gloss: "persons" },
 	{ id: "filing", label: "Filing a verb" },
 	{ id: "translating", label: "Translating" },
+	{ id: "subjunctive", label: "Coniūnctīvus", gloss: "the subjunctive" },
 	{ id: "conjugations", label: "The conjugations" },
 ];
 
@@ -85,6 +87,7 @@ function RouteComponent() {
 				<Persons />
 				<Filing />
 				<Translating />
+				<Subjunctive />
 				<Paradigms />
 			</div>
 		</>

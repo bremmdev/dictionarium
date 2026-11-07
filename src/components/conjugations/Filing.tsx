@@ -176,8 +176,8 @@ export function Filing() {
 				className="mx-auto max-w-4xl"
 			/>
 			<p>
-				So conjugating any regular verb in the present, the imperfect or the
-				future is two steps:
+				So conjugating any regular verb in the present, the imperfect, the
+				future or the present subjunctive is two steps:
 			</p>
 			{/* The same numbered steps as Filing a noun on /declensions. */}
 			<ol className="mx-auto max-w-3xl space-y-3">

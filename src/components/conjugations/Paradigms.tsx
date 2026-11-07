@@ -149,6 +149,54 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 	),
 };
 
+const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
+	salūtō: (
+		<>
+			The present subjunctive is made by changing the vowel. In the first
+			conjugation the <LatinWord>ā</LatinWord> of the stem becomes{" "}
+			<LatinWord>ē</LatinWord>: <LatinWord>salūtēs</LatinWord>,{" "}
+			<LatinWord>salūtēmus</LatinWord>, short before <LatinWord>-m</LatinWord>,{" "}
+			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>. So{" "}
+			<LatinWord>salūtēs</LatinWord> ends like the indicative{" "}
+			<LatinWord>monēs</LatinWord>, and only the conjugation tells you which
+			mood it is.
+		</>
+	),
+	moneō: (
+		<>
+			Every other conjugation takes an <LatinWord>ā</LatinWord> instead:{" "}
+			<LatinWord>moneam</LatinWord>, <LatinWord>moneās</LatinWord>. The{" "}
+			<LatinWord>e</LatinWord> of the stem stays, short because a vowel in front
+			of another vowel is short in Latin.
+		</>
+	),
+	dūcō: (
+		<>
+			<LatinWord>dūcam</LatinWord> is both the future and the present
+			subjunctive. From the second person on, the vowel tells them apart: future{" "}
+			<LatinWord>dūcēs</LatinWord>, <LatinWord>dūcet</LatinWord>, subjunctive{" "}
+			<LatinWord>dūcās</LatinWord>, <LatinWord>dūcat</LatinWord>.
+		</>
+	),
+	audiō: (
+		<>
+			The <LatinWord>i</LatinWord> comes in front of the{" "}
+			<LatinWord>ā</LatinWord>, as it does in the future. Again{" "}
+			<LatinWord>audiam</LatinWord> is shared with the future, and{" "}
+			<LatinWord>audiēs</LatinWord> against <LatinWord>audiās</LatinWord>{" "}
+			separates the rest.
+		</>
+	),
+	capiō: (
+		<>
+			Ending for ending the same as <LatinWord>audiō</LatinWord>:{" "}
+			<LatinWord>capiam</LatinWord>, <LatinWord>capiās</LatinWord>,{" "}
+			<LatinWord>capiat</LatinWord>. The vowel lengths that keep the two groups
+			apart in the indicative play no part here.
+		</>
+	),
+};
+
 function Group({ title, stem, verbs }: ConjugationGroup) {
 	return (
 		<div className="space-y-6">
@@ -168,8 +216,11 @@ function Group({ title, stem, verbs }: ConjugationGroup) {
 						key={lemma}
 						verb={verb}
 						notes={{
-							present: PRESENT_NOTES[lemma],
-							perfect: PERFECT_NOTES[lemma],
+							indicative: {
+								present: PRESENT_NOTES[lemma],
+								perfect: PERFECT_NOTES[lemma],
+							},
+							subjunctive: { present: SUBJUNCTIVE_NOTES[lemma] },
 						}}
 					/>
 				);

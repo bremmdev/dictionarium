@@ -246,8 +246,10 @@ function IrregularVerbSection({ verb }: { verb: IrregularVerb }) {
 				verb={verb}
 				headingAs="h3"
 				notes={{
-					present: PRESENT_NOTES[lemma],
-					perfect: PERFECT_NOTES[lemma],
+					indicative: {
+						present: PRESENT_NOTES[lemma],
+						perfect: PERFECT_NOTES[lemma],
+					},
 				}}
 			/>
 			<Compounds verb={verb} />

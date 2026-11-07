@@ -64,6 +64,12 @@ export const MOOD_TENSES = {
 } as const satisfies Record<string, ReadonlyArray<Tense>>;
 
 export type Mood = keyof typeof MOOD_TENSES;
+
+/** The Latin name on a verb's tab, and its English gloss. */
+export const MOOD_LABELS: Record<Mood, { la: string; en: string }> = {
+	indicative: { la: "Indicātīvus", en: "indicative" },
+	subjunctive: { la: "Coniūnctīvus", en: "subjunctive" },
+};
 export type Voice = "active" | "passive";
 type MoodTense<M extends Mood> = (typeof MOOD_TENSES)[M][number];
 
@@ -152,6 +158,18 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 				},
 			},
 		},
+		subjunctive: {
+			active: {
+				present: {
+					"1sg": "-em",
+					"2sg": "-ēs",
+					"3sg": "-et",
+					"1pl": "-ēmus",
+					"2pl": "-ētis",
+					"3pl": "-ent",
+				},
+			},
+		},
 	},
 	"2": {
 		indicative: {
@@ -179,6 +197,18 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-ēbimus",
 					"2pl": "-ēbitis",
 					"3pl": "-ēbunt",
+				},
+			},
+		},
+		subjunctive: {
+			active: {
+				present: {
+					"1sg": "-eam",
+					"2sg": "-eās",
+					"3sg": "-eat",
+					"1pl": "-eāmus",
+					"2pl": "-eātis",
+					"3pl": "-eant",
 				},
 			},
 		},
@@ -212,6 +242,18 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 				},
 			},
 		},
+		subjunctive: {
+			active: {
+				present: {
+					"1sg": "-am",
+					"2sg": "-ās",
+					"3sg": "-at",
+					"1pl": "-āmus",
+					"2pl": "-ātis",
+					"3pl": "-ant",
+				},
+			},
+		},
 	},
 	"4": {
 		indicative: {
@@ -242,6 +284,18 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 				},
 			},
 		},
+		subjunctive: {
+			active: {
+				present: {
+					"1sg": "-iam",
+					"2sg": "-iās",
+					"3sg": "-iat",
+					"1pl": "-iāmus",
+					"2pl": "-iātis",
+					"3pl": "-iant",
+				},
+			},
+		},
 	},
 	"3io": {
 		indicative: {
@@ -269,6 +323,18 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-iēmus",
 					"2pl": "-iētis",
 					"3pl": "-ient",
+				},
+			},
+		},
+		subjunctive: {
+			active: {
+				present: {
+					"1sg": "-iam",
+					"2sg": "-iās",
+					"3sg": "-iat",
+					"1pl": "-iāmus",
+					"2pl": "-iātis",
+					"3pl": "-iant",
 				},
 			},
 		},
@@ -443,6 +509,18 @@ const SALUTO: Verb = {
 			},
 		},
 	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "salūtem" },
+				"2sg": { form: "salūtēs" },
+				"3sg": { form: "salūtet" },
+				"1pl": { form: "salūtēmus" },
+				"2pl": { form: "salūtētis" },
+				"3pl": { form: "salūtent" },
+			},
+		},
+	},
 };
 
 const MONEO: Verb = {
@@ -499,6 +577,18 @@ const MONEO: Verb = {
 				"1pl": { form: "monuerimus" },
 				"2pl": { form: "monueritis" },
 				"3pl": { form: "monuerint" },
+			},
+		},
+	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "moneam" },
+				"2sg": { form: "moneās" },
+				"3sg": { form: "moneat" },
+				"1pl": { form: "moneāmus" },
+				"2pl": { form: "moneātis" },
+				"3pl": { form: "moneant" },
 			},
 		},
 	},
@@ -561,6 +651,18 @@ const DUCO: Verb = {
 			},
 		},
 	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "dūcam" },
+				"2sg": { form: "dūcās" },
+				"3sg": { form: "dūcat" },
+				"1pl": { form: "dūcāmus" },
+				"2pl": { form: "dūcātis" },
+				"3pl": { form: "dūcant" },
+			},
+		},
+	},
 };
 
 const AUDIO: Verb = {
@@ -620,6 +722,18 @@ const AUDIO: Verb = {
 			},
 		},
 	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "audiam" },
+				"2sg": { form: "audiās" },
+				"3sg": { form: "audiat" },
+				"1pl": { form: "audiāmus" },
+				"2pl": { form: "audiātis" },
+				"3pl": { form: "audiant" },
+			},
+		},
+	},
 };
 
 const CAPIO: Verb = {
@@ -676,6 +790,18 @@ const CAPIO: Verb = {
 				"1pl": { form: "cēperimus" },
 				"2pl": { form: "cēperitis" },
 				"3pl": { form: "cēperint" },
+			},
+		},
+	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "capiam" },
+				"2sg": { form: "capiās" },
+				"3sg": { form: "capiat" },
+				"1pl": { form: "capiāmus" },
+				"2pl": { form: "capiātis" },
+				"3pl": { form: "capiant" },
 			},
 		},
 	},
