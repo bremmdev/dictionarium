@@ -149,7 +149,7 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 	),
 };
 
-const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
+const SUBJUNCTIVE_PRESENT_NOTES: Record<string, React.ReactNode> = {
 	salūtō: (
 		<>
 			The present subjunctive is made by changing the vowel. In the first
@@ -159,7 +159,9 @@ const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>. So{" "}
 			<LatinWord>salūtēs</LatinWord> ends like the indicative{" "}
 			<LatinWord>monēs</LatinWord>, and only the conjugation tells you which
-			mood it is.
+			mood it is. The imperfect is the infinitive with the endings on it,{" "}
+			<LatinWord>salūtāre</LatinWord> + <LatinWord>-m</LatinWord>, and its{" "}
+			<LatinWord>ē</LatinWord> is short in the same three places.
 		</>
 	),
 	moneō: (
@@ -167,7 +169,8 @@ const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
 			Every other conjugation takes an <LatinWord>ā</LatinWord> instead:{" "}
 			<LatinWord>moneam</LatinWord>, <LatinWord>moneās</LatinWord>. The{" "}
 			<LatinWord>e</LatinWord> of the stem stays, short because a vowel in front
-			of another vowel is short in Latin.
+			of another vowel is short in Latin. In the imperfect it is long again, as
+			in the infinitive: <LatinWord>monērem</LatinWord>.
 		</>
 	),
 	dūcō: (
@@ -175,7 +178,9 @@ const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>dūcam</LatinWord> is both the future and the present
 			subjunctive. From the second person on, the vowel tells them apart: future{" "}
 			<LatinWord>dūcēs</LatinWord>, <LatinWord>dūcet</LatinWord>, subjunctive{" "}
-			<LatinWord>dūcās</LatinWord>, <LatinWord>dūcat</LatinWord>.
+			<LatinWord>dūcās</LatinWord>, <LatinWord>dūcat</LatinWord>. The imperfect
+			keeps the short <LatinWord>e</LatinWord> of <LatinWord>dūcere</LatinWord>:{" "}
+			<LatinWord>dūcerem</LatinWord> against <LatinWord>monērem</LatinWord>.
 		</>
 	),
 	audiō: (
@@ -184,15 +189,38 @@ const SUBJUNCTIVE_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>ā</LatinWord>, as it does in the future. Again{" "}
 			<LatinWord>audiam</LatinWord> is shared with the future, and{" "}
 			<LatinWord>audiēs</LatinWord> against <LatinWord>audiās</LatinWord>{" "}
-			separates the rest.
+			separates the rest. The imperfect comes from <LatinWord>audīre</LatinWord>{" "}
+			and has no extra <LatinWord>i</LatinWord>: <LatinWord>audīrem</LatinWord>.
 		</>
 	),
 	capiō: (
 		<>
-			Ending for ending the same as <LatinWord>audiō</LatinWord>:{" "}
+			The present is ending for ending the same as <LatinWord>audiō</LatinWord>:{" "}
 			<LatinWord>capiam</LatinWord>, <LatinWord>capiās</LatinWord>,{" "}
-			<LatinWord>capiat</LatinWord>. The vowel lengths that keep the two groups
-			apart in the indicative play no part here.
+			<LatinWord>capiat</LatinWord>. The imperfect parts company with it,
+			because the infinitive does: <LatinWord>capere</LatinWord> gives{" "}
+			<LatinWord>caperem</LatinWord>, like <LatinWord>dūcerem</LatinWord>, not{" "}
+			<LatinWord>audīrem</LatinWord>.
+		</>
+	),
+};
+
+const SUBJUNCTIVE_PERFECT_NOTES: Record<string, React.ReactNode> = {
+	salūtō: (
+		<>
+			One set of endings for every verb, as in the indicative. The perfect looks
+			like the future perfect except in two places: <LatinWord>-erim</LatinWord>{" "}
+			for <LatinWord>-erō</LatinWord>, and a long <LatinWord>ī</LatinWord> in{" "}
+			<LatinWord>salūtāverīs</LatinWord>, <LatinWord>salūtāverīmus</LatinWord>,{" "}
+			<LatinWord>salūtāverītis</LatinWord>. The pluperfect is the perfect
+			infinitive <LatinWord>salūtāvisse</LatinWord> with the endings on it.
+		</>
+	),
+	audiō: (
+		<>
+			Here too the <LatinWord>v</LatinWord> often drops out:{" "}
+			<LatinWord>audierim</LatinWord>, and in the pluperfect{" "}
+			<LatinWord>audīssem</LatinWord> or <LatinWord>audiissem</LatinWord>.
 		</>
 	),
 };
@@ -220,7 +248,10 @@ function Group({ title, stem, verbs }: ConjugationGroup) {
 								present: PRESENT_NOTES[lemma],
 								perfect: PERFECT_NOTES[lemma],
 							},
-							subjunctive: { present: SUBJUNCTIVE_NOTES[lemma] },
+							subjunctive: {
+								present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
+								perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
+							},
 						}}
 					/>
 				);

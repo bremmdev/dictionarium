@@ -43,7 +43,12 @@ export function Verb({ verb, notes, headingAs = "h4" }: VerbProps) {
 				<Tabs className="mx-auto max-w-4xl">
 					<Tabs.List className="flex flex-wrap justify-center">
 						{moods.map((mood) => (
-							<Tabs.Tab key={mood} label={mood} lang="la">
+							<Tabs.Tab
+								key={mood}
+								label={mood}
+								lang="la"
+								className="uppercase tracking-wide"
+							>
 								{MOOD_LABELS[mood].la}
 								<span className="sr-only" lang="en">
 									{` (${MOOD_LABELS[mood].en})`}

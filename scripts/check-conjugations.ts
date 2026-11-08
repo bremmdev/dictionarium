@@ -80,8 +80,7 @@ for (const { conjugation, verbs } of CONJUGATION_GROUPS) {
 				const tenses: Record<string, TenseForms | undefined> =
 					verb[mood]?.[voice] ?? {};
 				const endings: Sheet = ENDINGS[conjugation][mood]?.[voice] ?? {};
-				const perfectEndings: Sheet =
-					mood === "indicative" ? (PERFECT_ENDINGS[voice] ?? {}) : {};
+				const perfectEndings: Sheet = PERFECT_ENDINGS[mood]?.[voice] ?? {};
 
 				for (const [tense, forms] of Object.entries(tenses)) {
 					if (!forms) continue;
@@ -110,7 +109,7 @@ for (const verb of IRREGULAR_VERBS) {
 	}
 	for (const tense of SYSTEMS.perfect) {
 		const forms = verb.indicative.active?.[tense];
-		const sheet = PERFECT_ENDINGS.active?.[tense];
+		const sheet = PERFECT_ENDINGS.indicative.active?.[tense];
 		if (forms && sheet) {
 			checkForms(`${lemma} indicative active ${tense}`, verb.perfectStem, forms, sheet);
 		}

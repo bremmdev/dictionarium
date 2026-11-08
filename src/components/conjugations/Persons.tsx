@@ -56,12 +56,14 @@ export function Persons() {
 			<p>
 				The first person singular is the one that varies:{" "}
 				<LatinWord>-ō</LatinWord> in the present, <LatinWord>-m</LatinWord> in
-				the imperfect, the pluperfect and the present subjunctive:{" "}
+				the imperfect, the pluperfect and every tense of the subjunctive:{" "}
 				<LatinWord>salūtābam</LatinWord>, <LatinWord>salūtāveram</LatinWord>,{" "}
-				<LatinWord>salūtem</LatinWord>. The future goes either way:{" "}
-				<LatinWord>-ō</LatinWord> where it has a <LatinWord>b</LatinWord>,{" "}
-				<LatinWord>salūtābō</LatinWord>, and <LatinWord>-m</LatinWord> where it
-				does not, <LatinWord>dūcam</LatinWord>. The future perfect always has{" "}
+				<LatinWord>salūtem</LatinWord>, <LatinWord>salūtārem</LatinWord>,{" "}
+				<LatinWord>salūtāverim</LatinWord>, <LatinWord>salūtāvissem</LatinWord>.
+				The future goes either way: <LatinWord>-ō</LatinWord> where it has a{" "}
+				<LatinWord>b</LatinWord>, <LatinWord>salūtābō</LatinWord>, and{" "}
+				<LatinWord>-m</LatinWord> where it does not,{" "}
+				<LatinWord>dūcam</LatinWord>. The future perfect always has{" "}
 				<LatinWord>-ō</LatinWord>: <LatinWord>salūtāverō</LatinWord>.
 			</p>
 		</section>

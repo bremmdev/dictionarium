@@ -177,7 +177,7 @@ export function Filing() {
 			/>
 			<p>
 				So conjugating any regular verb in the present, the imperfect, the
-				future or the present subjunctive is two steps:
+				future, or the present or imperfect subjunctive is two steps:
 			</p>
 			{/* The same numbered steps as Filing a noun on /grammar/declensions. */}
 			<ol className="mx-auto max-w-3xl space-y-3">
@@ -198,9 +198,11 @@ export function Filing() {
 				own, and only in the first and fourth conjugations can you count on
 				guessing it. Take the third principal part and drop its{" "}
 				<LatinWord>-ī</LatinWord>: what is left is the perfect stem, and the
-				perfect, pluperfect and future perfect endings go straight onto it:{" "}
+				perfect, pluperfect and future perfect endings go straight onto it, and
+				so do the perfect and pluperfect subjunctive:{" "}
 				<LatinWord>dūx-</LatinWord> + <LatinWord>-ī</LatinWord>,{" "}
-				<LatinWord>-eram</LatinWord> or <LatinWord>-erō</LatinWord>.
+				<LatinWord>-eram</LatinWord>, <LatinWord>-erō</LatinWord>,{" "}
+				<LatinWord>-erim</LatinWord> or <LatinWord>-issem</LatinWord>.
 			</p>
 			<Table
 				caption="The perfect stem, read off the third principal part."

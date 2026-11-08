@@ -204,7 +204,7 @@ export function Subjunctive() {
 			</p>
 
 			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
-				Spotting the present subjunctive
+				Spotting the subjunctive
 			</Heading>
 			<p className="mx-auto max-w-3xl">
 				The present subjunctive swaps the vowel before the ending. Read the new
@@ -218,6 +218,15 @@ export function Subjunctive() {
 				nowrap
 				className="mx-auto max-w-4xl"
 			/>
+			<p className="mx-auto max-w-3xl">
+				The other three tenses are made the same way in every conjugation, each
+				from a form you already have. The imperfect is the present infinitive
+				with the endings on it: <LatinWord>salūtāre</LatinWord>,{" "}
+				<LatinWord>salūtārem</LatinWord>. The perfect is the perfect stem with{" "}
+				<LatinWord>-erim</LatinWord>: <LatinWord>salūtāverim</LatinWord>. The
+				pluperfect is the perfect infinitive with the endings on it:{" "}
+				<LatinWord>salūtāvisse</LatinWord>, <LatinWord>salūtāvissem</LatinWord>.
+			</p>
 
 			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
 				On its own
