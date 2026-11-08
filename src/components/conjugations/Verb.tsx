@@ -47,7 +47,7 @@ export function Verb({ verb, notes, headingAs = "h4" }: VerbProps) {
 								key={mood}
 								label={mood}
 								lang="la"
-								className="uppercase tracking-wide"
+								className="px-2 py-1.5 text-sm uppercase sm:px-4 sm:py-2 sm:text-base sm:tracking-wide"
 							>
 								{MOOD_LABELS[mood].la}
 								<span className="sr-only" lang="en">
