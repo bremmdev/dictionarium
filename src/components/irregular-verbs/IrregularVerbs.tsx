@@ -141,6 +141,38 @@ const PERFECT_NOTES: Record<string, React.ReactNode> = {
 	),
 };
 
+const SUBJUNCTIVE_PRESENT_NOTES: Record<string, React.ReactNode> = {
+	sum: (
+		<>
+			The present has an <LatinWord>ī</LatinWord>, not the{" "}
+			<LatinWord>ē</LatinWord> or <LatinWord>ā</LatinWord> of the regular verbs:{" "}
+			<LatinWord>sīs</LatinWord>, <LatinWord>sīmus</LatinWord>,{" "}
+			<LatinWord>sītis</LatinWord>, short before <LatinWord>-m</LatinWord>,{" "}
+			<LatinWord>-t</LatinWord> and <LatinWord>-nt</LatinWord>. Early Latin also
+			had <LatinWord>siem</LatinWord>, <LatinWord>siēs</LatinWord>,{" "}
+			<LatinWord>siet</LatinWord>, <LatinWord>sient</LatinWord> and{" "}
+			<LatinWord>fuam</LatinWord>, <LatinWord>fuās</LatinWord>,{" "}
+			<LatinWord>fuat</LatinWord>, <LatinWord>fuant</LatinWord>. The imperfect
+			is the infinitive with the endings on it, as in every verb:{" "}
+			<LatinWord>esse</LatinWord> + <LatinWord>-m</LatinWord>. Often{" "}
+			<LatinWord>forem</LatinWord>, <LatinWord>forēs</LatinWord>,{" "}
+			<LatinWord>foret</LatinWord>, <LatinWord>forent</LatinWord> stand in for
+			it, as <LatinWord>fore</LatinWord> does for{" "}
+			<LatinWord>futūrum esse</LatinWord>.
+		</>
+	),
+};
+
+const SUBJUNCTIVE_PERFECT_NOTES: Record<string, React.ReactNode> = {
+	sum: (
+		<>
+			Regular here too: <LatinWord>fuerim</LatinWord> like{" "}
+			<LatinWord>salūtāverim</LatinWord>, and the pluperfect is the perfect
+			infinitive <LatinWord>fuisse</LatinWord> with the endings on it.
+		</>
+	),
+};
+
 const COMPOUND_NOTES: Record<string, React.ReactNode> = {
 	sum: (
 		<>
@@ -249,6 +281,10 @@ function IrregularVerbSection({ verb }: { verb: IrregularVerb }) {
 					indicative: {
 						present: PRESENT_NOTES[lemma],
 						perfect: PERFECT_NOTES[lemma],
+					},
+					subjunctive: {
+						present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
+						perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
 					},
 				}}
 			/>

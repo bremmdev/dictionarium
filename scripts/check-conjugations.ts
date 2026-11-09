@@ -107,11 +107,15 @@ for (const verb of IRREGULAR_VERBS) {
 	if (perfect !== `${verb.perfectStem}ī`) {
 		problems.push(`${lemma}: perfect stem ${verb.perfectStem}- + -ī is not ${perfect}`);
 	}
-	for (const tense of SYSTEMS.perfect) {
-		const forms = verb.indicative.active?.[tense];
-		const sheet = PERFECT_ENDINGS.indicative.active?.[tense];
-		if (forms && sheet) {
-			checkForms(`${lemma} indicative active ${tense}`, verb.perfectStem, forms, sheet);
+	for (const mood of MOODS) {
+		const tenses: Record<string, TenseForms | undefined> = verb[mood]?.active ?? {};
+		const sheets: Sheet = PERFECT_ENDINGS[mood]?.active ?? {};
+		for (const tense of SYSTEMS.perfect) {
+			const forms = tenses[tense];
+			const sheet = sheets[tense];
+			if (forms && sheet) {
+				checkForms(`${lemma} ${mood} active ${tense}`, verb.perfectStem, forms, sheet);
+			}
 		}
 	}
 }

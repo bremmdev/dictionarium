@@ -76,6 +76,42 @@ const SUM: IrregularVerb = {
 			},
 		},
 	},
+	subjunctive: {
+		active: {
+			present: {
+				"1sg": { form: "sim" },
+				"2sg": { form: "sīs" },
+				"3sg": { form: "sit" },
+				"1pl": { form: "sīmus" },
+				"2pl": { form: "sītis" },
+				"3pl": { form: "sint" },
+			},
+			imperfect: {
+				"1sg": { form: "essem" },
+				"2sg": { form: "essēs" },
+				"3sg": { form: "esset" },
+				"1pl": { form: "essēmus" },
+				"2pl": { form: "essētis" },
+				"3pl": { form: "essent" },
+			},
+			perfect: {
+				"1sg": { form: "fuerim" },
+				"2sg": { form: "fuerīs" },
+				"3sg": { form: "fuerit" },
+				"1pl": { form: "fuerīmus" },
+				"2pl": { form: "fuerītis" },
+				"3pl": { form: "fuerint" },
+			},
+			pluperfect: {
+				"1sg": { form: "fuissem" },
+				"2sg": { form: "fuissēs" },
+				"3sg": { form: "fuisset" },
+				"1pl": { form: "fuissēmus" },
+				"2pl": { form: "fuissētis" },
+				"3pl": { form: "fuissent" },
+			},
+		},
+	},
 	// possum is a compound too, but gets its own section.
 	compounds: [
 		{

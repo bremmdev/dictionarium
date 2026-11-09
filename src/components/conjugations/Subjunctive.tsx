@@ -236,10 +236,7 @@ export function Subjunctive() {
 					<strong className={LEAD}>Let us, let them.</strong> The imperative
 					mostly speaks to <em>you</em>. For <em>let us</em> and{" "}
 					<em>let them</em> Latin uses the present subjunctive, called hortatory
-					or jussive: <LatinWord>eāmus</LatinWord>, <em>let us go</em>. Dido in
-					the <cite>Aeneid</cite> puts the two moods side by side:{" "}
-					<LatinWord>moriēmur inultae, sed moriāmur</LatinWord>,{" "}
-					<em>we shall die unavenged — but let us die</em>.
+					or jussive: <LatinWord>eāmus</LatinWord>, <em>let us go</em>.
 				</p>
 				<p>
 					<strong className={LEAD}>Wishes.</strong> The present wishes for
@@ -298,12 +295,7 @@ export function Subjunctive() {
 					<LatinWord>tantus</LatinWord> or <LatinWord>adeō</LatinWord>:{" "}
 					<LatinWord>tam clārē clāmat ut omnēs eum audiant</LatinWord>,{" "}
 					<em>he shouts so loudly that everyone hears him</em>. Here the
-					subjunctive states a fact. In the affirmative purpose and result look
-					the same, and only the negative tells them apart:{" "}
-					<LatinWord>lentē ambulō nē cadam</LatinWord>,{" "}
-					<em>I walk slowly so as not to fall</em>, against{" "}
-					<LatinWord>tam lentē ambulō ut nōn cadam</LatinWord>,{" "}
-					<em>I walk so slowly that I don't fall</em>.
+					subjunctive states a fact.
 				</p>
 				<p>
 					<strong className={LEAD}>Reported questions.</strong> A question that
@@ -375,7 +367,7 @@ export function Subjunctive() {
 				<p className="text-sm">
 					After Allen and Greenough, <cite>New Latin Grammar</cite>, §§ 154,
 					157, 439, 441–447, 483–484, 515–517, 531, 533, 537–538, 545–547, 549
-					and 574. Dido's line is <cite>Aeneid</cite> 4.659–660.
+					and 574.
 				</p>
 			</div>
 		</section>
