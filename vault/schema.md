@@ -367,7 +367,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 | `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                                                              |
 | `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
 | `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
-| `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
+| `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/grammar/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
 
 Each names the rows it objects to, and exits non-zero:
 

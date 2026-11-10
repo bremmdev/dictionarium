@@ -19,7 +19,7 @@ Two consequences worth naming up front:
 | `src/utils/proverbs/form.ts`          | `proverbFormReducer` — the proverb desk's transitions.                             |
 | `src/utils/proverbs/rules.ts`         | `parseProverbDraft` and `ANONYMOUS`.                                               |
 | `src/server/proverbs.ts`              | `getProverbs`, which lists; `createProverb` and `updateProverb`, which write.      |
-| `src/components/admin/EntryForm.tsx`  | Fields, focus, and the live region. Dispatches; decides nothing.                   |
+| `src/components/admin/EntryForm.tsx`  | Fields, focus, and the announcements. Dispatches; decides nothing.                 |
 | `src/utils/entries/form.ts`           | `formReducer` — every transition the draft makes, as a pure function.              |
 | `src/utils/entries/rules.ts`          | `parseEntryDraft` and the inflection vocabulary — see [schema.md](./schema.md).    |
 | `src/utils/entries/wiktionary.ts`     | Looking a lemma up, parsing what comes back, and mapping it onto these columns.    |
