@@ -1,4 +1,4 @@
-# Plan: /conjugations resource page
+# Plan: /grammar/conjugations resource page
 
 ## Progress
 
@@ -15,7 +15,7 @@
 - **2026-11-07, present subjunctive active done; Tabs appear.** `ENDINGS` carries `subjunctive.active.present` (-em / -eam / -am / -iam / -iam). `Verb` shows one m7kit `Tabs` per verb with a tab per mood that has forms (*Indicātīvus*, *Coniūnctīvus*, English gloss sr-only), and plain tables when there is only one mood, so /irregular-verbs is unchanged. Tabs are uncontrolled: syncing all five verbs would resize the panels above the one clicked and shift the page. `notes` is now keyed by mood, then system. Captions name the mood. Notes per verb on ē against ā, and on *dūcam* / *audiam* / *capiam* shared with the future. Persōnae's -m line and Filing's two-steps line mention it. Translating not extended yet. All 30 forms checked against Wiktionary (zero mismatches).
 - **2026-11-07, Coniūnctīvus section added** (`Subjunctive.tsx`, `#subjunctive`, between Translating and The conjugations), from the user's own notes, fact-checked against A&G on Dickinson (dcc.dickinson.edu/grammar/latin/<slug>; Perseus refuses automated fetches). Contents: the three moods; the *we fear a liar* vowel table, read off `CONJUGATION_GROUPS`; four independent uses; five dependent uses; the sequence of tenses with *sciō / sciēbam quid faciās…*. Corrections made to the notes: the subjunctive is not only for the unreal (result clauses and reported questions state facts); temporal *cum* in the present takes the indicative (A&G § 547); the sequence columns are relative time, not aspect, and "same time" also covers a later action, as in purpose clauses. Its imperfect, perfect and pluperfect examples run ahead of the paradigm tables. Same day, at the user's request: the purpose, result and `cum` examples were replaced with short made-up sentences on the page's own verbs (*veniō ut tē salūtem*, *lentē ambulō nē cadam* / *ut nōn cadam*, *cum Rōmae sum, amīcōs salūtō*); the rules stay A&G's, and the new words' macrons were checked against Wiktionary.
 - **2026-11-08, imperfect, perfect and pluperfect subjunctive active done**, so the subjunctive tab is complete for the active. `ENDINGS` carries the imperfect (-ārem / -ērem / -erem / -īrem / -erem). `PERFECT_ENDINGS` is now keyed by mood like `ENDINGS`, with the subjunctive -erim (long ī in -erīs, -erīmus, -erītis) and -issem; `check:conjugations` reads it per mood (379 forms). Both systems show two columns in the subjunctive. Notes: an imperfect sentence per verb (*capere* → *caperem*, unlike *audīrem*), and perfect-system notes on salūtō (-erim vs -erō, *salūtārim*, *salūtāssem*) and audiō (*audierim*, *audīssem* / *audiissem*). The Coniūnctīvus section's "Spotting" part now covers how the other three tenses are made. Persōnae's -m line and Filing's two passages mention them. All 120 subjunctive forms diffed against Wiktionary with zero mismatches; its only extras are the syncopated forms, left to the notes. No page scroll at 375px; no table overflow at 1280px.
-- **2026-11-09, *sum* subjunctive active done**, so *sum* gets the mood tabs on /irregular-verbs (possum, eō, ferō still show plain tables). *forem* and the early *siem* / *fuam* are in the notes, not alts: A&G § 170 lists *forem* without a 1st/2nd plural. `check:conjugations` now also checks the subjunctive perfect system of irregulars (391 forms). All four irregulars (168 cells, indicative plus *sum*'s subjunctive) diffed against Wiktionary with zero mismatches. Its extras are rare 2sg futures *ere* / *potere*, *īvī* for eō and *tetulī* for ferō (both already in the notes), and *siem*, *fuam*, *forem* for sum. *sum*'s subjunctive also checked against the A&G § 170 charts on Dickinson. Those charts print a short i in *fueris*, *fuerimus*; the page keeps the long ī of `PERFECT_ENDINGS`.
+- **2026-11-09, *sum* subjunctive active done**, so *sum* gets the mood tabs on /grammar/irregular-verbs (possum, eō, ferō still show plain tables). *forem* and the early *siem* / *fuam* are in the notes, not alts: A&G § 170 lists *forem* without a 1st/2nd plural. `check:conjugations` now also checks the subjunctive perfect system of irregulars (391 forms). All four irregulars (168 cells, indicative plus *sum*'s subjunctive) diffed against Wiktionary with zero mismatches. Its extras are rare 2sg futures *ere* / *potere*, *īvī* for eō and *tetulī* for ferō (both already in the notes), and *siem*, *fuam*, *forem* for sum. *sum*'s subjunctive also checked against the A&G § 170 charts on Dickinson. Those charts print a short i in *fueris*, *fuerimus*; the page keeps the long ī of `PERFECT_ENDINGS`.
 - How it differs from the plan below:
   - `principalParts` is a four-part tuple and the lemma is its first item.
   - Verbs carry a single `base` (salūt-, mon-, dūc-, aud-, cap-). `perfect` and `supine` stems get added when those tenses do.
@@ -24,7 +24,7 @@
 
 ## Context
 
-/declensions teaches the five noun patterns. Verbs are the other half of reading Latin and have no resource page. This adds `/conjugations` in the same style: a banner, a jump list, intro sections, one group per conjugation with a full paradigm per example verb, and an endings sheet. The data shape has to hold every conjugation group and every tense, mood and voice from the start, even though the page fills in over several phases. Irregular verbs (sum, possum, volō, nōlō, …) come in a later phase on the same data shape.
+/grammar/declensions teaches the five noun patterns. Verbs are the other half of reading Latin and have no resource page. This adds `/grammar/conjugations` in the same style: a banner, a jump list, intro sections, one group per conjugation with a full paradigm per example verb, and an endings sheet. The data shape has to hold every conjugation group and every tense, mood and voice from the start, even though the page fills in over several phases. Irregular verbs (sum, possum, volō, nōlō, …) come in a later phase on the same data shape.
 
 Example verbs (dūcō replaces mittō, at the user's request):
 
@@ -43,7 +43,7 @@ Decisions already made by the user:
 ## Files
 
 New, all under `src/components/conjugations/` unless noted:
-- `src/routes/conjugations.tsx`: route, `head` meta, banner, page shell. Mirrors `src/routes/declensions.tsx`.
+- `src/routes/grammar/conjugations.tsx`: route, `head` meta, banner, page shell. Mirrors `src/routes/grammar/declensions.tsx`.
 - `Conjugations.utils.ts`: data only, no JSX (same rule as `Declensions.utils.ts`).
 - `Persons.tsx`, `Filing.tsx`, `Tenses.tsx`, `Paradigms.tsx`, `Verb.tsx`, `SystemTable.tsx`, `Endings.tsx`. Later `Irregulars.tsx`.
 - `scripts/check-conjugations.ts`, plus `check:conjugations` added to the `check` chain in `package.json`.
@@ -160,12 +160,12 @@ Every form is entered by hand with precomposed macrons (vault/a11y.md; `check:ma
 ## Verification
 
 - `npm run check`: macrons, the new conjugation derivation check, biome.
-- `npm run dev`, then open `/conjugations` in Chrome:
+- `npm run dev`, then open `/grammar/conjugations` in Chrome:
   - Every SectionNav anchor lands on its section.
   - The resources menu shows the entry, marked current on the page.
   - Tabs switch with the mouse and with ←/→/Home/End, and there are no duplicate ids across the five verbs (`[role=tab]` ids are all unique).
   - Tables scroll inside their own box at 375px and there is no page-level horizontal scroll.
   - Tables sit side by side only at 2xl.
-- /declensions looks and behaves the same after the SectionNav and FormCell moves.
+- /grammar/declensions looks and behaves the same after the SectionNav and FormCell moves.
 - The Wiktionary diff reports zero unexplained mismatches before each phase is called done.
-- Prod: no DB or schema change. Deploy is manual (user checklist): merge, deploy, open `/conjugations` on prod.
+- Prod: no DB or schema change. Deploy is manual (user checklist): merge, deploy, open `/grammar/conjugations` on prod.
