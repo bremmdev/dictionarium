@@ -188,7 +188,11 @@ export function Subjunctive() {
 				subjunctive covers almost everything else.
 			</p>
 			<Table
-				caption="The three moods of salūtō."
+				caption={
+					<>
+						The three moods of <span lang="la">salūtō</span>.
+					</>
+				}
 				columns={MOOD_COLUMNS}
 				rows={MOOD_ROWS}
 				className="mx-auto max-w-4xl"
