@@ -12,7 +12,7 @@
     "preview": "arca run -- vite preview",
     "format": "biome format --write",
     "lint": "biome lint",
-    "check": "npm run check:macrons && npm run check:lemmas && npm run check:homonyms && npm run check:senses && npm run check:inflection && npm run check:governs && npm run check:conjugations && biome check",
+    "check": "npm run check:macrons && npm run check:lemmas && npm run check:homonyms && npm run check:senses && npm run check:inflection && npm run check:governs && npm run check:conjugations && npm run check:pronouns && biome check",
     "start": "node .output/server/index.mjs",
     "db:generate": "arca run -- drizzle-kit generate",
     "db:migrate": "arca run -- drizzle-kit migrate",
@@ -26,6 +26,7 @@
     "check:inflection": "arca run -- tsx scripts/check-inflection.ts",
     "check:governs": "arca run -- tsx scripts/check-governs.ts",
     "check:conjugations": "arca run -- tsx scripts/check-conjugations.ts",
+    "check:pronouns": "arca run -- tsx scripts/check-pronouns.ts",
     "report:frequency": "arca run -- tsx scripts/frequency-report.ts"
   },
   "dependencies": {

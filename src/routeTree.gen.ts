@@ -21,6 +21,7 @@ import { Route as GrammarIndexRouteImport } from './routes/grammar/index'
 import { Route as GrammarConjugationsRouteImport } from './routes/grammar/conjugations'
 import { Route as GrammarDeclensionsRouteImport } from './routes/grammar/declensions'
 import { Route as GrammarIrregularVerbsRouteImport } from './routes/grammar/irregular-verbs'
+import { Route as GrammarPronounsRouteImport } from './routes/grammar/pronouns'
 import { Route as VerbumLemmaChar123HomonymChar125RouteImport } from './routes/verbum.$lemma.{-$homonym}'
 
 const IndexRoute = IndexRouteImport.update({
@@ -83,6 +84,11 @@ const GrammarIrregularVerbsRoute = GrammarIrregularVerbsRouteImport.update({
   path: '/grammar/irregular-verbs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrammarPronounsRoute = GrammarPronounsRouteImport.update({
+  id: '/grammar/pronouns',
+  path: '/grammar/pronouns',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerbumLemmaChar123HomonymChar125Route =
   VerbumLemmaChar123HomonymChar125RouteImport.update({
     id: '/verbum/$lemma/{-$homonym}',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/grammar/conjugations': typeof GrammarConjugationsRoute
   '/grammar/declensions': typeof GrammarDeclensionsRoute
   '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar/pronouns': typeof GrammarPronounsRoute
   '/grammar/': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/grammar/conjugations': typeof GrammarConjugationsRoute
   '/grammar/declensions': typeof GrammarDeclensionsRoute
   '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar/pronouns': typeof GrammarPronounsRoute
   '/grammar': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/grammar/conjugations': typeof GrammarConjugationsRoute
   '/grammar/declensions': typeof GrammarDeclensionsRoute
   '/grammar/irregular-verbs': typeof GrammarIrregularVerbsRoute
+  '/grammar/pronouns': typeof GrammarPronounsRoute
   '/grammar/': typeof GrammarIndexRoute
   '/verbum/$lemma/{-$homonym}': typeof VerbumLemmaChar123HomonymChar125Route
 }
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/grammar/conjugations'
     | '/grammar/declensions'
     | '/grammar/irregular-verbs'
+    | '/grammar/pronouns'
     | '/grammar/'
     | '/verbum/$lemma/{-$homonym}'
   fileRoutesByTo: FileRoutesByTo
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/grammar/conjugations'
     | '/grammar/declensions'
     | '/grammar/irregular-verbs'
+    | '/grammar/pronouns'
     | '/grammar'
     | '/verbum/$lemma/{-$homonym}'
   id:
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/grammar/conjugations'
     | '/grammar/declensions'
     | '/grammar/irregular-verbs'
+    | '/grammar/pronouns'
     | '/grammar/'
     | '/verbum/$lemma/{-$homonym}'
   fileRoutesById: FileRoutesById
@@ -196,6 +208,7 @@ export interface RootRouteChildren {
   GrammarConjugationsRoute: typeof GrammarConjugationsRoute
   GrammarDeclensionsRoute: typeof GrammarDeclensionsRoute
   GrammarIrregularVerbsRoute: typeof GrammarIrregularVerbsRoute
+  GrammarPronounsRoute: typeof GrammarPronounsRoute
   GrammarIndexRoute: typeof GrammarIndexRoute
   VerbumLemmaChar123HomonymChar125Route: typeof VerbumLemmaChar123HomonymChar125Route
 }
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GrammarIrregularVerbsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grammar/pronouns': {
+      id: '/grammar/pronouns'
+      path: '/grammar/pronouns'
+      fullPath: '/grammar/pronouns'
+      preLoaderRoute: typeof GrammarPronounsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verbum/$lemma/{-$homonym}': {
       id: '/verbum/$lemma/{-$homonym}'
       path: '/verbum/$lemma/{-$homonym}'
@@ -308,6 +328,7 @@ const rootRouteChildren: RootRouteChildren = {
   GrammarConjugationsRoute: GrammarConjugationsRoute,
   GrammarDeclensionsRoute: GrammarDeclensionsRoute,
   GrammarIrregularVerbsRoute: GrammarIrregularVerbsRoute,
+  GrammarPronounsRoute: GrammarPronounsRoute,
   GrammarIndexRoute: GrammarIndexRoute,
   VerbumLemmaChar123HomonymChar125Route: VerbumLemmaChar123HomonymChar125Route,
 }
