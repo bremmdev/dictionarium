@@ -24,7 +24,30 @@ type GenderedParadigmProps = {
 	note?: React.ReactNode;
 	/** h3 where the word heads its own part of a section, as on /grammar/pronouns. */
 	headingAs?: "h3" | "h4";
+	/** "masc.", "fem." and "neut." below md; a screen reader still hears the full word. */
+	abbreviate?: boolean;
 };
+
+const short = (abbreviation: string, label: string) => (
+	<>
+		<span aria-hidden="true" className="md:hidden">
+			{abbreviation}
+		</span>
+		<span className="max-md:sr-only">{label}</span>
+	</>
+);
+
+const ABBREVIATIONS: Record<string, string> = {
+	m: "masc.",
+	f: "fem.",
+	n: "neut.",
+};
+
+const SHORT_COLUMNS = ADJECTIVE_COLUMNS.map((column) =>
+	column.key in ABBREVIATIONS
+		? { ...column, label: short(ABBREVIATIONS[column.key], column.label) }
+		: column,
+);
 
 const asForm = (cell: Cell): Form =>
 	typeof cell === "string" ? { form: cell } : cell;
@@ -37,7 +60,9 @@ export function GenderedParadigm({
 	intro,
 	note,
 	headingAs = "h4",
+	abbreviate = false,
 }: GenderedParadigmProps) {
+	const columns = abbreviate ? SHORT_COLUMNS : ADJECTIVE_COLUMNS;
 	const rows = (forms: GenderedForms) =>
 		ADJECTIVE_CASES.map((grammaticalCase) => ({
 			id: grammaticalCase,
@@ -70,7 +95,7 @@ export function GenderedParadigm({
 							<span lang="la">{lemma}</span>, singular
 						</>
 					}
-					columns={ADJECTIVE_COLUMNS}
+					columns={columns}
 					rows={rows(singular)}
 				/>
 				<Table
@@ -79,7 +104,7 @@ export function GenderedParadigm({
 							<span lang="la">{lemma}</span>, plural
 						</>
 					}
-					columns={ADJECTIVE_COLUMNS}
+					columns={columns}
 					rows={rows(plural)}
 				/>
 			</div>
