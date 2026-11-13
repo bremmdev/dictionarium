@@ -309,6 +309,7 @@ function Pronoun({ pronoun }: { pronoun: GenderedPronoun }) {
 		<div id={id} className="scroll-mt-8">
 			<GenderedParadigm
 				headingAs="h3"
+				abbreviate
 				title={
 					<>
 						<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
