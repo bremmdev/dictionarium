@@ -17,7 +17,7 @@ export const Route = createFileRoute("/grammar/")({
 			{
 				name: "description",
 				content:
-					"Latin grammar with macrons: the declensions, the conjugations and the irregular verbs.",
+					"Latin grammar with macrons: the declensions, the conjugations, the irregular verbs and the pronouns.",
 			},
 		],
 	}),

@@ -2,8 +2,6 @@ import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
 import {
-	ADJECTIVE_CASES,
-	ADJECTIVE_COLUMNS,
 	ADJECTIVE_FILING,
 	type AdjectiveParadigm,
 	EXAMPLE_COLUMNS,
@@ -11,6 +9,7 @@ import {
 	FIRST_SECOND,
 	THIRD,
 } from "./Adjectives.utils";
+import { GenderedParadigm } from "./GenderedParadigm";
 
 const FILING_ROWS = ADJECTIVE_FILING.map(({ entry, className, tells }) => ({
 	id: entry,
@@ -143,49 +142,21 @@ const EXAMPLE_ROWS = EXAMPLES.map(({ phrase, english, agreeing }) => ({
 
 function Paradigm({ paradigm }: { paradigm: AdjectiveParadigm }) {
 	const { lemma, english, label, singular, plural } = paradigm;
-
-	const rows = (forms: AdjectiveParadigm["singular"]) =>
-		ADJECTIVE_CASES.map((grammaticalCase) => ({
-			id: grammaticalCase,
-			cells: {
-				grammaticalCase,
-				m: <LatinWord>{forms[grammaticalCase].m}</LatinWord>,
-				f: <LatinWord>{forms[grammaticalCase].f}</LatinWord>,
-				n: <LatinWord>{forms[grammaticalCase].n}</LatinWord>,
-			},
-		}));
-
 	return (
-		<div className="space-y-4">
-			<Heading
-				variant="h4"
-				className="mx-auto text-center uppercase tracking-wide"
-			>
-				<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
-				<span className="font-normal text-ink-600 normal-case">
-					({label}) — {english}
-				</span>
-			</Heading>
-			{/* Singular and plural are two tables rather than one six-column grid:
-			    the Table header is a single row, so a six-column version would
-			    have to label a column "M" twice and leave the reader to work out
-			    which half is which. */}
-			<div className="grid items-start gap-8 lg:grid-cols-2">
-				<Table
-					caption="Singular"
-					columns={ADJECTIVE_COLUMNS}
-					rows={rows(singular)}
-				/>
-				<Table
-					caption="Plural"
-					columns={ADJECTIVE_COLUMNS}
-					rows={rows(plural)}
-				/>
-			</div>
-			<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
-				{NOTES[lemma]}
-			</p>
-		</div>
+		<GenderedParadigm
+			title={
+				<>
+					<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
+					<span className="font-normal text-ink-600 normal-case">
+						({label}) — {english}
+					</span>
+				</>
+			}
+			lemma={lemma}
+			singular={singular}
+			plural={plural}
+			note={NOTES[lemma]}
+		/>
 	);
 }
 

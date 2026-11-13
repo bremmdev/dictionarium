@@ -25,9 +25,9 @@ export type Case = (typeof CASES)[number];
  * noun here that needs it throughout, plus the old i-stem accusative plural of
  * urbs.
  */
-type Form = {
+export type Form = {
 	form: string;
-	alt?: string;
+	alt?: string | ReadonlyArray<string>;
 };
 
 export type Paradigm = {

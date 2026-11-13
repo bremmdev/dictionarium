@@ -1,4 +1,4 @@
-import { Shuffle, Table2, TableProperties } from "lucide-react";
+import { Pointer, Shuffle, Table2, TableProperties } from "lucide-react";
 
 // Shared by the resources menu and the /grammar index.
 export const GRAMMAR_TOPICS = [
@@ -19,5 +19,11 @@ export const GRAMMAR_TOPICS = [
 		label: "Irregular verbs",
 		description: "Verbs that break the pattern",
 		Icon: Shuffle,
+	},
+	{
+		to: "/grammar/pronouns",
+		label: "Pronouns",
+		description: "Words that point and stand in",
+		Icon: Pointer,
 	},
 ] as const;

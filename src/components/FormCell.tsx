@@ -8,16 +8,27 @@ import { LatinWord } from "./LatinWord";
  * pronounce an English word. Below md it drops to its own line to keep the
  * column narrow on a phone.
  */
-export function FormCell({ form, alt }: { form: string; alt?: string }) {
+export function FormCell({
+	form,
+	alt,
+}: {
+	form: string;
+	/** Several where a slot has more than two forms: eī, iī or ī. */
+	alt?: string | ReadonlyArray<string>;
+}) {
+	const alts = alt === undefined ? [] : [alt].flat();
 	return (
 		<>
 			<LatinWord>{form}</LatinWord>
-			{alt && (
-				<span className="block text-ink-600 text-sm md:inline md:text-base">
+			{alts.map((a) => (
+				<span
+					key={a}
+					className="block text-ink-600 text-sm md:inline md:text-base"
+				>
 					{" or "}
-					<span lang="la">{alt}</span>
+					<span lang="la">{a}</span>
 				</span>
-			)}
+			))}
 		</>
 	);
 }
