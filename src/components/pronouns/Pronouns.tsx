@@ -5,6 +5,7 @@ import { FormCell } from "#/components/FormCell";
 import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
+import { TextLink } from "#/components/TextLink";
 import {
 	DEIXIS,
 	DEIXIS_COLUMNS,
@@ -15,6 +16,9 @@ import {
 	type PersonalForms,
 	type PersonalPronoun,
 	POSSESSIVES,
+	PRONOMINAL_ADJECTIVE_COLUMNS,
+	PRONOMINAL_ADJECTIVE_PARADIGMS,
+	PRONOMINAL_ADJECTIVES,
 	PRONOMINAL_CELLS,
 	PRONOMINAL_COLUMNS,
 } from "./Pronouns.utils";
@@ -108,6 +112,23 @@ const BLURBS: Record<string, React.ReactNode> = {
 			<em>himself</em> of <em>he came himself</em>.
 		</>
 	),
+	"tōtus, tōta, tōtum": (
+		<>
+			<em>Whole</em>, <em>all of</em>: <LatinWord>tōta Gallia</LatinWord>,{" "}
+			<em>the whole of Gaul</em>. The pattern for the nine:{" "}
+			<LatinWord>bonus</LatinWord> in every cell but the genitive and dative
+			singular.
+		</>
+	),
+	"alius, alia, aliud": (
+		<>
+			<em>Other</em>, <em>another</em>, one of any number:{" "}
+			<LatinWord>aliud tempus</LatinWord>, <em>another time</em>. Doubled, it
+			shares a group out: <LatinWord>aliī … aliī</LatinWord>,{" "}
+			<em>some … others</em>. Where there are only two, the other one is{" "}
+			<LatinWord>alter</LatinWord>.
+		</>
+	),
 	"īdem, eadem, idem": (
 		<>
 			<LatinWord>is</LatinWord> with the ending <LatinWord>-dem</LatinWord>,
@@ -189,6 +210,23 @@ const NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>idem</LatinWord> keeps its short <LatinWord>i</LatinWord>, so
 			the macron is the only thing telling the two apart. The plural doublets
 			are those of <LatinWord>is</LatinWord>.
+		</>
+	),
+	"tōtus, tōta, tōtum": (
+		<>
+			Against <LatinWord>ille</LatinWord>, it keeps the nominatives of{" "}
+			<LatinWord>bonus</LatinWord>: <LatinWord>tōtus</LatinWord> and{" "}
+			<LatinWord>tōtum</LatinWord>, never <LatinWord>*tōte</LatinWord> or{" "}
+			<LatinWord>*tōtud</LatinWord>.
+		</>
+	),
+	"alius, alia, aliud": (
+		<>
+			The neuter is <LatinWord>aliud</LatinWord>, like{" "}
+			<LatinWord>illud</LatinWord>. The genitive of its own,{" "}
+			<LatinWord>alīus</LatinWord>, is rare: Latin borrows{" "}
+			<LatinWord>alterīus</LatinWord> from <LatinWord>alter</LatinWord>, or for{" "}
+			<em>someone else's</em> uses the adjective <LatinWord>aliēnus</LatinWord>.
 		</>
 	),
 };
@@ -328,6 +366,18 @@ function Pronoun({ pronoun }: { pronoun: GenderedPronoun }) {
 	);
 }
 
+const PRONOMINAL_ADJECTIVE_ROWS = PRONOMINAL_ADJECTIVES.map(
+	({ lemma, english, genitive, dative }) => ({
+		id: lemma,
+		cells: {
+			lemma: <LatinWord>{lemma}</LatinWord>,
+			english,
+			genitive: <FormCell {...genitive} />,
+			dative: <FormCell {...dative} />,
+		},
+	}),
+);
+
 const SECTION = "scroll-mt-8 mx-auto max-w-page-width space-y-8 px-4 sm:px-8";
 const H2 = "mx-auto text-center uppercase tracking-wide";
 
@@ -348,9 +398,12 @@ export function Pronominal() {
 				dative singular <LatinWord>-ī</LatinWord>, the same in all three
 				genders, and the neuter ends in <LatinWord>-d</LatinWord>. Learn{" "}
 				<LatinWord>ille</LatinWord> and you have <LatinWord>iste</LatinWord> and
-				nearly all of <LatinWord>ipse</LatinWord>; nine adjectives, among them{" "}
-				<LatinWord>ūnus</LatinWord> and <LatinWord>tōtus</LatinWord>, borrow the
-				same genitive and dative.
+				nearly all of <LatinWord>ipse</LatinWord>;{" "}
+				<TextLink to="/grammar/pronouns" hash="pronominal-adjectives">
+					nine adjectives
+				</TextLink>
+				, among them <LatinWord>ūnus</LatinWord> and{" "}
+				<LatinWord>tōtus</LatinWord>, borrow the same genitive and dative.
 			</p>
 			<Table
 				caption={
@@ -514,6 +567,60 @@ export function IntensiveAndIdentity() {
 				the one already met, <em>the same again</em>.
 			</p>
 			{INTENSIVE_AND_IDENTITY.map((pronoun) => (
+				<Pronoun key={pronoun.id} pronoun={pronoun} />
+			))}
+		</section>
+	);
+}
+
+export function PronominalAdjectives() {
+	return (
+		<section
+			id="pronominal-adjectives"
+			aria-labelledby="pronominal-adjectives-heading"
+			className={SECTION}
+		>
+			<Heading
+				id="pronominal-adjectives-heading"
+				variant="h2"
+				className={H2}
+				lang="la"
+			>
+				Adiectīva prōnōminālia
+			</Heading>
+			<p>
+				Nine adjectives decline like <LatinWord>bonus</LatinWord> except in the
+				genitive and dative singular, where they take the pronominal{" "}
+				<LatinWord>-īus</LatinWord> and <LatinWord>-ī</LatinWord> in all three
+				genders: <LatinWord>tōtīus</LatinWord>, <LatinWord>tōtī</LatinWord>. The
+				plural is <LatinWord>bonus</LatinWord>'s throughout. In the order below,
+				their first letters spell the schoolroom mnemonic{" "}
+				<span lang="la">UNUS NAUTA</span>.
+			</p>
+			<Table
+				caption={
+					<>
+						The nine, with the two cells where they part from{" "}
+						<span lang="la">bonus</span>.
+					</>
+				}
+				columns={PRONOMINAL_ADJECTIVE_COLUMNS}
+				rows={PRONOMINAL_ADJECTIVE_ROWS}
+				className="mx-auto max-w-5xl"
+			/>
+			<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
+				Their compounds decline the same way: <LatinWord>uterque</LatinWord>,{" "}
+				<em>each of two</em>, has <LatinWord>utrīusque</LatinWord>,{" "}
+				<LatinWord>utrīque</LatinWord>. As with <LatinWord>ille</LatinWord>, the{" "}
+				<LatinWord>ī</LatinWord> of <LatinWord>-īus</LatinWord> can be short in
+				verse, often in <LatinWord>alterius</LatinWord> and always in{" "}
+				<LatinWord>utriusque</LatinWord>. The regular forms of{" "}
+				<LatinWord>bonus</LatinWord> turn up now and then too, such as{" "}
+				<LatinWord>aliae</LatinWord> and <LatinWord>aliō</LatinWord>.{" "}
+				<LatinWord>neuter</LatinWord> as a grammar term, <em>neuter</em> gender,
+				is an ordinary adjective: <LatinWord>neutrī generis</LatinWord>.
+			</p>
+			{PRONOMINAL_ADJECTIVE_PARADIGMS.map((pronoun) => (
 				<Pronoun key={pronoun.id} pronoun={pronoun} />
 			))}
 		</section>

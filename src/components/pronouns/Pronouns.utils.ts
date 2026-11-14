@@ -3,7 +3,8 @@
 //
 // A pronoun with a `pattern` follows one of two ending sheets, ille's or
 // bonus's, and scripts/check-pronouns.ts holds every cell of it to stem +
-// ending. A cell marked irregular is skipped: ipsum, where ille has illud.
+// ending. A cell marked irregular is skipped: ipsum, where ille has illud,
+// and tōtus, where ille has ille.
 
 import type { AdjectiveCase } from "#/components/declensions/Adjectives.utils";
 import type { Form } from "#/components/declensions/Declensions.utils";
@@ -740,9 +741,197 @@ export const DEMONSTRATIVES = [HIC, ISTE, ILLE, IS];
 
 export const INTENSIVE_AND_IDENTITY = [IPSE, IDEM];
 
+export type PronominalAdjective = {
+	lemma: string;
+	english: string;
+	genitive: Cell;
+	dative: Cell;
+};
+
+/**
+ * The nine adjectives that take ille's genitive and dative singular, in the
+ * order of the mnemonic UNUS NAUTA. The check builds both cells from the
+ * feminine stem: ūn-a, ūn-īus, ūn-ī.
+ */
+export const PRONOMINAL_ADJECTIVES: Array<PronominalAdjective> = [
+	{
+		lemma: "ūnus, ūna, ūnum",
+		english: "one, alone",
+		genitive: { form: "ūnīus" },
+		dative: { form: "ūnī" },
+	},
+	{
+		lemma: "nūllus, nūlla, nūllum",
+		english: "no, none",
+		genitive: { form: "nūllīus" },
+		dative: { form: "nūllī" },
+	},
+	{
+		lemma: "ūllus, ūlla, ūllum",
+		english: "any",
+		genitive: { form: "ūllīus" },
+		dative: { form: "ūllī" },
+	},
+	{
+		lemma: "sōlus, sōla, sōlum",
+		english: "alone, only",
+		genitive: { form: "sōlīus" },
+		dative: { form: "sōlī" },
+	},
+	{
+		lemma: "neuter, neutra, neutrum",
+		english: "neither (of two)",
+		genitive: { form: "neutrīus" },
+		dative: { form: "neutrī" },
+	},
+	{
+		lemma: "alius, alia, aliud",
+		english: "other, another",
+		genitive: { form: "alterīus", alt: "alīus", irregular: true },
+		dative: { form: "aliī" },
+	},
+	{
+		lemma: "uter, utra, utrum",
+		english: "which (of two)?",
+		genitive: { form: "utrīus" },
+		dative: { form: "utrī" },
+	},
+	{
+		lemma: "tōtus, tōta, tōtum",
+		english: "whole",
+		genitive: { form: "tōtīus" },
+		dative: { form: "tōtī" },
+	},
+	{
+		lemma: "alter, altera, alterum",
+		english: "the other (of two)",
+		genitive: { form: "alterīus" },
+		dative: { form: "alterī" },
+	},
+];
+
+export const PRONOMINAL_ADJECTIVE_COLUMNS = [
+	{ key: "lemma", label: "Adjective" },
+	{ key: "english", label: "Meaning" },
+	{ key: "genitive", label: "Genitive singular" },
+	{ key: "dative", label: "Dative singular" },
+];
+
+// ille's endings, except where the nominative keeps bonus's -us and -um.
+const TOTUS: GenderedPronoun = {
+	id: "totus",
+	lemma: "tōtus, tōta, tōtum",
+	english: "whole",
+	pattern: { stem: "tōt", endings: "pronominal" },
+	singular: {
+		nominative: {
+			m: { form: "tōtus", irregular: true },
+			f: { form: "tōta" },
+			n: { form: "tōtum", irregular: true },
+		},
+		genitive: {
+			m: { form: "tōtīus" },
+			f: { form: "tōtīus" },
+			n: { form: "tōtīus" },
+		},
+		dative: { m: { form: "tōtī" }, f: { form: "tōtī" }, n: { form: "tōtī" } },
+		accusative: {
+			m: { form: "tōtum" },
+			f: { form: "tōtam" },
+			n: { form: "tōtum", irregular: true },
+		},
+		ablative: { m: { form: "tōtō" }, f: { form: "tōtā" }, n: { form: "tōtō" } },
+	},
+	plural: {
+		nominative: {
+			m: { form: "tōtī" },
+			f: { form: "tōtae" },
+			n: { form: "tōta" },
+		},
+		genitive: {
+			m: { form: "tōtōrum" },
+			f: { form: "tōtārum" },
+			n: { form: "tōtōrum" },
+		},
+		dative: {
+			m: { form: "tōtīs" },
+			f: { form: "tōtīs" },
+			n: { form: "tōtīs" },
+		},
+		accusative: {
+			m: { form: "tōtōs" },
+			f: { form: "tōtās" },
+			n: { form: "tōta" },
+		},
+		ablative: {
+			m: { form: "tōtīs" },
+			f: { form: "tōtīs" },
+			n: { form: "tōtīs" },
+		},
+	},
+};
+
+// ille's endings, aliud included; the genitive is alter's.
+const ALIUS: GenderedPronoun = {
+	id: "alius",
+	lemma: "alius, alia, aliud",
+	english: "other, another",
+	pattern: { stem: "ali", endings: "pronominal" },
+	singular: {
+		nominative: {
+			m: { form: "alius", irregular: true },
+			f: { form: "alia" },
+			n: { form: "aliud" },
+		},
+		genitive: {
+			m: { form: "alterīus", alt: "alīus", irregular: true },
+			f: { form: "alterīus", alt: "alīus", irregular: true },
+			n: { form: "alterīus", alt: "alīus", irregular: true },
+		},
+		dative: { m: { form: "aliī" }, f: { form: "aliī" }, n: { form: "aliī" } },
+		accusative: {
+			m: { form: "alium" },
+			f: { form: "aliam" },
+			n: { form: "aliud" },
+		},
+		ablative: { m: { form: "aliō" }, f: { form: "aliā" }, n: { form: "aliō" } },
+	},
+	plural: {
+		nominative: {
+			m: { form: "aliī" },
+			f: { form: "aliae" },
+			n: { form: "alia" },
+		},
+		genitive: {
+			m: { form: "aliōrum" },
+			f: { form: "aliārum" },
+			n: { form: "aliōrum" },
+		},
+		dative: {
+			m: { form: "aliīs" },
+			f: { form: "aliīs" },
+			n: { form: "aliīs" },
+		},
+		accusative: {
+			m: { form: "aliōs" },
+			f: { form: "aliās" },
+			n: { form: "alia" },
+		},
+		ablative: {
+			m: { form: "aliīs" },
+			f: { form: "aliīs" },
+			n: { form: "aliīs" },
+		},
+	},
+};
+
+/** In full: tōtus for the rule, alius for its exceptions. */
+export const PRONOMINAL_ADJECTIVE_PARADIGMS = [TOTUS, ALIUS];
+
 /** Every gendered table on the page, for the check. */
 export const PRONOUNS = [
 	...POSSESSIVES,
 	...DEMONSTRATIVES,
 	...INTENSIVE_AND_IDENTITY,
+	...PRONOMINAL_ADJECTIVE_PARADIGMS,
 ];

@@ -12,6 +12,7 @@ import {
 	PersonalPronouns,
 	Possessives,
 	Pronominal,
+	PronominalAdjectives,
 } from "#/components/pronouns/Pronouns";
 import { type Section, SectionNav } from "#/components/SectionNav";
 
@@ -25,6 +26,11 @@ const SECTIONS: Section[] = [
 	{ id: "possessives", label: "Possessīva", gloss: "possessives" },
 	{ id: "demonstratives", label: "Dēmōnstrātīva", gloss: "demonstratives" },
 	{ id: "identity", label: "Ipse et īdem", gloss: "self and same" },
+	{
+		id: "pronominal-adjectives",
+		label: "Adiectīva prōnōminālia",
+		gloss: "pronominal adjectives",
+	},
 ];
 
 export const Route = createFileRoute("/grammar/pronouns")({
@@ -37,7 +43,7 @@ export const Route = createFileRoute("/grammar/pronouns")({
 			{
 				name: "description",
 				content:
-					"The Latin pronouns in full, with macrons: ego, tū and suī with their possessives, the demonstratives hic, iste, ille and is, and ipse and īdem.",
+					"The Latin pronouns in full, with macrons: ego, tū and suī with their possessives, the demonstratives hic, iste, ille and is, ipse and īdem, and the nine adjectives that decline like them.",
 			},
 		],
 	}),
@@ -97,6 +103,7 @@ function RouteComponent() {
 				<Possessives />
 				<Demonstratives />
 				<IntensiveAndIdentity />
+				<PronominalAdjectives />
 			</div>
 		</>
 	);

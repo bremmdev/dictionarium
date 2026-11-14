@@ -1,6 +1,7 @@
 import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
+import { TextLink } from "#/components/TextLink";
 import {
 	ADJECTIVE_FILING,
 	type AdjectiveParadigm,
@@ -35,7 +36,12 @@ const NOTES: Record<string, React.ReactNode> = {
 			genitive and <LatinWord>-ī</LatinWord> in the dative, in all three
 			genders: <LatinWord>tōtīus</LatinWord>, <LatinWord>tōtī</LatinWord>. In
 			practice <LatinWord>alius</LatinWord> borrows the genitive of{" "}
-			<LatinWord>alter</LatinWord>: <LatinWord>alterīus</LatinWord>.
+			<LatinWord>alter</LatinWord>: <LatinWord>alterīus</LatinWord>. All nine
+			are set out with the{" "}
+			<TextLink to="/grammar/pronouns" hash="pronominal-adjectives">
+				pronouns
+			</TextLink>
+			.
 		</>
 	),
 	"pulcher, pulchra, pulchrum": (

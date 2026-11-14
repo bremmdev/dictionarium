@@ -10,6 +10,9 @@
 - **2026-11-13, phase 2 done.** *Persōnālia* (`#personal`): *ego, nōs*, *tū, vōs* and *suī* as Case / Singular / Plural tables, laid out like the noun paradigms (`#ego`, `#tu`, `#sui`), and a paragraph on *mēcum / nōbīscum* and *-met / tūte*. *suī*'s missing nominative is `null` in the data, a dash on screen and "no form" to a screen reader. *Possessīva* (`#possessives`): full tables for *meus, tuus, suus, noster, vester* through `GenderedParadigm`. `GenderedPronoun.stem` became `pattern: { stem, endings: "pronominal" | "bonus" }`; `check:pronouns` reads *bonus*'s endings off `FIRST_SECOND` rather than restating them (236 forms) and checks that each personal table is headed by its own nominatives. All forms diffed against Wiktionary with zero mismatches. Rules from A&G §§ 142–145, 295, 299, 302 on Dickinson.
   - *nostrī / nostrum* and *vestrī / vestrum* in Wiktionary's order; A&G print no order in text.
   - Left out of the cells: *mēmē, tētē, mēd, tēd, tīs, mīs*, and *mee* beside *mī*. The notes mention *sēsē* only (it is in the cells as an alternative).
+- **2026-11-14, phase 4 done** (ahead of phase 3, on request, on `main`). *Adiectīva prōnōminālia* (`#pronominal-adjectives`), after *Ipse et īdem* until phase 3 lands: a table of the nine in UNUS NAUTA order with genitive and dative singular, then *tōtus* (`#totus`) and *alius* (`#alius`) in full. Both sit on `PRONOMINAL_ENDINGS` with the cells that differ marked irregular (*tōtus*, *tōtum* ×2; *alius* and the genitive *alterīus or alīus*), as decided: no -us nominative added to the sheet. `check:pronouns` builds the nine's genitive and dative from the feminine stem and holds them to the full tables (306 forms). Linked from the *bonus* note on /grammar/declensions and from the *Dēclīnātiō prōnōminālis* paragraph. Forms diffed against Wiktionary; rules from A&G § 113 on Dickinson.
+  - Only the classical *-īus / -ī* in the cells. Left to the notes: short *-ius* in verse, the occasional *bonus* forms (*aliae*, *aliō*), *neutrī generis*. Left out: *altrīus*, *alis / alid*, Old Latin genitive *ūllī*.
+  - The summary table is 445px on a 375px screen and scrolls in its box; no page scroll.
 
 ## Placement
 
@@ -26,10 +29,8 @@ Its own route, like the irregular verbs: /grammar/declensions is about the five 
 | `identity` | *Ipse et īdem* | 1 ✓ |
 | `relative` | *quī, quae, quod*; *quis, quid*; the question adjective *quī* | 3 |
 | `indefinites` | *aliquis, quīdam, quisque, quisquam, quīvīs / quīlibet*; *quis* after *sī, nisi, num, nē*, as a compounds table | 3 |
-| `pronominal-adjectives` | the nine (*ūnus, ūllus, nūllus, sōlus, neuter, alius, uter, tōtus, alter*): *tōtus* in full, *alius* for its exceptions. Link the Adjectives footnote here | 4 |
+| `pronominal-adjectives` | the nine (*ūnus, ūllus, nūllus, sōlus, neuter, alius, uter, tōtus, alter*): *tōtus* in full, *alius* for its exceptions. Link the Adjectives footnote here | 4 ✓ |
 | `using` | *hic … ille* "the latter … the former", *suus* against *eius*, *is quī*, *īdem ac / quī*, relative agreement, connecting relative, *-met / -pte / -ce*; correlatives if wanted | 5 |
-
-For phase 4, `PRONOMINAL_ENDINGS` will need a nominative for the *-us* type (*tōtus*), or the check has to mark those cells irregular.
 
 ## Phase 6: the dictionary side (approved 2026-11-13)
 

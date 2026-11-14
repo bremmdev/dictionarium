@@ -10,6 +10,7 @@ import {
 } from "#/components/declensions/Adjectives.utils";
 import {
 	PERSONAL,
+	PRONOMINAL_ADJECTIVES,
 	PRONOMINAL_ENDINGS,
 	PRONOUNS,
 } from "#/components/pronouns/Pronouns.utils";
@@ -82,6 +83,34 @@ for (const pronoun of PERSONAL) {
 		}
 	} else if (heads[0]?.form !== singular || heads[1]?.form !== plural) {
 		problems.push(`${pronoun.lemma}: the nominatives are not the lemma`);
+	}
+}
+
+// The nine: genitive and dative on the feminine's stem, and the same cells as
+// the full table where the word has one.
+for (const adjective of PRONOMINAL_ADJECTIVES) {
+	const feminine = adjective.lemma.split(", ")[1];
+	const stem = feminine.replace(/a$/, "");
+	const full = PRONOUNS.find(({ lemma }) => lemma === adjective.lemma);
+	for (const [grammaticalCase, ending] of [
+		["genitive", "īus"],
+		["dative", "ī"],
+	] as const) {
+		const cell = adjective[grammaticalCase];
+		if (!cell.irregular) {
+			checked++;
+			if (cell.form !== stem + ending) {
+				problems.push(
+					`${adjective.lemma} ${grammaticalCase}: "${cell.form}", but ${stem}- + -${ending} gives "${stem + ending}"`,
+				);
+			}
+		}
+		const inFull = full?.singular[grammaticalCase].m;
+		if (inFull && (inFull.form !== cell.form || `${inFull.alt}` !== `${cell.alt}`)) {
+			problems.push(
+				`${adjective.lemma} ${grammaticalCase}: the summary and the full table disagree`,
+			);
+		}
 	}
 }
 
