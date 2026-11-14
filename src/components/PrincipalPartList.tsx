@@ -30,6 +30,14 @@ function partLabels(entry: Entry, count: number) {
 		return ["genitive"];
 	}
 
+	// meus, mea, meum. An irregular pronoun is shown whole: suī, sibi, sē has
+	// three forms and no genders.
+	if (entry.partOfSpeech === "pronoun") {
+		return entry.declension === "1-2" && count === 3
+			? ADJECTIVE_PART_LABELS["3"]
+			: null;
+	}
+
 	if (entry.partOfSpeech === "adjective") {
 		// `1-2` never had a terminations answer because it did not need one: its
 		// three forms are one per gender by construction.

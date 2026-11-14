@@ -49,11 +49,11 @@ const TOGGLE =
 
 /**
  * What the principal-parts input is called and what goes in it, per part of
- * speech. Keyed by the three hasPrincipalParts admits — a fourth would be a type
+ * speech. Keyed by the four hasPrincipalParts admits — a fifth would be a type
  * error here rather than a field labelled "Genitive" holding something else.
  */
 const FILING: Record<
-	"noun" | "verb" | "adjective",
+	"noun" | "verb" | "adjective" | "pronoun",
 	{ legend: string; hint: string; placeholder: string }
 > = {
 	verb: {
@@ -70,6 +70,11 @@ const FILING: Record<
 		legend: "Terminations",
 		hint: "The filing as a dictionary prints it, lemma first, separated by commas.",
 		placeholder: "bonus, bona, bonum",
+	},
+	pronoun: {
+		legend: "Forms",
+		hint: "The filing as a dictionary prints it, lemma first: the three genders, or the genitive where there are none (ego, meī).",
+		placeholder: "hic, haec, hoc",
 	},
 };
 

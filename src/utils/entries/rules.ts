@@ -11,7 +11,11 @@
  */
 import { normalizeLemma } from "#/utils/search/rules";
 
-/** `1-2` is the adjective pattern (bonus, bona, bonum); `indeclinable` is an answer, not an absence. */
+/**
+ * `1-2` is the adjective pattern (bonus, bona, bonum); `indeclinable` is an
+ * answer, not an absence. `irregular` is the pronouns' own system (hic, ego),
+ * as it is for the verbs.
+ */
 export const DECLENSIONS = [
 	"1",
 	"2",
@@ -20,6 +24,7 @@ export const DECLENSIONS = [
 	"5",
 	"1-2",
 	"indeclinable",
+	"irregular",
 ] as const;
 
 export const CONJUGATIONS = ["1", "2", "3", "4", "3io", "irregular"] as const;
@@ -73,15 +78,14 @@ export type DeclinedPartOfSpeech = {
  * in a class no adjective list could find it in.
  *
  * Numerals are adjectives in the grammar's eyes (vault/schema.md): prīmus and
- * ūnus are `1-2`, trēs is `3`, septem is `indeclinable`. Pronouns keep the whole
- * vocabulary, because their declension is its own irregular system and the
- * column has no value for it yet; narrowing them would be guessing.
+ * ūnus are `1-2`, trēs is `3`, septem is `indeclinable`. Pronouns are
+ * `irregular` (hic, ego, quis), except the possessives: meus declines as bonus.
  */
 export const DECLENSIONS_BY_PART_OF_SPEECH = {
 	noun: ["1", "2", "3", "4", "5", "indeclinable"],
 	adjective: ["1-2", "3", "indeclinable"],
 	numeral: ["1-2", "3", "indeclinable"],
-	pronoun: DECLENSIONS,
+	pronoun: ["irregular", "1-2"],
 } as const satisfies Record<DeclinedPartOfSpeech, ReadonlyArray<Declension>>;
 
 /**
@@ -132,18 +136,19 @@ export function isTerminations(value: string): value is Terminations {
 
 /**
  * Nouns file their genitive there, verbs their principal parts, adjectives their
- * terminations; see vault/schema.md.
+ * terminations, pronouns their other forms (hic, haec, hoc; ego, meī); see
+ * vault/schema.md.
  *
  * An indeclinable word is the exception inside the exception: fās and nēquam
  * never change shape, so there is no second form to print and the lemma is the
  * whole filing after all (A&G §§103a, 122). Which is why this takes the
- * declension too — for a verb the answer does not depend on it.
+ * declension too — for a verb or a pronoun the answer does not depend on it.
  */
 export function hasPrincipalParts(
 	partOfSpeech: string,
 	declension?: string,
-): partOfSpeech is "noun" | "verb" | "adjective" {
-	if (partOfSpeech === "verb") return true;
+): partOfSpeech is "noun" | "verb" | "adjective" | "pronoun" {
+	if (partOfSpeech === "verb" || partOfSpeech === "pronoun") return true;
 	return (
 		(partOfSpeech === "noun" || partOfSpeech === "adjective") &&
 		declension !== "indeclinable"
@@ -388,12 +393,15 @@ export function suspectCharacter(value: string) {
  * What is missing when principal_parts is empty, said in the word's own terms.
  * Keyed by the parts of speech hasPrincipalParts admits, so the two cannot drift.
  */
-const EMPTY_FILING: Record<"noun" | "verb" | "adjective", string> = {
-	verb: "A verb is filed by its principal parts, separated by commas.",
-	noun: "A noun is filed with its genitive.",
-	adjective:
-		"An adjective is filed with its other terminations: acer, acris, acre — or vetus, veteris, where there is only a genitive to give.",
-};
+const EMPTY_FILING: Record<"noun" | "verb" | "adjective" | "pronoun", string> =
+	{
+		verb: "A verb is filed by its principal parts, separated by commas.",
+		noun: "A noun is filed with its genitive.",
+		adjective:
+			"An adjective is filed with its other terminations: acer, acris, acre — or vetus, veteris, where there is only a genitive to give.",
+		pronoun:
+			"A pronoun is filed with its other forms: hic, haec, hoc — or ego, meī, where there are no genders to give.",
+	};
 
 /** "a noun", but "an adverb" — a part of speech is named inside a sentence. */
 function aWord(word: string) {

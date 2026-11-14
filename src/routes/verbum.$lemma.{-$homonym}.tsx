@@ -12,7 +12,14 @@ import {
 	useLoaderData,
 	useRouter,
 } from "@tanstack/react-router";
-import { ArrowLeft, Bookmark, Info, Pencil, Search } from "lucide-react";
+import {
+	ArrowLeft,
+	Bookmark,
+	Info,
+	Pencil,
+	Search,
+	Table2,
+} from "lucide-react";
 import { Fragment, useState } from "react";
 import abacus from "#/assets/abacus-sketch.svg";
 import acanthus from "#/assets/acanthus-sketch.svg";
@@ -383,16 +390,41 @@ function WordBanner({
 	);
 }
 
-function PrincipalParts({ entry }: { entry: EntryWithSenses }) {
-	if (!entry.principalParts) {
+/** The grammar page that sets the word out in full: /grammar/pronouns#hic. */
+function FullTableLink({ entry }: { entry: EntryPage }) {
+	const table = entry.fullTable;
+	if (!table) {
+		return null;
+	}
+
+	return (
+		<p>
+			<TextLink to={table.to} hash={table.hash} icon={Table2}>
+				{table.like ? (
+					<>
+						Conjugated like <span lang="la">{table.like}</span>
+					</>
+				) : entry.partOfSpeech === "verb" ? (
+					"Conjugated in full"
+				) : (
+					"Declined in full"
+				)}
+			</TextLink>
+		</p>
+	);
+}
+
+function PrincipalParts({ entry }: { entry: EntryPage }) {
+	if (!entry.principalParts && !entry.fullTable) {
 		return null;
 	}
 
 	return (
 		<section>
 			<Heading variant="h2">Principal parts</Heading>
-			<div className="mt-6">
+			<div className="mt-6 space-y-4">
 				<PrincipalPartList entry={entry} />
+				<FullTableLink entry={entry} />
 			</div>
 		</section>
 	);

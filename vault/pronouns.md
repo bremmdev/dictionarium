@@ -14,6 +14,13 @@
   - Only the classical *-īus / -ī* in the cells. Left to the notes: short *-ius* in verse, the occasional *bonus* forms (*aliae*, *aliō*), *neutrī generis*. Left out: *altrīus*, *alis / alid*, Old Latin genitive *ūllī*.
   - The summary table is 445px on a 375px screen and scrolls in its box; no page scroll.
 
+- **2026-11-14, phase 6 done** (on `main`, before phases 3 and 5, on request). No migration: `declension` is text.
+  - `DECLENSIONS` gains `irregular`; `DECLENSIONS_BY_PART_OF_SPEECH.pronoun` is `irregular | 1-2`, not `irregular` alone as planned, because *meus* declines as *bonus* and filing it `irregular` would be false.
+  - `hasPrincipalParts` admits `pronoun` (never indeclinable): the admin form asks for "Forms" (*hic, haec, hoc*), and `checkInflection` reports a pronoun without them.
+  - Wiktionary fill: a pronoun is `irregular` unless Wiktionary says first/second-declension, and files headword + feminine + neuter, else headword + genitive (*nēmō, nēminis*). *ego*, *tū*, *suī* print neither, so the fill warns. *īdem*'s "with an indeclinable portion" no longer lands as "indeclinable" in its notes or declension. Wiktionary files *hic*, *ipse* and *meus* as determiners, so their part of speech stays the editor's to pick.
+  - `PrincipalPartList` labels a `1-2` pronoun's three forms by gender; an irregular pronoun's are shown whole (*suī, sibi, sē* has three forms and no genders).
+  - `fullTableFor` (`src/utils/entries/tables.ts`), run in `getEntry`, so the table data stays off the client: a pronoun or adjective whose lemma heads a table on /grammar/pronouns gets "Declined in full" under its principal parts; a verb on /grammar/irregular-verbs gets "Conjugated in full", and its compounds "Conjugated like *sum*". Checked on /verbum/ferō (lands on `#fero`) and /verbum/volō (no table, no link). No pronoun is filed locally, so the pronoun links were checked through `fullTableFor` only.
+
 ## Placement
 
 Its own route, like the irregular verbs: /grammar/declensions is about the five patterns, and pronouns are looked up one word at a time.
@@ -32,7 +39,7 @@ Its own route, like the irregular verbs: /grammar/declensions is about the five 
 | `pronominal-adjectives` | the nine (*ūnus, ūllus, nūllus, sōlus, neuter, alius, uter, tōtus, alter*): *tōtus* in full, *alius* for its exceptions. Link the Adjectives footnote here | 4 ✓ |
 | `using` | *hic … ille* "the latter … the former", *suus* against *eius*, *is quī*, *īdem ac / quī*, relative agreement, connecting relative, *-met / -pte / -ce*; correlatives if wanted | 5 |
 
-## Phase 6: the dictionary side (approved 2026-11-13)
+## Phase 6: the dictionary side (approved 2026-11-13, done 2026-11-14)
 
 - `declension = 'irregular'` for pronouns, mirroring `conjugation = 'irregular'`; narrow `DECLENSIONS_BY_PART_OF_SPEECH.pronoun` to it. The nine adjectives stay `1-2` with notes, as `schema.md` decided.
 - Widen `hasPrincipalParts` to pronouns: *hic, haec, hoc*, *ego, meī*.

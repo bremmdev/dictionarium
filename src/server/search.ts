@@ -6,6 +6,7 @@ import { homographCount } from "#/db/homographs";
 import { type Entry, entries, type ShownEntry } from "#/db/schema";
 import { withFrequency } from "#/server/frequency";
 import { recordSearch } from "#/server/recording";
+import { type FullTable, fullTableFor } from "#/utils/entries/tables";
 import {
 	MAX_RESULTS,
 	MIN_QUERY_LENGTH,
@@ -102,7 +103,10 @@ export type Homograph = Pick<
 	meaningEn: string | null;
 };
 
-export type EntryPage = ShownEntry & { siblings: Array<Homograph> };
+export type EntryPage = ShownEntry & {
+	siblings: Array<Homograph>;
+	fullTable: FullTable | null;
+};
 
 async function findSiblings(entry: Entry): Promise<Array<Homograph>> {
 	const rows = await db.query.entries.findMany({
@@ -160,7 +164,7 @@ export const getEntry = createServerFn({ method: "GET" })
 
 		// Only asked when there is someone to find, which is almost never.
 		const siblings = entry.homographs > 1 ? await findSiblings(entry) : [];
-		return { ...entry, siblings };
+		return { ...entry, siblings, fullTable: fullTableFor(entry) };
 	});
 
 /** The admin desk's lookup: the id survives a rename, the URL key does not. */

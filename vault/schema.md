@@ -109,9 +109,9 @@ Not every value answers for every part of speech. `DECLENSIONS_BY_PART_OF_SPEECH
 | `noun`         | `1` … `5`, `indeclinable`            |
 | `adjective`    | `1-2`, `3`, `indeclinable`           |
 | `numeral`      | `1-2`, `3`, `indeclinable`           |
-| `pronoun`      | any — no value fits their system yet |
+| `pronoun`      | `irregular`, `1-2`                   |
 
-A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns keep the whole list until the column grows a value for the pronominal declension (see below); narrowing them now would be guessing.
+A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns are `irregular`, as the irregular verbs are: _hic_, _ego_, _quis_, _īdem_ and _nēmō_ each decline their own way, and their tables are on /grammar/pronouns. The possessives are the exception: _meus_ declines as _bonus_, so a possessive filed as a pronoun is `1-2`. A pronoun files its other forms in `principal_parts`, lemma first: _hic, haec, hoc_, or the genitive where there are no genders (_ego, meī_; _nēmō, nēminis_).
 
 The column's question was never "which numbered table?" — it is **how does this word inflect?**, and _indeclinable_ is a perfectly good answer to that, where NULL is not an answer at all. `conjugation` already worked this way: `irregular` is the same move, made earlier.
 

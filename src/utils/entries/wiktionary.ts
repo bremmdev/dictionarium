@@ -730,7 +730,13 @@ function readNotes(candidate: Candidate) {
 	// Longest alternative first: "semi-deponent" must not be read as "deponent".
 	const phrases =
 		/\b(semi-deponent|deponent|indeclinable|impersonal(?: in the passive)?|defective|suppletive|no passive|no supine|not comparable)\b/g;
-	for (const match of candidate.grammar.matchAll(phrases)) flags.add(match[1]);
+	for (const match of candidate.grammar.matchAll(phrases)) {
+		// īdem is "a pronoun with an indeclinable portion": its -dem, not the word.
+		if (candidate.partOfSpeech === "pronoun" && match[1] === "indeclinable") {
+			continue;
+		}
+		flags.add(match[1]);
+	}
 
 	// Filed as a preposition, so where it stands has to be said in words:
 	// pectore tenus, "as far as the chest".
@@ -749,8 +755,8 @@ function readGender(candidate: Candidate) {
 
 /**
  * The dictionary filing for the word: all four principal parts for a verb, the
- * genitive for a noun, the genders for an adjective, nothing for the rest —
- * their lemma is already the whole filing (see vault/schema.md).
+ * genitive for a noun, the genders for an adjective or a pronoun, nothing for
+ * the rest — their lemma is already the whole filing (see vault/schema.md).
  */
 function readPrincipalParts(candidate: Candidate) {
 	const { forms, headword, partOfSpeech } = candidate;
@@ -788,7 +794,28 @@ function readPrincipalParts(candidate: Candidate) {
 		return genitive ? `${headword}, ${genitive}` : undefined;
 	}
 
+	if (partOfSpeech === "pronoun") {
+		// hic, haec, hoc; quis, quid. Then nēmō, nēminis. ego and suī print
+		// neither on the headword line, so they are the editor's to fill.
+		const filed = [
+			headword,
+			findForm(forms, /feminine/),
+			findForm(forms, /neuter/),
+		].filter(Boolean);
+		if (filed.length > 1) return filed.join(", ");
+		const genitive = findForm(forms, /genitive/);
+		return genitive ? `${headword}, ${genitive}` : undefined;
+	}
+
 	return undefined;
+}
+
+/**
+ * A pronoun is `irregular` unless Wiktionary calls it first/second-declension
+ * (meus). Its "indeclinable" is about a part of the word: īdem's -dem.
+ */
+function readPronounDeclension(grammar: string) {
+	return readDeclension(grammar) === "1-2" ? "1-2" : "irregular";
 }
 
 /**
@@ -1043,7 +1070,12 @@ function toRow(
 		partOfSpeech: candidate.partOfSpeech,
 		principalParts: readPrincipalParts(candidate) || undefined,
 		gender: isNoun ? readGender(candidate) : undefined,
-		declension: isNominal ? readDeclension(candidate.grammar) : undefined,
+		declension:
+			candidate.partOfSpeech === "pronoun"
+				? readPronounDeclension(candidate.grammar)
+				: isNominal
+					? readDeclension(candidate.grammar)
+					: undefined,
 		terminations:
 			candidate.partOfSpeech === "adjective"
 				? readTerminations(candidate.grammar)
@@ -1304,6 +1336,13 @@ export async function suggestFromWiktionary(
 	) {
 		warnings.push(
 			"Wiktionary does not say how many terminations this adjective has, so that is for you to answer",
+		);
+	}
+
+	// ego's headword line prints its plural, not its genitive.
+	if (partOfSpeech === "pronoun" && draft.principalParts === "") {
+		warnings.push(
+			"Wiktionary prints no other forms for this pronoun, so the filing is for you to give (ego, meī)",
 		);
 	}
 
