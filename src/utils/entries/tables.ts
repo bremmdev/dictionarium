@@ -7,25 +7,45 @@ import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.uti
 import {
 	DECLINED_LIKE,
 	PERSONAL,
+	PRONOMINAL_ADJECTIVES,
+	PRONOMINAL_COMPOUNDS,
 	PRONOUNS,
+	TOTUS,
 } from "#/components/pronouns/Pronouns.utils";
 import type { Entry } from "#/db/schema";
 
 export type FullTable = {
 	to: "/grammar/pronouns" | "/grammar/irregular-verbs";
 	hash: string;
-	/** The verb whose table it is, when the word is one of its compounds. */
+	/** The word whose table it is, when it has none of its own: sum for absum. */
 	like?: string;
 };
 
 const firstForm = (filing: string) => filing.split(", ")[0];
 
-const DECLINED = new Map<string, FullTable>(
-	[...PERSONAL, ...PRONOUNS, ...DECLINED_LIKE].map(({ id, lemma }) => [
-		firstForm(lemma),
-		{ to: "/grammar/pronouns", hash: id },
-	]),
+// ūnus, uter and the rest point at tōtus; a table of their own wins.
+const LIKE_TOTUS = [
+	...PRONOMINAL_ADJECTIVES.map(({ lemma }) => lemma),
+	...PRONOMINAL_COMPOUNDS,
+].map(
+	(lemma) =>
+		[
+			firstForm(lemma),
+			{
+				to: "/grammar/pronouns",
+				hash: TOTUS.id,
+				like: firstForm(TOTUS.lemma),
+			},
+		] as const,
 );
+
+const DECLINED = new Map<string, FullTable>([
+	...LIKE_TOTUS,
+	...[...PERSONAL, ...PRONOUNS, ...DECLINED_LIKE].map(
+		({ id, lemma }) =>
+			[firstForm(lemma), { to: "/grammar/pronouns", hash: id }] as const,
+	),
+]);
 
 const CONJUGATED = new Map<string, FullTable>(
 	IRREGULAR_VERBS.flatMap(({ id, principalParts: [lemma], compounds = [] }) => [

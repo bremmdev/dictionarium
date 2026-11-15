@@ -722,6 +722,9 @@ export const PRONOMINAL_ADJECTIVES: Array<PronominalAdjective> = [
 	},
 ];
 
+/** Compounds of the nine that decline the same way, as the page says. */
+export const PRONOMINAL_COMPOUNDS = ["uterque, utraque, utrumque"];
+
 export const PRONOMINAL_ADJECTIVE_COLUMNS = [
 	{ key: "lemma", label: "Adjective" },
 	{ key: "english", label: "Meaning" },
@@ -730,7 +733,7 @@ export const PRONOMINAL_ADJECTIVE_COLUMNS = [
 ];
 
 // ille's endings, except where the nominative keeps bonus's -us and -um.
-const TOTUS: GenderedPronoun = {
+export const TOTUS: GenderedPronoun = {
 	id: "totus",
 	lemma: "tōtus, tōta, tōtum",
 	english: "whole",

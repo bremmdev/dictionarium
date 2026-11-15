@@ -402,7 +402,8 @@ function FullTableLink({ entry }: { entry: EntryPage }) {
 			<TextLink to={table.to} hash={table.hash} icon={Table2}>
 				{table.like ? (
 					<>
-						Conjugated like <span lang="la">{table.like}</span>
+						{entry.partOfSpeech === "verb" ? "Conjugated" : "Declined"} like{" "}
+						<span lang="la">{table.like}</span>
 					</>
 				) : entry.partOfSpeech === "verb" ? (
 					"Conjugated in full"

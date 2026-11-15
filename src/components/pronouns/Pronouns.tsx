@@ -125,10 +125,8 @@ const BLURBS: Record<string, React.ReactNode> = {
 	"alius, alia, aliud": (
 		<>
 			<em>Other</em>, <em>another</em>, one of any number:{" "}
-			<LatinWord>aliud tempus</LatinWord>, <em>another time</em>. Doubled, it
-			shares a group out: <LatinWord>aliī … aliī</LatinWord>,{" "}
-			<em>some … others</em>. Where there are only two, the other one is{" "}
-			<LatinWord>alter</LatinWord>.
+			<LatinWord>aliud tempus</LatinWord>, <em>another time</em>. Where there
+			are only two, the other one is <LatinWord>alter</LatinWord>.
 		</>
 	),
 	"īdem, eadem, idem": (
@@ -622,10 +620,8 @@ export function PronominalAdjectives() {
 				Nine adjectives decline like <LatinWord>bonus</LatinWord> except in the
 				genitive and dative singular, where they take the pronominal{" "}
 				<LatinWord>-īus</LatinWord> and <LatinWord>-ī</LatinWord> in all three
-				genders: <LatinWord>tōtīus</LatinWord>, <LatinWord>tōtī</LatinWord>. The
-				plural is <LatinWord>bonus</LatinWord>'s throughout. In the order below,
-				their first letters spell the schoolroom mnemonic{" "}
-				<span lang="la">UNUS NAUTA</span>.
+				genders: <LatinWord>tōtīus</LatinWord>, <LatinWord>tōtī</LatinWord>.
+				Remember them with the mnemonic <span lang="la">UNUS NAUTA</span>.
 			</p>
 			<Table
 				caption={
@@ -644,11 +640,7 @@ export function PronominalAdjectives() {
 				<LatinWord>utrīque</LatinWord>. As with <LatinWord>ille</LatinWord>, the{" "}
 				<LatinWord>ī</LatinWord> of <LatinWord>-īus</LatinWord> can be short in
 				verse, often in <LatinWord>alterius</LatinWord> and always in{" "}
-				<LatinWord>utriusque</LatinWord>. The regular forms of{" "}
-				<LatinWord>bonus</LatinWord> turn up now and then too, such as{" "}
-				<LatinWord>aliae</LatinWord> and <LatinWord>aliō</LatinWord>.{" "}
-				<LatinWord>neuter</LatinWord> as a grammar term, <em>neuter</em> gender,
-				is an ordinary adjective: <LatinWord>neutrī generis</LatinWord>.
+				<LatinWord>utriusque</LatinWord>.
 			</p>
 			{PRONOMINAL_ADJECTIVE_PARADIGMS.map((pronoun) => (
 				<Pronoun key={pronoun.id} pronoun={pronoun} />
