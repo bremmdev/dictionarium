@@ -537,80 +537,6 @@ const MEUS: GenderedPronoun = {
 	},
 };
 
-const TUUS: GenderedPronoun = {
-	id: "tuus",
-	lemma: "tuus, tua, tuum",
-	english: "your (of one person)",
-	pattern: { stem: "tu", endings: "bonus" },
-	singular: {
-		nominative: {
-			m: { form: "tuus" },
-			f: { form: "tua" },
-			n: { form: "tuum" },
-		},
-		genitive: { m: { form: "tuī" }, f: { form: "tuae" }, n: { form: "tuī" } },
-		dative: { m: { form: "tuō" }, f: { form: "tuae" }, n: { form: "tuō" } },
-		accusative: {
-			m: { form: "tuum" },
-			f: { form: "tuam" },
-			n: { form: "tuum" },
-		},
-		ablative: { m: { form: "tuō" }, f: { form: "tuā" }, n: { form: "tuō" } },
-	},
-	plural: {
-		nominative: { m: { form: "tuī" }, f: { form: "tuae" }, n: { form: "tua" } },
-		genitive: {
-			m: { form: "tuōrum" },
-			f: { form: "tuārum" },
-			n: { form: "tuōrum" },
-		},
-		dative: { m: { form: "tuīs" }, f: { form: "tuīs" }, n: { form: "tuīs" } },
-		accusative: {
-			m: { form: "tuōs" },
-			f: { form: "tuās" },
-			n: { form: "tua" },
-		},
-		ablative: { m: { form: "tuīs" }, f: { form: "tuīs" }, n: { form: "tuīs" } },
-	},
-};
-
-const SUUS: GenderedPronoun = {
-	id: "suus",
-	lemma: "suus, sua, suum",
-	english: "his, her, its, their own",
-	pattern: { stem: "su", endings: "bonus" },
-	singular: {
-		nominative: {
-			m: { form: "suus" },
-			f: { form: "sua" },
-			n: { form: "suum" },
-		},
-		genitive: { m: { form: "suī" }, f: { form: "suae" }, n: { form: "suī" } },
-		dative: { m: { form: "suō" }, f: { form: "suae" }, n: { form: "suō" } },
-		accusative: {
-			m: { form: "suum" },
-			f: { form: "suam" },
-			n: { form: "suum" },
-		},
-		ablative: { m: { form: "suō" }, f: { form: "suā" }, n: { form: "suō" } },
-	},
-	plural: {
-		nominative: { m: { form: "suī" }, f: { form: "suae" }, n: { form: "sua" } },
-		genitive: {
-			m: { form: "suōrum" },
-			f: { form: "suārum" },
-			n: { form: "suōrum" },
-		},
-		dative: { m: { form: "suīs" }, f: { form: "suīs" }, n: { form: "suīs" } },
-		accusative: {
-			m: { form: "suōs" },
-			f: { form: "suās" },
-			n: { form: "sua" },
-		},
-		ablative: { m: { form: "suīs" }, f: { form: "suīs" }, n: { form: "suīs" } },
-	},
-};
-
 const NOSTER: GenderedPronoun = {
 	id: "noster",
 	lemma: "noster, nostra, nostrum",
@@ -672,69 +598,55 @@ const NOSTER: GenderedPronoun = {
 	},
 };
 
-const VESTER: GenderedPronoun = {
-	id: "vester",
-	lemma: "vester, vestra, vestrum",
-	english: "your (of several)",
-	pattern: { stem: "vestr", endings: "bonus" },
-	singular: {
-		nominative: {
-			m: { form: "vester", irregular: true },
-			f: { form: "vestra" },
-			n: { form: "vestrum" },
-		},
-		genitive: {
-			m: { form: "vestrī" },
-			f: { form: "vestrae" },
-			n: { form: "vestrī" },
-		},
-		dative: {
-			m: { form: "vestrō" },
-			f: { form: "vestrae" },
-			n: { form: "vestrō" },
-		},
-		accusative: {
-			m: { form: "vestrum" },
-			f: { form: "vestram" },
-			n: { form: "vestrum" },
-		},
-		ablative: {
-			m: { form: "vestrō" },
-			f: { form: "vestrā" },
-			n: { form: "vestrō" },
-		},
-	},
-	plural: {
-		nominative: {
-			m: { form: "vestrī" },
-			f: { form: "vestrae" },
-			n: { form: "vestra" },
-		},
-		genitive: {
-			m: { form: "vestrōrum" },
-			f: { form: "vestrārum" },
-			n: { form: "vestrōrum" },
-		},
-		dative: {
-			m: { form: "vestrīs" },
-			f: { form: "vestrīs" },
-			n: { form: "vestrīs" },
-		},
-		accusative: {
-			m: { form: "vestrōs" },
-			f: { form: "vestrās" },
-			n: { form: "vestra" },
-		},
-		ablative: {
-			m: { form: "vestrīs" },
-			f: { form: "vestrīs" },
-			n: { form: "vestrīs" },
-		},
-	},
+/** A possessive with no table of its own: meus or noster on another stem. */
+export type DeclinedLike = {
+	/** The anchor, as on the tables: /grammar/pronouns#tuus. */
+	id: string;
+	lemma: string;
+	english: string;
+	/** The id of the table it declines like. */
+	like: string;
 };
 
-/** Each beside the personal pronoun it belongs to: mine, yours, one's own; ours, yours. */
-export const POSSESSIVES = [MEUS, TUUS, SUUS, NOSTER, VESTER];
+/** The two shapes in full, each with the possessives that follow it. */
+export const POSSESSIVES: Array<{
+	table: GenderedPronoun;
+	declinedLike: Array<DeclinedLike>;
+}> = [
+	{
+		table: MEUS,
+		declinedLike: [
+			{
+				id: "tuus",
+				lemma: "tuus, tua, tuum",
+				english: "your (of one person)",
+				like: "meus",
+			},
+			{
+				id: "suus",
+				lemma: "suus, sua, suum",
+				english: "his, her, its, their own",
+				like: "meus",
+			},
+		],
+	},
+	{
+		table: NOSTER,
+		declinedLike: [
+			{
+				id: "vester",
+				lemma: "vester, vestra, vestrum",
+				english: "your (of several)",
+				like: "noster",
+			},
+		],
+	},
+];
+
+/** For the links from the dictionary and the check. */
+export const DECLINED_LIKE = POSSESSIVES.flatMap(
+	({ declinedLike }) => declinedLike,
+);
 
 /** In the order the deixis table reads: near me, near you, far, mentioned. */
 export const DEMONSTRATIVES = [HIC, ISTE, ILLE, IS];
@@ -930,7 +842,7 @@ export const PRONOMINAL_ADJECTIVE_PARADIGMS = [TOTUS, ALIUS];
 
 /** Every gendered table on the page, for the check. */
 export const PRONOUNS = [
-	...POSSESSIVES,
+	...POSSESSIVES.map(({ table }) => table),
 	...DEMONSTRATIVES,
 	...INTENSIVE_AND_IDENTITY,
 	...PRONOMINAL_ADJECTIVE_PARADIGMS,

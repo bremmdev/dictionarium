@@ -4,7 +4,11 @@
  * own data, so a table added there is linked here with nothing else to do.
  */
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
-import { PERSONAL, PRONOUNS } from "#/components/pronouns/Pronouns.utils";
+import {
+	DECLINED_LIKE,
+	PERSONAL,
+	PRONOUNS,
+} from "#/components/pronouns/Pronouns.utils";
 import type { Entry } from "#/db/schema";
 
 export type FullTable = {
@@ -17,7 +21,7 @@ export type FullTable = {
 const firstForm = (filing: string) => filing.split(", ")[0];
 
 const DECLINED = new Map<string, FullTable>(
-	[...PERSONAL, ...PRONOUNS].map(({ id, lemma }) => [
+	[...PERSONAL, ...PRONOUNS, ...DECLINED_LIKE].map(({ id, lemma }) => [
 		firstForm(lemma),
 		{ to: "/grammar/pronouns", hash: id },
 	]),

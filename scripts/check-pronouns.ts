@@ -9,6 +9,7 @@ import {
 	FIRST_SECOND,
 } from "#/components/declensions/Adjectives.utils";
 import {
+	DECLINED_LIKE,
 	PERSONAL,
 	PRONOMINAL_ADJECTIVES,
 	PRONOMINAL_ENDINGS,
@@ -23,9 +24,16 @@ const ids = new Set<string>();
 let checked = 0;
 
 // The id is the anchor, so two of them would send a link to the wrong table.
-for (const { id, lemma } of [...PERSONAL, ...PRONOUNS]) {
+for (const { id, lemma } of [...PERSONAL, ...PRONOUNS, ...DECLINED_LIKE]) {
 	if (ids.has(id)) problems.push(`${lemma}: duplicate id "${id}"`);
 	ids.add(id);
+}
+
+// "Declines like meus" has to link to a table that is on the page.
+for (const { lemma, like } of DECLINED_LIKE) {
+	if (!PRONOUNS.some(({ id }) => id === like)) {
+		problems.push(`${lemma}: declines like "${like}", which has no table`);
+	}
 }
 
 const bonus = FIRST_SECOND.find(({ lemma }) => lemma === "bonus, bona, bonum");

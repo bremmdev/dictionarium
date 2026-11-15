@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { ADJECTIVE_CASES } from "#/components/declensions/Adjectives.utils";
 import { PARADIGM_COLUMNS } from "#/components/declensions/Declensions.utils";
 import { GenderedParadigm } from "#/components/declensions/GenderedParadigm";
@@ -7,6 +8,7 @@ import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
 import { TextLink } from "#/components/TextLink";
 import {
+	type DeclinedLike,
 	DEIXIS,
 	DEIXIS_COLUMNS,
 	DEMONSTRATIVES,
@@ -145,9 +147,7 @@ const NOTES: Record<string, React.ReactNode> = {
 			The masculine vocative singular is <LatinWord>mī</LatinWord>, rarely{" "}
 			<LatinWord>meus</LatinWord>: <LatinWord>mī fīlī</LatinWord>,{" "}
 			<em>my son</em>. The masculine plural <LatinWord>meī</LatinWord> is
-			spelled like the genitive of <LatinWord>ego</LatinWord>, and the sentence
-			tells them apart: <LatinWord>meī amīcī</LatinWord>, <em>my friends</em>,
-			against <LatinWord>memor meī</LatinWord>, <em>mindful of me</em>.
+			spelled like the genitive of <LatinWord>ego</LatinWord>.
 		</>
 	),
 	"suus, sua, suum": (
@@ -366,6 +366,37 @@ function Pronoun({ pronoun }: { pronoun: GenderedPronoun }) {
 	);
 }
 
+/** A possessive with no table: its heading and prose, and a link to the one it declines like. */
+function DeclinedLikeEntry({ pronoun }: { pronoun: DeclinedLike }) {
+	const { id, lemma, english, like } = pronoun;
+	return (
+		<div id={id} className="scroll-mt-8 space-y-4">
+			<Heading
+				variant="h4"
+				as="h3"
+				className="mx-auto text-center uppercase tracking-wide"
+			>
+				<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
+				<span className="font-normal text-ink-600 normal-case">
+					— {english}
+				</span>
+			</Heading>
+			<p className="mx-auto max-w-3xl text-center">
+				{BLURBS[lemma]} It declines like{" "}
+				<TextLink to="/grammar/pronouns" hash={like}>
+					<LatinWord>{like}</LatinWord>
+				</TextLink>
+				.
+			</p>
+			{NOTES[lemma] && (
+				<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
+					{NOTES[lemma]}
+				</p>
+			)}
+		</div>
+	);
+}
+
 const PRONOMINAL_ADJECTIVE_ROWS = PRONOMINAL_ADJECTIVES.map(
 	({ lemma, english, genitive, dative }) => ({
 		id: lemma,
@@ -419,11 +450,11 @@ export function Pronominal() {
 			/>
 			<p className="mx-auto max-w-4xl text-base text-ink-600 leading-relaxed">
 				The <LatinWord>ī</LatinWord> of <LatinWord>-īus</LatinWord> is long in
-				prose and often short in verse, <LatinWord>illius</LatinWord>.{" "}
-				<LatinWord>hic</LatinWord> and <LatinWord>is</LatinWord> keep their own
-				shapes, but the same genitive and dative show through:{" "}
-				<LatinWord>huius</LatinWord>, <LatinWord>huic</LatinWord>;{" "}
-				<LatinWord>eius</LatinWord>, <LatinWord>eī</LatinWord>.
+				prose and often short in verse. <LatinWord>hic</LatinWord> and{" "}
+				<LatinWord>is</LatinWord> keep their own shapes, but the same genitive
+				and dative show through: <LatinWord>huius</LatinWord>,{" "}
+				<LatinWord>huic</LatinWord>; <LatinWord>eius</LatinWord>,{" "}
+				<LatinWord>eī</LatinWord>.
 			</p>
 		</section>
 	);
@@ -447,15 +478,9 @@ export function PersonalPronouns() {
 				or <em>they</em>; a demonstrative stands in, most often{" "}
 				<LatinWord>is</LatinWord>. The one pronoun of the third person is the
 				reflexive <LatinWord>suī</LatinWord>, <em>himself</em>. None of the
-				three follows the pattern above.
-			</p>
-			<p>
-				The verb ending already says who the subject is, so{" "}
-				<LatinWord>ego</LatinWord> and <LatinWord>tū</LatinWord> are said only
-				for contrast or emphasis: <LatinWord>tē vocō</LatinWord>,{" "}
-				<em>I am calling you</em>, but{" "}
-				<LatinWord>quis mē vocat? ego tē vocō</LatinWord>,{" "}
-				<em>who is calling me? I am calling you</em>.
+				three follows the pattern above. The verb ending already says who the
+				subject is, so <LatinWord>ego</LatinWord> and <LatinWord>tū</LatinWord>{" "}
+				are said only for contrast or emphasis.
 			</p>
 			<div className="grid items-start gap-10 lg:grid-cols-2 2xl:grid-cols-3">
 				{PERSONAL.map((pronoun) => (
@@ -501,8 +526,13 @@ export function Possessives() {
 				<LatinWord>socium fraudāvit</LatinWord>, <em>he cheated his partner</em>
 				.
 			</p>
-			{POSSESSIVES.map((pronoun) => (
-				<Pronoun key={pronoun.id} pronoun={pronoun} />
+			{POSSESSIVES.map(({ table, declinedLike }) => (
+				<Fragment key={table.id}>
+					<Pronoun pronoun={table} />
+					{declinedLike.map((pronoun) => (
+						<DeclinedLikeEntry key={pronoun.id} pronoun={pronoun} />
+					))}
+				</Fragment>
 			))}
 		</section>
 	);

@@ -31,7 +31,7 @@ Its own route, like the irregular verbs: /grammar/declensions is about the five 
 |---|---|---|
 | `pronominal` | *Dēclīnātiō prōnōminālis* | 1 ✓ |
 | `personal` | *Persōnālia*: *ego, tū, suī* | 2 ✓ |
-| `possessives` | *Possessīva*: *meus, tuus, suus, noster, vester*, with **full paradigms** | 2 ✓ |
+| `possessives` | *Possessīva*: *meus* and *noster* in full; *tuus*, *suus* (like *meus*) and *vester* (like *noster*) as prose with their own anchors | 2 ✓ |
 | `demonstratives` | *Dēmōnstrātīva*: *hic, iste, ille, is* | 1 ✓ |
 | `identity` | *Ipse et īdem* | 1 ✓ |
 | `relative` | *quī, quae, quod*; *quis, quid*; the question adjective *quī* | 3 |
