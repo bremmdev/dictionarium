@@ -11,16 +11,20 @@ import { Results } from "./Results";
 
 const route = getRouteApi("/");
 
+/** The page's search heading, lifted into view with the box. */
+export const SEARCH_TITLE_ID = "search-title";
+
 export function Search() {
 	const q = route.useSearch({ select: (search) => search.q ?? "" });
 	const navigate = useNavigate({ from: "/" });
-	const { results, suggestions, total } = route.useLoaderData();
+	const { results, suggestions, total, matchCount } = route.useLoaderData();
 	// Not `useMatch().isFetching`: loaderDeps puts q in the match id, so each
 	// query is a *new* match rather than a refetch of the presented one, and the
 	// router only ever writes isFetching onto the match already on screen.
 	const isFetching = useRouterState({ select: (s) => s.isLoading });
 
 	const inputRef = useRef<HTMLInputElement>(null);
+	const formRef = useRef<HTMLFormElement>(null);
 
 	// `value` is the draft sitting in the box; `q` is the committed search that
 	// lives in the URL and drives the loader. They are genuinely different bits of
@@ -37,7 +41,7 @@ export function Search() {
 	const runSearch = (next: string) => {
 		const trimmed = next.trim();
 		// Drop q entirely when it is empty, so clearing lands on a clean "/".
-		navigate({
+		return navigate({
 			search: trimmed === "" ? {} : { q: trimmed },
 			resetScroll: false,
 		});
@@ -47,17 +51,21 @@ export function Search() {
 		<>
 			<search>
 				<form
-					className="group flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 shadow-[0_14px_30px_-20px_rgb(58_52_44/0.5)] transition-colors hover:border-parchment-400 focus-within:border-accent/60 focus-within:ring-3 focus-within:ring-accent/15 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
+					ref={formRef}
+					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 shadow-[0_14px_30px_-20px_rgb(58_52_44/0.5)] transition-colors hover:border-parchment-400 focus-within:border-accent/60 focus-within:ring-3 focus-within:ring-accent/15 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
 					onSubmit={(e) => {
 						e.preventDefault();
-						runSearch(value);
+						// After the results land, since the page is too short to scroll before then.
+						runSearch(value).then(() => {
+							if (value.trim() !== "") liftAboveKeyboard(formRef.current);
+						});
 					}}
 				>
 					<label htmlFor="search-word" className="sr-only">
 						Latin word to look up
 					</label>
 					<SearchIcon
-						className="h-5 w-5 shrink-0 text-gold-600 transition-colors group-focus-within:text-accent sm:h-6 sm:w-6"
+						className="h-5 w-5 shrink-0 text-gold-600 max-sm:hidden transition-colors group-focus-within:text-accent sm:h-6 sm:w-6"
 						aria-hidden="true"
 					/>
 					<span className="search-line min-w-0 flex-1">
@@ -109,7 +117,12 @@ export function Search() {
 				</form>
 			</search>
 
-			<section aria-labelledby="results-heading" aria-busy={isFetching}>
+			<section
+				aria-labelledby="results-heading"
+				aria-busy={isFetching}
+				// A screen of room below the box, or a short result list could not scroll it to the top.
+				className={q === "" ? undefined : "pointer-coarse:min-h-svh"}
+			>
 				<Heading variant="h2" id="results-heading" className="sr-only">
 					Search results
 				</Heading>
@@ -118,10 +131,24 @@ export function Search() {
 					suggestions={suggestions}
 					onSuggestion={() => inputRef.current?.focus()}
 					total={total}
+					matchCount={matchCount}
 					isFetching={isFetching}
 					query={q}
 				/>
 			</section>
 		</>
 	);
+}
+
+/** On touch screens the keyboard stays up after Enter, so move the title and box to the top and leave the results room. */
+function liftAboveKeyboard(form: HTMLFormElement | null) {
+	const target = document.getElementById(SEARCH_TITLE_ID) ?? form;
+	if (!target || !window.matchMedia("(pointer: coarse)").matches) return;
+	const reduceMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	target.scrollIntoView({
+		behavior: reduceMotion ? "auto" : "smooth",
+		block: "start",
+	});
 }

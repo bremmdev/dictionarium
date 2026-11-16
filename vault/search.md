@@ -87,13 +87,14 @@ Below `MIN_QUERY_LENGTH` (2) it returns no results and no suggestions without to
 
 The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
 
-**Ranks prefix matches first.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`. But a word _starting_ with the query is nearly always what the user meant, so the ordering sorts those to the top before falling back to alphabetical:
+**Ranks exact, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`. But the word itself, then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
 
 ```sql
-case when lemma_plain like 'am%' then 0 else 1 end, lemma_plain
+case when lemma_plain = 'am' then 0 when lemma_plain like 'am%' then 1 else 2 end,
+length(lemma_plain), lemma_plain
 ```
 
-Capped at `MAX_RESULTS`.
+**Capped at `MAX_RESULTS`, and says so.** When the list comes back full, a second `count()` over the same `WHERE` gives `matchCount`, and `Results.tsx` shows and announces "10 of 23 results. Keep typing to narrow the list." A list that comes back short already is the count, so the second scan only runs when the cut actually happened. `recordSearch` stores `matchCount` too, so `search_events.result_count` is the real number of matches rather than the capped one.
 
 ### Why the full table scan is fine
 

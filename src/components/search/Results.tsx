@@ -13,6 +13,8 @@ type ResultsProps = {
 	onSuggestion: () => void;
 	/** Every lemma in the dictionary is one word, so this is the word count. */
 	total: number;
+	/** Every entry the query matches; above results.length when the list was cut short. */
+	matchCount: number;
 	isFetching: boolean;
 	query: string;
 };
@@ -24,6 +26,7 @@ export function Results({
 	suggestions,
 	onSuggestion,
 	total,
+	matchCount,
 	isFetching,
 	query,
 }: ResultsProps) {
@@ -33,6 +36,7 @@ export function Results({
 	// rather than reading as a search that ran and found nothing.
 	const isTooShort =
 		trimmed.length > 0 && normalizeLemma(trimmed).length < MIN_QUERY_LENGTH;
+	const isCut = matchCount > results.length;
 
 	// Announce the outcome, never the in-between. Firing on every keystroke of a
 	// pending search would just talk over the user.
@@ -41,9 +45,11 @@ export function Results({
 		if (isTooShort) {
 			announcement = `Type at least ${MIN_QUERY_LENGTH} letters to search.`;
 		} else {
-			announcement = `${results.length} ${
-				results.length === 1 ? "result" : "results"
-			} for ${trimmed}.`;
+			announcement = isCut
+				? `${results.length} of ${matchCount.toLocaleString()} results for ${trimmed}. Keep typing to narrow the list.`
+				: `${results.length} ${
+						results.length === 1 ? "result" : "results"
+					} for ${trimmed}.`;
 			if (results.length === 0 && suggestions.length > 0) {
 				announcement += ` Did you mean ${orList.format(suggestions)}?`;
 			}
@@ -117,6 +123,16 @@ export function Results({
 						?
 					</p>
 				)}
+
+			{isCut && (
+				<p className="mb-3 text-center text-ink-600 text-lg">
+					Showing{" "}
+					<span className="font-semibold text-ink-900">
+						{results.length} of {matchCount.toLocaleString()}
+					</span>{" "}
+					results. Keep typing to narrow the list.
+				</p>
+			)}
 
 			{results.length > 0 && (
 				<ul className="divide-y divide-parchment-200 rounded-sm border border-parchment-200 bg-surface-subtle/50">

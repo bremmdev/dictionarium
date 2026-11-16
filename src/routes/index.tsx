@@ -5,7 +5,7 @@ import scroll from "#/assets/scroll-sketch.svg";
 import templum from "#/assets/temple-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Heading } from "#/components/Heading";
-import { Search } from "#/components/search/Search";
+import { SEARCH_TITLE_ID, Search } from "#/components/search/Search";
 import { getEntryCount, searchEntries } from "#/server/search";
 
 // The total does not change often, so give it its own TTL instead of
@@ -137,7 +137,8 @@ function Home() {
 			<section className="mx-auto max-w-5xl px-4 sm:px-8 py-10 md:py-24 space-y-8">
 				<Heading
 					variant="h2"
-					className="mx-auto text-center uppercase tracking-wide"
+					id={SEARCH_TITLE_ID}
+					className="mx-auto scroll-mt-4 text-center uppercase tracking-wide"
 					lang="la"
 				>
 					Quaere verba latīna

@@ -18,6 +18,8 @@ export type SearchOutcome = {
 	results: Array<ShownEntry>;
 	/** Macronned lemmas close to the query. Only filled when results is empty. */
 	suggestions: Array<string>;
+	/** Every entry the query matches, of which results holds the first MAX_RESULTS. */
+	matchCount: number;
 };
 
 export const searchEntries = createServerFn({ method: "GET" })
@@ -36,15 +38,16 @@ export const searchEntries = createServerFn({ method: "GET" })
 		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
 		const key = normalizeLemma(q);
 		if (key.length < MIN_QUERY_LENGTH) {
-			return { results: [], suggestions: [] };
+			return { results: [], suggestions: [], matchCount: 0 };
 		}
 
+		const matches = like(entries.lemmaPlain, `%${key}%`);
 		const results = await db.query.entries.findMany({
-			where: like(entries.lemmaPlain, `%${key}%`),
-			// Words that start with the query are what the user almost always
-			// wants, so rank those above the ones that merely contain it.
+			where: matches,
+			// Exact word, then words starting with the query, then the rest; shortest first in each, so am finds amō before ambulō.
 			orderBy: [
-				sql`case when ${entries.lemmaPlain} like ${`${key}%`} then 0 else 1 end`,
+				sql`case when ${entries.lemmaPlain} = ${key} then 0 when ${entries.lemmaPlain} like ${`${key}%`} then 1 else 2 end`,
+				sql`length(${entries.lemmaPlain})`,
 				entries.lemmaPlain,
 				entries.lemma,
 				entries.homonym,
@@ -54,6 +57,8 @@ export const searchEntries = createServerFn({ method: "GET" })
 			extras: { homographs: homographCount(entries).as("homographs") },
 			limit: MAX_RESULTS,
 		});
+		const matchCount =
+			results.length < MAX_RESULTS ? results.length : countMatches(matches);
 
 		// Recorded below the length guard, so only searches that were actually run
 		// are counted — a single letter never reaches the database
@@ -64,14 +69,21 @@ export const searchEntries = createServerFn({ method: "GET" })
 		// decrypting the session cookie, the insert itself is synchronous, and a
 		// floating promise here would be an unhandled rejection waiting to happen.
 		if (record) {
-			await recordSearch(key, results.length);
+			await recordSearch(key, matchCount);
 		}
 
 		return {
 			results: results.map(withFrequency),
 			suggestions: findSuggestions(key, results.length),
+			matchCount,
 		};
 	});
+
+/** Only run when the list came back full, since a short list already is the count. */
+function countMatches(where: SQL) {
+	const [row] = db.select({ n: count() }).from(entries).where(where).all();
+	return row?.n ?? 0;
+}
 
 /** Read only on a miss; every lemma is compared in JS — see vault/search.md. */
 function findSuggestions(key: string, resultCount: number) {

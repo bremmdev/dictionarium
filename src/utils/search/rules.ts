@@ -18,4 +18,4 @@ export function normalizeLemma(value: string) {
 /** Below this we don't bother the database — a single letter matches half the dictionary. */
 export const MIN_QUERY_LENGTH = 2;
 
-export const MAX_RESULTS = 10;
+export const MAX_RESULTS = 4;
