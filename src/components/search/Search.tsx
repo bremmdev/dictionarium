@@ -54,7 +54,7 @@ export function Search() {
 			<search>
 				<form
 					ref={formRef}
-					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 transition-colors focus-within:border-accent/80 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
+					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-accent bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 focus-within:ring-1 focus-within:ring-accent sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
 					onSubmit={(e) => {
 						e.preventDefault();
 						runSearch(value);
