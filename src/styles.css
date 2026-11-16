@@ -104,6 +104,13 @@
   --text-label--line-height: calc(1.125 / 0.8125);
 }
 
+/* The hand-drawn line under links, and a finer nib for the search field.
+   Used as masks. */
+:root {
+  --pen-stroke: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1.5 5.5C22 3.5 45 6.5 66 4.5S92 3 98.5 3.5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+  --pen-stroke-fine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M0 5.5C21 3.5 45 6.5 66 4.5S92 3 100 3.5' fill='none' stroke='black' stroke-width='1.25' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+
 @layer components {
   .nav-link {
     @apply font-bold tracking-wide hover:text-gold-600;
@@ -126,7 +133,7 @@
     bottom: -0.2em;
     height: 0.4em;
     background-color: currentColor;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1.5 5.5C22 3.5 45 6.5 66 4.5S92 3 98.5 3.5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+    mask: var(--pen-stroke) no-repeat center / 100% 100%;
   }
 
   .text-link:hover .text-link-label::after {
@@ -146,6 +153,40 @@
     }
 
     .text-link-label::after {
+      display: none;
+    }
+  }
+
+  /* <Search>. The word sits on a fine ruled pen stroke, the links' line drawn
+     long and flat. It takes the accent while the field has focus. */
+  .search-line {
+    position: relative;
+  }
+
+  .search-line::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.25rem;
+    height: 0.3rem;
+    background-color: var(--color-ink-500);
+    mask: var(--pen-stroke-fine) no-repeat center / 100% 100%;
+    pointer-events: none;
+  }
+
+  .search-line:focus-within::after {
+    background-color: var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .search-line::after {
+      transition: background-color 200ms ease-out;
+    }
+  }
+
+  /* The field's border carries it in forced colours. */
+  @media (forced-colors: active) {
+    .search-line::after {
       display: none;
     }
   }

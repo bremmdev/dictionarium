@@ -47,55 +47,58 @@ export function Search() {
 		<>
 			<search>
 				<form
-					className="flex gap-4 w-full"
+					className="group flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 shadow-[0_14px_30px_-20px_rgb(58_52_44/0.5)] transition-colors hover:border-parchment-400 focus-within:border-accent/60 focus-within:ring-3 focus-within:ring-accent/15 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
 					onSubmit={(e) => {
 						e.preventDefault();
 						runSearch(value);
 					}}
 				>
-					<div className="flex items-center gap-2 border-b border-accent focus-within:border-b-2 p-2 flex-1">
-						<label htmlFor="search-word" className="sr-only">
-							Latin word to look up
-						</label>
-						<SearchIcon
-							className="w-6 h-6 text-accent shrink-0"
-							aria-hidden="true"
-						/>
+					<label htmlFor="search-word" className="sr-only">
+						Latin word to look up
+					</label>
+					<SearchIcon
+						className="h-5 w-5 shrink-0 text-gold-600 transition-colors group-focus-within:text-accent sm:h-6 sm:w-6"
+						aria-hidden="true"
+					/>
+					<span className="search-line min-w-0 flex-1">
 						<input
 							id="search-word"
 							ref={inputRef}
 							type="text"
 							lang="la"
 							autoComplete="off"
+							autoCapitalize="none"
+							autoCorrect="off"
+							enterKeyHint="search"
 							spellCheck={false}
-							className="w-full text-xl h-12 outline-none font-bold tracking-wide"
+							className="h-12 w-full bg-transparent font-medium text-ink-900 text-xl tracking-wide caret-accent outline-hidden sm:text-2xl"
 							value={value}
 							onChange={(e) => setValue(e.target.value)}
 						/>
-						{value !== "" && (
-							<button
-								type="button"
-								lang="la"
-								onClick={() => {
-									setValue("");
-									runSearch("");
-									// This button unmounts on clear, so hand focus back to
-									// the input rather than letting it fall to <body>.
-									inputRef.current?.focus();
-								}}
-								className="focus-ring uppercase text-accent font-bold"
-							>
-								dēlē
-								<span className="sr-only" lang="en">
-									{" (clear)"}
-								</span>
-							</button>
-						)}
-					</div>
+					</span>
+					{value !== "" && (
+						<button
+							type="button"
+							lang="la"
+							onClick={() => {
+								setValue("");
+								runSearch("");
+								// This button unmounts on clear, so hand focus back to
+								// the input rather than letting it fall to <body>.
+								inputRef.current?.focus();
+							}}
+							className="focus-ring shrink-0 rounded-sm px-2 py-2 font-semibold text-ink-600 text-sm uppercase tracking-[0.12em] hover:text-accent sm:text-base"
+						>
+							dēlē
+							<span className="sr-only" lang="en">
+								{" (clear)"}
+							</span>
+						</button>
+					)}
 					<Button
 						type="submit"
 						variant="primary"
-						className="uppercase self-center"
+						className="shrink-0 uppercase max-sm:px-3 max-sm:text-base"
 						lang="la"
 					>
 						Quaere
