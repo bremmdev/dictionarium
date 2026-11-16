@@ -370,7 +370,7 @@ function DeclinedLikeEntry({ pronoun }: { pronoun: DeclinedLike }) {
 	return (
 		<div id={id} className="scroll-mt-8 space-y-4">
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto text-center uppercase tracking-wide"
 			>

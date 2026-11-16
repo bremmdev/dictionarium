@@ -180,12 +180,7 @@ function RouteComponent() {
 function NotFound() {
 	return (
 		<div className="mx-auto max-w-3xl space-y-4 px-4 sm:px-8 py-16 text-center md:py-24">
-			<Heading
-				variant="h3"
-				as="h1"
-				className="font-bold text-accent!"
-				lang="la"
-			>
+			<Heading variant="h3" as="h1" className="text-accent!" lang="la">
 				Nihil inventum.
 			</Heading>
 			<p className="text-ink-600 text-lg">

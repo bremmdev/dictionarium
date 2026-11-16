@@ -73,7 +73,7 @@ export function NumberTheory() {
 			</p>
 
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto text-center uppercase tracking-wide"
 			>
@@ -104,7 +104,7 @@ export function NumberTheory() {
 			</p>
 
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto text-center uppercase tracking-wide"
 			>

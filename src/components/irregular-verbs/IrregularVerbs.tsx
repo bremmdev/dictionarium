@@ -234,7 +234,7 @@ function Compounds({ verb }: { verb: IrregularVerb }) {
 
 	return (
 		<div className="mx-auto max-w-4xl space-y-4">
-			<Heading variant="h4" as="h3" className="text-center">
+			<Heading variant="h3" as="h3" className="text-center">
 				Compounds of <LatinWord>{lemma}</LatinWord>
 			</Heading>
 			<p>{COMPOUND_NOTES[lemma]}</p>

@@ -229,7 +229,7 @@ function Group({ title, stem, verbs }: ConjugationGroup) {
 	return (
 		<div className="space-y-6">
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto text-center uppercase tracking-wide"
 			>

@@ -55,7 +55,7 @@ function Figure({ value, label }: { value: number; label: string }) {
 			<p className="font-bold text-3xl text-ink-900 tabular-nums">
 				{value.toLocaleString()}
 			</p>
-			<p className="mt-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+			<p className="mt-1 font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 				{label}
 			</p>
 		</div>
@@ -109,7 +109,7 @@ function PeriodPicker({ current }: { current: number }) {
 					to="/admin/stats"
 					search={days === DEFAULT_PERIOD ? {} : { days }}
 					aria-current={days === current ? "page" : undefined}
-					className={`focus-ring rounded-full border px-3 py-1 font-semibold text-xs uppercase tracking-[0.18em] ${
+					className={`focus-ring rounded-full border px-3 py-1 font-semibold text-label uppercase tracking-[0.18em] ${
 						days === current
 							? "border-accent bg-parchment-100 text-accent"
 							: "border-parchment-300 bg-parchment-50 text-gold-600 hover:border-accent hover:text-accent"

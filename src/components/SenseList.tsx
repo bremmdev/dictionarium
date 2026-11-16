@@ -38,7 +38,7 @@ export function SenseList({ senses, compact = false }: SenseListProps) {
 						<p className={`text-ink-900 ${compact ? "text-lg" : "text-xl"}`}>
 							<CaseTag governs={sense.governs} />
 							{sense.usage && (
-								<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-600 text-xs uppercase tracking-[0.18em]">
+								<span className="mr-2 rounded-full border border-parchment-300 px-2 py-0.5 align-middle text-ink-600 text-label uppercase tracking-[0.18em]">
 									{sense.usage}
 								</span>
 							)}

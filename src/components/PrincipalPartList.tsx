@@ -99,7 +99,7 @@ export function PrincipalPartList({
 						compact ? "bg-parchment-50 px-3 py-2" : "bg-parchment-100 px-4 py-3"
 					}`}
 				>
-					<p className="font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+					<p className="font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 						{labels?.[i] ?? "form"}
 					</p>
 					<p

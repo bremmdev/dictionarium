@@ -182,7 +182,7 @@ function EditLink({ entry }: { entry: EntryWithSenses }) {
 		<Link
 			to="/admin"
 			search={{ id: entry.id }}
-			className="focus-ring inline-flex items-center gap-2 rounded-full border border-parchment-300 bg-parchment-50 px-4 py-1.5 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] hover:border-accent hover:text-accent"
+			className="focus-ring inline-flex items-center gap-2 rounded-full border border-parchment-300 bg-parchment-50 px-4 py-1.5 font-semibold text-gold-600 text-label uppercase tracking-[0.18em] hover:border-accent hover:text-accent"
 			lang="la"
 		>
 			<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
@@ -240,7 +240,7 @@ function DifficultToggle({
 			aria-pressed={entry.difficult}
 			aria-disabled={isPending}
 			onClick={toggle}
-			className={`focus-ring inline-flex items-center gap-2 rounded-full border px-4 py-1.5 font-semibold text-xs uppercase tracking-[0.18em] ${
+			className={`focus-ring inline-flex items-center gap-2 rounded-full border px-4 py-1.5 font-semibold text-label uppercase tracking-[0.18em] ${
 				entry.difficult
 					? "border-accent bg-accent text-parchment-50 hover:bg-accent/90"
 					: "border-parchment-300 bg-parchment-50 text-gold-600 hover:border-accent hover:text-accent"
@@ -261,7 +261,7 @@ function DifficultToggle({
 }
 
 const CHIP =
-	"rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]";
+	"rounded-full border border-parchment-300 bg-parchment-50 px-3 py-1 font-semibold text-gold-600 text-label uppercase tracking-[0.18em]";
 
 /** The grammar as separate pills, so "noun" and "2nd decl." read as two facts. */
 function GrammarChips({ entry }: { entry: ShownEntry }) {
@@ -370,7 +370,7 @@ function WordBanner({
 
 					{/* The lemma is the page's h1 and now sits in a banner, so it takes
 					    the display step of the scale rather than the section one. */}
-					<Heading variant="h1" className="mt-3 font-bold" lang="la">
+					<Heading variant="h1" weight="bold" className="mt-3" lang="la">
 						<Lemma entry={entry} />
 					</Heading>
 
@@ -423,7 +423,9 @@ function PrincipalParts({ entry }: { entry: EntryPage }) {
 
 	return (
 		<section>
-			<Heading variant="h2">Principal parts</Heading>
+			<Heading variant="h3" as="h2" weight="normal">
+				Principal parts
+			</Heading>
 			<div className="mt-6 space-y-4">
 				<PrincipalPartList entry={entry} />
 				<FullTableLink entry={entry} />
@@ -463,7 +465,9 @@ function Meanings({ entry }: { entry: EntryWithSenses }) {
 
 	return (
 		<section>
-			<Heading variant="h2">Meanings</Heading>
+			<Heading variant="h3" as="h2" weight="normal">
+				Meanings
+			</Heading>
 
 			<div className="mt-6">
 				<SenseList senses={senses} />
@@ -489,7 +493,7 @@ function WordDetail() {
 
 					{entry.notes && (
 						<section>
-							<Heading variant="h4" as="h2">
+							<Heading variant="h3" as="h2" weight="normal">
 								Notes
 							</Heading>
 							<p className="mt-3 border-accent border-l-2 bg-parchment-100 px-4 py-3 text-ink-700">

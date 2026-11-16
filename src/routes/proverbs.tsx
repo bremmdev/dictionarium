@@ -122,7 +122,7 @@ function ProverbCard({ proverb }: { proverb: Proverb }) {
 				<dl className="space-y-1 text-base">
 					{proverb.meaningEn && (
 						<div>
-							<dt className="inline font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+							<dt className="inline font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 								Meaning
 							</dt>{" "}
 							<dd className="inline text-ink-700">{proverb.meaningEn}</dd>
@@ -130,7 +130,7 @@ function ProverbCard({ proverb }: { proverb: Proverb }) {
 					)}
 					{proverb.source && (
 						<div>
-							<dt className="inline font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+							<dt className="inline font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 								Source
 							</dt>{" "}
 							<dd className="inline text-ink-700">{proverb.source}</dd>
@@ -138,7 +138,7 @@ function ProverbCard({ proverb }: { proverb: Proverb }) {
 					)}
 					{proverb.notes && (
 						<div>
-							<dt className="inline font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+							<dt className="inline font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 								Notes
 							</dt>{" "}
 							<dd className="inline text-ink-600">{proverb.notes}</dd>
@@ -173,6 +173,7 @@ function RouteComponent() {
 								id={`author-${i}`}
 								variant="h3"
 								as="h2"
+								weight="normal"
 								className="border-parchment-300 border-b pb-2"
 							>
 								{authorLabel(author)}

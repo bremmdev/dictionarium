@@ -99,6 +99,9 @@
   ui-serif,
   serif;
   --container-page-width: 90rem;
+  /* Uppercase labels and chips. 12px Garamond is too faint for them. */
+  --text-label: 0.8125rem;
+  --text-label--line-height: calc(1.125 / 0.8125);
 }
 
 @layer components {

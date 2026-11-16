@@ -207,7 +207,7 @@ export function Subjunctive() {
 				into a handful of types, each with its own signal word or position.
 			</p>
 
-			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
+			<Heading variant="h3" as="h3" className="mx-auto max-w-3xl">
 				Spotting the subjunctive
 			</Heading>
 			<p className="mx-auto max-w-3xl">
@@ -232,10 +232,10 @@ export function Subjunctive() {
 				<LatinWord>salūtāvisse</LatinWord>, <LatinWord>salūtāvissem</LatinWord>.
 			</p>
 
-			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
+			<Heading variant="h3" as="h3" className="mx-auto max-w-3xl">
 				On its own
 			</Heading>
-			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-600 leading-relaxed">
+			<div className="mx-auto max-w-3xl space-y-3">
 				<p>
 					<strong className={LEAD}>Let us, let them.</strong> The imperative
 					mostly speaks to <em>you</em>. For <em>let us</em> and{" "}
@@ -273,10 +273,10 @@ export function Subjunctive() {
 				</p>
 			</div>
 
-			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
+			<Heading variant="h3" as="h3" className="mx-auto max-w-3xl">
 				In a joined clause
 			</Heading>
-			<div className="mx-auto max-w-3xl space-y-3 text-base text-ink-600 leading-relaxed">
+			<div className="mx-auto max-w-3xl space-y-3">
 				<p>
 					<strong className={LEAD}>
 						Purpose, with <LatinWord>ut</LatinWord> or <LatinWord>nē</LatinWord>
@@ -341,7 +341,7 @@ export function Subjunctive() {
 				</p>
 			</div>
 
-			<Heading variant="h4" as="h3" className="mx-auto max-w-3xl">
+			<Heading variant="h3" as="h3" className="mx-auto max-w-3xl">
 				Which tense
 			</Heading>
 			<p className="mx-auto max-w-3xl">

@@ -77,8 +77,7 @@ export function GenderedParadigm({
 	return (
 		<div className="space-y-4">
 			<Heading
-				variant="h4"
-				as={headingAs}
+				variant={headingAs}
 				className="mx-auto text-center uppercase tracking-wide"
 			>
 				{title}

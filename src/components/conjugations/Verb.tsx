@@ -31,7 +31,7 @@ export function Verb({ verb, notes, headingAs = "h4" }: VerbProps) {
 
 	return (
 		<div className="space-y-4">
-			<Heading variant="h4" as={headingAs} className="mx-auto text-center">
+			<Heading variant={headingAs} className="mx-auto text-center">
 				<LatinWord>{lemma}</LatinWord>
 				<span className="font-normal text-ink-600">
 					{", "}

@@ -24,7 +24,7 @@ export function FrequencyTag({ frequency }: { frequency: Frequency | null }) {
 	}
 
 	return (
-		<span className="whitespace-nowrap rounded-full border border-gold-400 px-2 py-0.5 align-middle font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+		<span className="whitespace-nowrap rounded-full border border-gold-400 px-2 py-0.5 align-middle font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 			<span className="sr-only">Frequency: </span>
 			{bandLabel(frequency.band)}
 		</span>

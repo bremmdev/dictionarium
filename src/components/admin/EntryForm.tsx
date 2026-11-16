@@ -45,7 +45,7 @@ import { TextLink } from "#/components/TextLink";
 
 /** The small per-sense buttons that reveal an optional pair of fields. */
 const TOGGLE =
-	"focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-600 text-xs uppercase tracking-[0.18em] hover:text-accent";
+	"focus-ring inline-flex items-center gap-1.5 font-semibold text-ink-600 text-label uppercase tracking-[0.18em] hover:text-accent";
 
 /**
  * What the principal-parts input is called and what goes in it, per part of
@@ -136,7 +136,7 @@ function CaseChips({
 			<legend
 				className={
 					compact
-						? "font-semibold text-ink-600 text-xs uppercase tracking-[0.18em]"
+						? "font-semibold text-ink-600 text-label uppercase tracking-[0.18em]"
 						: LABEL
 				}
 			>

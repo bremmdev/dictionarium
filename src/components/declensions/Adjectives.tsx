@@ -204,7 +204,7 @@ export function Adjectives() {
 			/>
 
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto pt-4 text-center uppercase tracking-wide"
 			>
@@ -223,7 +223,7 @@ export function Adjectives() {
 			))}
 
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto pt-4 text-center uppercase tracking-wide"
 			>
@@ -251,7 +251,7 @@ export function Adjectives() {
 			</p>
 
 			<Heading
-				variant="h4"
+				variant="h3"
 				as="h3"
 				className="mx-auto pt-4 text-center uppercase tracking-wide"
 			>

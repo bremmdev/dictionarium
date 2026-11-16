@@ -12,7 +12,7 @@ export function CaseTag({ governs }: { governs: string | null }) {
 	}
 
 	return (
-		<span className="mr-2 whitespace-nowrap rounded-full border border-gold-400 px-2 py-0.5 align-middle font-semibold text-gold-600 text-xs uppercase tracking-[0.18em]">
+		<span className="mr-2 whitespace-nowrap rounded-full border border-gold-400 px-2 py-0.5 align-middle font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 			{label}
 		</span>
 	);

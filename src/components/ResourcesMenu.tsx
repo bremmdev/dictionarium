@@ -29,7 +29,7 @@ const MORE = [
 type MenuItem = (typeof GRAMMAR_TOPICS)[number] | (typeof MORE)[number];
 
 const GROUP_LABEL =
-	"font-semibold text-ink-700 text-xs uppercase tracking-wider";
+	"font-semibold text-ink-700 text-label uppercase tracking-wider";
 
 const linksIn = (panel: HTMLElement | null) =>
 	Array.from(panel?.querySelectorAll("a") ?? []);

@@ -59,7 +59,7 @@ export function Table({
 			    step so their relative weight does not flip on a small screen. */}
 			<table className="w-full border-collapse border border-parchment-200 text-base md:text-lg">
 				{caption && (
-					<caption className="pb-3 text-left text-ink-600 text-xs italic md:text-sm">
+					<caption className="pb-3 text-left text-ink-600 text-sm italic">
 						{caption}
 					</caption>
 				)}
@@ -70,7 +70,7 @@ export function Table({
 							<th
 								key={column.key}
 								scope="col"
-								className={`${cell} font-semibold text-gold-600 text-xs uppercase tracking-[0.18em] md:text-sm`}
+								className={`${cell} font-semibold text-gold-600 text-label uppercase tracking-[0.18em] md:text-sm`}
 							>
 								{column.label}
 							</th>
