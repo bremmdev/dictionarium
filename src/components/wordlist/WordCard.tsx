@@ -1,9 +1,8 @@
 import { ChevronDown } from "lucide-react";
 import { CaseTag } from "#/components/CaseTag";
-import { FrequencyTag } from "#/components/FrequencyTag";
 import { Lemma } from "#/components/Lemma";
 import { PrincipalPartList } from "#/components/PrincipalPartList";
-import { grammarLabel } from "#/components/search/EntryCard";
+import { GrammarLine } from "#/components/search/EntryCard";
 import { SenseList } from "#/components/SenseList";
 import type { ShownEntry } from "#/db/schema";
 
@@ -39,9 +38,8 @@ export function WordCard({ entry }: { entry: ShownEntry }) {
 						<Lemma entry={entry} />
 					</span>
 					<span className="font-semibold text-gold-600 text-sm uppercase tracking-[0.18em]">
-						{grammarLabel(entry)}
+						<GrammarLine entry={entry} />
 					</span>
-					<FrequencyTag frequency={entry.frequency} />
 				</span>
 
 				{/* Closed, the card leads with the parts and the core meaning; open,

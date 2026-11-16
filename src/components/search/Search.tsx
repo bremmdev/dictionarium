@@ -41,9 +41,11 @@ export function Search() {
 	const runSearch = (next: string) => {
 		const trimmed = next.trim();
 		// Drop q entirely when it is empty, so clearing lands on a clean "/".
-		return navigate({
+		navigate({
 			search: trimmed === "" ? {} : { q: trimmed },
 			resetScroll: false,
+			// A view transition freezes the page mid-swap and cancels the lift's smooth scroll.
+			viewTransition: false,
 		});
 	};
 
@@ -55,10 +57,8 @@ export function Search() {
 					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 shadow-[0_14px_30px_-20px_rgb(58_52_44/0.5)] transition-colors hover:border-parchment-400 focus-within:border-accent/60 focus-within:ring-3 focus-within:ring-accent/15 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
 					onSubmit={(e) => {
 						e.preventDefault();
-						// After the results land, since the page is too short to scroll before then.
-						runSearch(value).then(() => {
-							if (value.trim() !== "") liftAboveKeyboard(formRef.current);
-						});
+						runSearch(value);
+						if (value.trim() !== "") liftAboveKeyboard(formRef.current);
 					}}
 				>
 					<label htmlFor="search-word" className="sr-only">
@@ -120,8 +120,12 @@ export function Search() {
 			<section
 				aria-labelledby="results-heading"
 				aria-busy={isFetching}
-				// A screen of room below the box, or a short result list could not scroll it to the top.
-				className={q === "" ? undefined : "pointer-coarse:min-h-svh"}
+				// A screen of room so the box can reach the top; keyed on the draft so it is there before the search is sent.
+				className={
+					q === "" && value.trim() === ""
+						? undefined
+						: "pointer-coarse:min-h-svh"
+				}
 			>
 				<Heading variant="h2" id="results-heading" className="sr-only">
 					Search results
@@ -144,11 +148,39 @@ export function Search() {
 function liftAboveKeyboard(form: HTMLFormElement | null) {
 	const target = document.getElementById(SEARCH_TITLE_ID) ?? form;
 	if (!target || !window.matchMedia("(pointer: coarse)").matches) return;
-	const reduceMotion = window.matchMedia(
-		"(prefers-reduced-motion: reduce)",
-	).matches;
-	target.scrollIntoView({
-		behavior: reduceMotion ? "auto" : "smooth",
-		block: "start",
-	});
+	if (isAtTop(target)) return;
+
+	const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		? "auto"
+		: "smooth";
+	target.scrollIntoView({ behavior, block: "start" });
+
+	// A resize (the keyboard closing after a tap on Quaere) can cancel a smooth scroll, so once things go quiet, jump the rest.
+	let settle: ReturnType<typeof setTimeout> | undefined;
+	const check = (wait = 150) => {
+		clearTimeout(settle);
+		settle = setTimeout(() => {
+			if (!isAtTop(target)) target.scrollIntoView({ block: "start" });
+		}, wait);
+	};
+	const onChange = () => check();
+	const stop = () => {
+		clearTimeout(settle);
+		window.removeEventListener("scroll", onChange);
+		window.removeEventListener("resize", onChange);
+		window.visualViewport?.removeEventListener("resize", onChange);
+		window.removeEventListener("touchstart", stop);
+	};
+	window.addEventListener("scroll", onChange, { passive: true });
+	window.addEventListener("resize", onChange);
+	window.visualViewport?.addEventListener("resize", onChange);
+	// Touching the page hands scrolling back to the reader.
+	window.addEventListener("touchstart", stop, { passive: true });
+	check(600);
+	setTimeout(stop, 2000);
+}
+
+function isAtTop(element: HTMLElement) {
+	const margin = Number.parseFloat(getComputedStyle(element).scrollMarginTop);
+	return Math.abs(element.getBoundingClientRect().top - margin) < 2;
 }

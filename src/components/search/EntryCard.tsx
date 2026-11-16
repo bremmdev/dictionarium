@@ -73,9 +73,23 @@ export function grammarFacts(entry: Entry) {
 	return parts;
 }
 
-/** "verb · 1st conj.", "noun · 2nd decl. · masc." */
-export function grammarLabel(entry: Entry) {
-	return grammarFacts(entry).join(" · ");
+/**
+ * "noun · 2nd decl. · masc." and the frequency badge, wrapping between facts only.
+ * Flex items rather than inline text, so the row gap opens only when the badge wraps.
+ */
+export function GrammarLine({ entry }: { entry: ShownEntry }) {
+	const facts = grammarFacts(entry);
+	return (
+		<span className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
+			{facts.map((fact, i) => (
+				<span key={fact} className="whitespace-nowrap">
+					{fact}
+					{i < facts.length - 1 && "\u00a0·"}
+				</span>
+			))}
+			<FrequencyTag frequency={entry.frequency} />
+		</span>
+	);
 }
 
 type EntryCardProps = {
@@ -108,9 +122,8 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 					</Link>
 				</Heading>
 				<p className="text-gold-600 uppercase text-sm font-semibold tracking-[0.18em]">
-					{grammarLabel(entry)}
+					<GrammarLine entry={entry} />
 				</p>
-				<FrequencyTag frequency={entry.frequency} />
 			</div>
 
 			{/* Centred on the whole card rather than on the first line, so it stays
