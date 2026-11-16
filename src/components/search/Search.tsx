@@ -58,7 +58,7 @@ export function Search() {
 					onSubmit={(e) => {
 						e.preventDefault();
 						runSearch(value);
-						if (value.trim() !== "") liftAboveKeyboard(formRef.current);
+						if (value.trim() !== "") showResults(formRef.current);
 					}}
 				>
 					<label htmlFor="search-word" className="sr-only">
@@ -127,7 +127,12 @@ export function Search() {
 						: "pointer-coarse:min-h-svh"
 				}
 			>
-				<Heading variant="h2" id="results-heading" className="sr-only">
+				<Heading
+					variant="h2"
+					id="results-heading"
+					tabIndex={-1}
+					className="sr-only"
+				>
 					Search results
 				</Heading>
 				<Results
@@ -144,18 +149,49 @@ export function Search() {
 	);
 }
 
-/** On touch screens the keyboard stays up after Enter, so move the title and box to the top and leave the results room. */
-function liftAboveKeyboard(form: HTMLFormElement | null) {
+/** On touch screens: close the keyboard, then bring the title and box to the top with the results below. */
+function showResults(form: HTMLFormElement | null) {
 	const target = document.getElementById(SEARCH_TITLE_ID) ?? form;
 	if (!target || !window.matchMedia("(pointer: coarse)").matches) return;
-	if (isAtTop(target)) return;
 
+	// Focus somewhere real rather than dropping it on <body>; leaving the box closes the keyboard.
+	document.getElementById("results-heading")?.focus({ preventScroll: true });
+	whenKeyboardClosed(() => lift(target));
+}
+
+/** A closing keyboard resizes the viewport, which would cut a smooth scroll short. */
+function whenKeyboardClosed(then: () => void) {
+	const viewport = window.visualViewport;
+	const isUp = () =>
+		viewport !== null && viewport.height < window.innerHeight * 0.85;
+	if (!isUp()) {
+		then();
+		return;
+	}
+
+	let quiet: ReturnType<typeof setTimeout> | undefined;
+	const finish = () => {
+		viewport?.removeEventListener("resize", onResize);
+		clearTimeout(quiet);
+		clearTimeout(cap);
+		then();
+	};
+	const onResize = () => {
+		clearTimeout(quiet);
+		if (!isUp()) quiet = setTimeout(finish, 100);
+	};
+	viewport?.addEventListener("resize", onResize);
+	const cap = setTimeout(finish, 1000);
+}
+
+function lift(target: HTMLElement) {
+	if (isAtTop(target)) return;
 	const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 		? "auto"
 		: "smooth";
 	target.scrollIntoView({ behavior, block: "start" });
 
-	// A resize (the keyboard closing after a tap on Quaere) can cancel a smooth scroll, so once things go quiet, jump the rest.
+	// If something still cuts the scroll short, jump the rest once things go quiet.
 	let settle: ReturnType<typeof setTimeout> | undefined;
 	const check = (wait = 150) => {
 		clearTimeout(settle);
@@ -168,12 +204,10 @@ function liftAboveKeyboard(form: HTMLFormElement | null) {
 		clearTimeout(settle);
 		window.removeEventListener("scroll", onChange);
 		window.removeEventListener("resize", onChange);
-		window.visualViewport?.removeEventListener("resize", onChange);
 		window.removeEventListener("touchstart", stop);
 	};
 	window.addEventListener("scroll", onChange, { passive: true });
 	window.addEventListener("resize", onChange);
-	window.visualViewport?.addEventListener("resize", onChange);
 	// Touching the page hands scrolling back to the reader.
 	window.addEventListener("touchstart", stop, { passive: true });
 	check(600);
