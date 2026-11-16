@@ -54,7 +54,7 @@ export function Search() {
 			<search>
 				<form
 					ref={formRef}
-					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 shadow-[0_14px_30px_-20px_rgb(58_52_44/0.5)] transition-colors hover:border-parchment-400 focus-within:border-accent/60 focus-within:ring-3 focus-within:ring-accent/15 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
+					className="group scroll-mt-3 flex items-center gap-3 rounded-lg border border-parchment-300 bg-[color-mix(in_oklab,var(--color-parchment-50),white_55%)] py-2.5 pr-2.5 pl-4 transition-colors focus-within:border-accent/80 sm:gap-5 sm:py-3 sm:pr-3 sm:pl-6"
 					onSubmit={(e) => {
 						e.preventDefault();
 						runSearch(value);
@@ -68,7 +68,7 @@ export function Search() {
 						className="h-5 w-5 shrink-0 text-gold-600 max-sm:hidden transition-colors group-focus-within:text-accent sm:h-6 sm:w-6"
 						aria-hidden="true"
 					/>
-					<span className="search-line min-w-0 flex-1">
+					<span className="search-line min-w-0 flex-1 text-xl sm:text-2xl">
 						<input
 							id="search-word"
 							ref={inputRef}
