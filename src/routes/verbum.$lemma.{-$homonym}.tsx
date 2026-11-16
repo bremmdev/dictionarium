@@ -344,6 +344,7 @@ function WordBanner({
 
 	return (
 		<Banner
+			compactOnPhone
 			illustrations={[
 				{
 					src: ILLUSTRATIONS[entry.partOfSpeech] ?? scroll,
@@ -508,6 +509,7 @@ function NotFound() {
 
 	return (
 		<Banner
+			compactOnPhone
 			illustrations={[
 				{ src: amphora, className: "w-40 -rotate-6 select-none md:w-56" },
 			]}
@@ -531,7 +533,7 @@ function NotFound() {
 							</TooltipTrigger>
 							<TooltipContent
 								placement="bottom right"
-								className="w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
+								className="z-10 w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
 							>
 								<p className="text-ink-700 leading-relaxed">
 									<span className="font-semibold text-ink-900">

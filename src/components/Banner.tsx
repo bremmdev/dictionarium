@@ -8,6 +8,8 @@ type BannerProps = {
 	/** Fills the left column: eyebrow, heading, lede — whatever the page needs. */
 	content: React.ReactNode;
 	illustrations: BannerIllustration[];
+	/** Below md, drop the illustrations and tighten the padding. */
+	compactOnPhone?: boolean;
 };
 
 // A pair of illustrations splits the column and leans away from itself, so it
@@ -18,15 +20,23 @@ const DEFAULT_ILLUSTRATION = [
 	"flex-1 translate-y-4 rotate-7",
 ];
 
-export function Banner({ content, illustrations }: BannerProps) {
+export function Banner({
+	content,
+	illustrations,
+	compactOnPhone = false,
+}: BannerProps) {
 	return (
-		<div className="overflow-hidden border-parchment-200 border-b bg-linear-to-b from-parchment-50 to-parchment-100">
-			<div className="mx-auto grid max-w-page-width grid-cols-1 items-center gap-12 px-4 sm:px-8 py-12 md:grid-cols-3 md:gap-10 md:py-16">
+		<div className="overflow-x-clip border-parchment-200 border-b bg-linear-to-b from-parchment-50 to-parchment-100">
+			<div
+				className={`mx-auto grid max-w-page-width grid-cols-1 items-center gap-12 px-4 sm:px-8 md:grid-cols-3 md:gap-10 md:py-16 ${compactOnPhone ? "py-8" : "py-12"}`}
+			>
 				<div className="text-center md:col-span-2 md:text-left *:first-child:mt-0 *:last-child:mb-0">
 					{content}
 				</div>
 
-				<div className="mx-auto flex w-full max-w-xs flex-wrap items-center justify-center md:max-w-lg">
+				<div
+					className={`mx-auto flex w-full max-w-xs flex-wrap items-center justify-center md:max-w-lg ${compactOnPhone ? "max-md:hidden" : ""}`}
+				>
 					{illustrations.map(({ src, className }, i) => (
 						<img
 							key={src}

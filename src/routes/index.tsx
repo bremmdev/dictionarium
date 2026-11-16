@@ -86,12 +86,13 @@ function HomeBanner() {
 	return (
 		<Banner
 			illustrations={[{ src: scroll }, { src: templum }]}
+			compactOnPhone
 			content={
 				<>
 					<p className="text-gold-600 text-sm font-medium uppercase tracking-[0.32em] md:text-base">
 						A dictionary for the Latin student
 					</p>
-					<div className="mt-6 flex items-center justify-center gap-4 md:justify-start">
+					<div className="mt-4 flex items-center justify-center gap-4 md:mt-6 md:justify-start">
 						<Heading variant="h1" lang="la">
 							Verba sub manū.
 						</Heading>
@@ -104,7 +105,7 @@ function HomeBanner() {
 							</TooltipTrigger>
 							<TooltipContent
 								placement="bottom right"
-								className="w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
+								className="z-10 w-72 p-3 text-left text-base shadow-md shadow-ink-900/10"
 							>
 								<p className="text-ink-700 leading-relaxed">
 									<span className="font-semibold text-ink-900">
@@ -133,7 +134,7 @@ function Home() {
 		<>
 			<HomeBanner />
 
-			<section className="mx-auto max-w-5xl px-4 sm:px-8 py-16 md:py-24 space-y-8">
+			<section className="mx-auto max-w-5xl px-4 sm:px-8 py-10 md:py-24 space-y-8">
 				<Heading
 					variant="h2"
 					className="mx-auto text-center uppercase tracking-wide"
