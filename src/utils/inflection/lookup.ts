@@ -1,3 +1,4 @@
+import { editDistance, type Scored } from "#/utils/search/suggestions";
 import { formKey } from "./key";
 import { keysOf, paradigm } from "./paradigm";
 import type { Cell, Filing } from "./types";
@@ -9,7 +10,19 @@ export type FormMatches = {
 	lemmaIds: Set<number>;
 	/** Every other entry with a form spelled like the query, and those forms' cells. */
 	forms: Map<number, Array<Cell>>;
+	/** Set when the query only matched without it: virumque is virum + -que. */
+	enclitic?: string;
 };
+
+/**
+ * Tried in this order, and only when the whole query matched nothing. Keyed as
+ * formKey spells them (-ve is ue), shown as Latin spells them.
+ */
+const ENCLITICS = [
+	{ key: "que", spelled: "que" },
+	{ key: "ne", spelled: "ne" },
+	{ key: "ue", spelled: "ve" },
+];
 
 type Keyed = Cell & { key: string };
 
@@ -60,8 +73,80 @@ export class FormIndex {
 		return cells;
 	}
 
-	/** `key` is already formKey'd. */
+	/**
+	 * `key` is already formKey'd. An enclitic is stripped only when nothing
+	 * matched, so quoque, itaque and uterque never split.
+	 */
 	lookup(key: string): FormMatches {
+		const direct = this.match(key);
+		if (direct.lemmaIds.size > 0 || direct.forms.size > 0) return direct;
+
+		for (const enclitic of ENCLITICS) {
+			if (!key.endsWith(enclitic.key) || key.length < enclitic.key.length + 2)
+				continue;
+			const { forms } = this.match(key.slice(0, -enclitic.key.length), true);
+			if (forms.size > 0)
+				return { lemmaIds: new Set(), forms, enclitic: enclitic.spelled };
+		}
+
+		// -cum goes on the ablative of a pronoun: mēcum, nōbīscum, quōcum.
+		if (key.endsWith("cum") && key.length > 4) {
+			const { forms } = this.match(key.slice(0, -3), true);
+			const ablatives = new Map<number, Array<Cell>>();
+			for (const [id, cells] of forms) {
+				if (this.filings.get(id)?.partOfSpeech !== "pronoun") continue;
+				const kept = cells.filter(
+					({ analysis }) =>
+						analysis.kind === "case" && analysis.case === "ablative",
+				);
+				if (kept.length > 0) ablatives.set(id, kept);
+			}
+			if (ablatives.size > 0)
+				return { lemmaIds: new Set(), forms: ablatives, enclitic: "cum" };
+		}
+		return direct;
+	}
+
+	/**
+	 * Forms within `max` edits of a query that matched nothing: salutavisent
+	 * gives salūtāvissent (salūtō). The candidates are the entries with a key
+	 * within one edit of the start of the query.
+	 */
+	suggest(key: string, max: number): Array<Scored> {
+		if (max === 0) return [];
+		const candidates = new Set<number>();
+		for (const [stem, ids] of this.byKey) {
+			if (stem.length > key.length + 1) continue;
+			const near = [stem.length - 1, stem.length, stem.length + 1].some(
+				(length) =>
+					length > 0 && editDistance(stem, key.slice(0, length), 1) <= 1,
+			);
+			if (near) for (const id of ids) candidates.add(id);
+		}
+
+		const scored: Array<Scored> = [];
+		for (const id of candidates) {
+			const filing = this.filings.get(id);
+			if (!filing) continue;
+			const seen = new Set<string>();
+			for (const cell of this.cellsOf(id, filing)) {
+				if (seen.has(cell.form)) continue;
+				seen.add(cell.form);
+				const distance = editDistance(key, cell.key, max);
+				if (distance === 0 || distance > max) continue;
+				scored.push({
+					text: cell.form,
+					of: filing.lemma,
+					key: cell.key,
+					distance,
+				});
+			}
+		}
+		return scored;
+	}
+
+	/** With `asForms`, a lemma match is a form match too, so its cells are kept. */
+	private match(key: string, asForms = false): FormMatches {
 		const candidates = new Set<number>();
 		for (let length = 1; length <= key.length; length++) {
 			for (const id of this.byKey.get(key.slice(0, length)) ?? [])
@@ -72,7 +157,7 @@ export class FormIndex {
 		for (const id of candidates) {
 			const filing = this.filings.get(id);
 			if (!filing) continue;
-			if (formKey(filing.lemma) === key) {
+			if (!asForms && formKey(filing.lemma) === key) {
 				matches.lemmaIds.add(id);
 				continue;
 			}

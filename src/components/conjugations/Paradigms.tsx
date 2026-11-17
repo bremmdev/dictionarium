@@ -225,9 +225,45 @@ const SUBJUNCTIVE_PERFECT_NOTES: Record<string, React.ReactNode> = {
 	),
 };
 
-function Group({ title, stem, verbs }: ConjugationGroup) {
+const PASSIVE_NOTES: Record<string, React.ReactNode> = {
+	salūtō: (
+		<>
+			The passive keeps the tense signs and swaps the personal endings:{" "}
+			<LatinWord>-r</LatinWord>, <LatinWord>-ris</LatinWord>,{" "}
+			<LatinWord>-tur</LatinWord>, <LatinWord>-mur</LatinWord>,{" "}
+			<LatinWord>-minī</LatinWord>, <LatinWord>-ntur</LatinWord>. Every second
+			person singular also has a form in <LatinWord>-re</LatinWord>, and{" "}
+			<LatinWord>salūtāre</LatinWord>, <em>you are greeted</em>, is spelled like
+			the infinitive.
+		</>
+	),
+	moneō: (
+		<>
+			<LatinWord>monēris</LatinWord> is the present, <em>you are warned</em>.
+			The future keeps its <LatinWord>b</LatinWord>:{" "}
+			<LatinWord>monēberis</LatinWord>.
+		</>
+	),
+	dūcō: (
+		<>
+			Only the vowel length separates <LatinWord>dūceris</LatinWord>,{" "}
+			<em>you are led</em>, from <LatinWord>dūcēris</LatinWord>,{" "}
+			<em>you will be led</em>.
+		</>
+	),
+	capiō: (
+		<>
+			<LatinWord>caperis</LatinWord>, not <em>capiris</em>: before{" "}
+			<LatinWord>r</LatinWord> the short <LatinWord>i</LatinWord> becomes{" "}
+			<LatinWord>e</LatinWord>, as in <LatinWord>capere</LatinWord>. That makes
+			it look like <LatinWord>dūceris</LatinWord>.
+		</>
+	),
+};
+
+function Group({ id, title, stem, verbs }: ConjugationGroup) {
 	return (
-		<div className="space-y-6">
+		<div id={id} className="scroll-mt-8 space-y-6">
 			<Heading
 				variant="h3"
 				as="h3"
@@ -244,13 +280,18 @@ function Group({ title, stem, verbs }: ConjugationGroup) {
 						key={lemma}
 						verb={verb}
 						notes={{
-							indicative: {
-								present: PRESENT_NOTES[lemma],
-								perfect: PERFECT_NOTES[lemma],
+							active: {
+								indicative: {
+									present: PRESENT_NOTES[lemma],
+									perfect: PERFECT_NOTES[lemma],
+								},
+								subjunctive: {
+									present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
+									perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
+								},
 							},
-							subjunctive: {
-								present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
-								perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
+							passive: {
+								indicative: { present: PASSIVE_NOTES[lemma] },
 							},
 						}}
 					/>

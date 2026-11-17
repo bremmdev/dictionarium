@@ -154,12 +154,12 @@ const NOTES: Record<string, React.ReactNode> = {
 const ORPHAN =
 	"lg:col-span-2 lg:mx-auto lg:w-[calc(50%-1.25rem)] 2xl:col-span-1 2xl:mx-0 2xl:w-auto";
 
-function Group({ title, stem, paradigms }: DeclensionGroup) {
+function Group({ id, title, stem, paradigms }: DeclensionGroup) {
 	// Only an odd count leaves a row short in two columns.
 	const hasOrphan = paradigms.length > 1 && paradigms.length % 2 === 1;
 
 	return (
-		<div className="space-y-6">
+		<div id={id} className="scroll-mt-8 space-y-6">
 			<Heading
 				variant="h3"
 				as="h3"

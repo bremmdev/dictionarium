@@ -5,6 +5,7 @@
  * one of the keys the index finds the entry by.
  */
 import {
+	type Cetera,
 	CONJUGATION_GROUPS,
 	PERSONS,
 } from "#/components/conjugations/Conjugations.utils";
@@ -21,6 +22,7 @@ import {
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 import { PERSONAL, PRONOUNS } from "#/components/pronouns/Pronouns.utils";
 import { formKey } from "#/utils/inflection/key";
+import { maxEditsFor, nearestSuggestions } from "#/utils/search/suggestions";
 import { FormIndex, type Indexed } from "#/utils/inflection/lookup";
 import { inflectionOf, keysOf, paradigm } from "#/utils/inflection/paradigm";
 import {
@@ -45,8 +47,9 @@ const filing = (fields: Partial<Filing> & Pick<Filing, "lemma" | "partOfSpeech">
 });
 
 function slot(a: Analysis) {
-	if (a.kind === "case") return `${a.number} ${a.case}${a.gender ? ` ${a.gender}` : ""}`;
+	if (a.kind === "case") return `${a.of ? `${a.of} ` : ""}${a.number} ${a.case}${a.gender ? ` ${a.gender}` : ""}`;
 	if (a.kind === "finite") return `${a.mood} ${a.voice} ${a.tense} ${a.person}`;
+	if (a.kind === "imperative") return `${a.voice} ${a.tense} imperative ${a.person}`;
 	return `${a.tense} ${a.voice} infinitive`;
 }
 
@@ -122,6 +125,36 @@ for (const [declension, paradigms] of [["1-2", FIRST_SECOND], ["3", THIRD]] as c
 	}
 }
 
+/** The Cētera tab, slot by slot; the two-word infinitives are left out. */
+function ceteraSlots(cetera: Cetera, page: Map<string, Array<string>>) {
+	const set = (slot: string, cell: Form | undefined) => {
+		if (cell) page.set(slot, formsOf(cell));
+	};
+	for (const voice of ["active", "passive"] as const) {
+		for (const tense of ["present", "future"] as const) {
+			for (const [person, cell] of Object.entries(cetera.imperative[voice]?.[tense] ?? {})) {
+				set(`${voice} ${tense} imperative ${person}`, cell);
+			}
+		}
+		set(`present ${voice} infinitive`, cetera.infinitive.present?.[voice]);
+	}
+	set("perfect active infinitive", cetera.infinitive.perfect?.active);
+	const [nominative, genitive] = cetera.participle.present?.form.split(", ") ?? [];
+	for (const g of ["m", "f", "n"] as const) {
+		if (nominative) page.set(`presentParticiple singular nominative ${g}`, [nominative]);
+		if (genitive) page.set(`presentParticiple singular genitive ${g}`, [genitive]);
+	}
+	for (const [of, line] of [
+		["perfectParticiple", cetera.participle.perfect],
+		["futureParticiple", cetera.participle.future],
+		["gerundive", cetera.gerundive],
+	] as const) {
+		line?.form.split(", ").forEach((form, i) => page.set(`${of} singular nominative ${["m", "f", "n"][i]}`, [form]));
+	}
+	for (const [c, cell] of Object.entries(cetera.gerund ?? {})) set(`gerund singular ${c}`, cell);
+	for (const [c, cell] of Object.entries(cetera.supine ?? {})) set(`supine singular ${c}`, cell);
+}
+
 const verbs = [
 	...CONJUGATION_GROUPS.flatMap(({ conjugation, verbs }) => verbs.map((verb) => ({ verb, conjugation }))),
 	...IRREGULAR_VERBS.map((verb) => ({ verb, conjugation: "irregular" })),
@@ -129,12 +162,19 @@ const verbs = [
 for (const { verb, conjugation } of verbs) {
 	const page = new Map<string, Array<string>>();
 	for (const mood of ["indicative", "subjunctive"] as const) {
-		const tenses: Record<string, Record<string, Form> | undefined> = verb[mood]?.active ?? {};
-		for (const [tense, forms] of Object.entries(tenses)) {
-			if (!forms) continue;
-			for (const person of PERSONS) page.set(`${mood} active ${tense} ${person}`, formsOf(forms[person]));
+		for (const voice of ["active", "passive"] as const) {
+			const tenses: Record<string, Record<string, Form> | undefined> = verb[mood]?.[voice] ?? {};
+			for (const [tense, forms] of Object.entries(tenses)) {
+				if (!forms) continue;
+				for (const person of PERSONS) {
+					// The perfect passive is two words; its participle is checked on its own.
+					const single = formsOf(forms[person]).filter((form) => !form.includes(" "));
+					if (single.length > 0) page.set(`${mood} ${voice} ${tense} ${person}`, single);
+				}
+			}
 		}
 	}
+	if (verb.cetera) ceteraSlots(verb.cetera, page);
 	const [lemma] = verb.principalParts;
 	const entry = filing({
 		lemma,
@@ -181,6 +221,24 @@ const fixtures: Array<Indexed> = [
 	filing({ lemma: "vetus", partOfSpeech: "adjective", principalParts: "vetus, veteris", declension: "3", terminations: "1" }),
 	filing({ lemma: "volō", partOfSpeech: "verb", principalParts: "volō, velle, voluī, volitūrus", conjugation: "irregular" }),
 	filing({ lemma: "audiō", partOfSpeech: "verb", principalParts: "audiō, audīre, audīvī, audītum", conjugation: "4" }),
+	filing({ lemma: "hortor", partOfSpeech: "verb", principalParts: "hortor, hortārī, hortātus sum", conjugation: "1" }),
+	filing({ lemma: "loquor", partOfSpeech: "verb", principalParts: "loquor, loquī, locūtus sum", conjugation: "3" }),
+	filing({ lemma: "patior", partOfSpeech: "verb", principalParts: "patior, patī, passus sum", conjugation: "3io" }),
+	filing({ lemma: "audeō", partOfSpeech: "verb", principalParts: "audeō, audēre, ausus sum", conjugation: "2" }),
+	filing({ lemma: "dīcō", partOfSpeech: "verb", principalParts: "dīcō, dīcere, dīxī, dictum", conjugation: "3" }),
+	filing({ lemma: "capiō", partOfSpeech: "verb", principalParts: "capiō, capere, cēpī, captum", conjugation: "3io" }),
+	filing({ lemma: "volō", partOfSpeech: "verb", principalParts: "volō, volāre, volāvī, volātum", conjugation: "1" }),
+	filing({ lemma: "nōlō", partOfSpeech: "verb", principalParts: "nōlō, nōlle, nōluī", conjugation: "irregular" }),
+	filing({ lemma: "ferō", partOfSpeech: "verb", principalParts: "ferō, ferre, tulī, lātum", conjugation: "3" }),
+	filing({ lemma: "afferō", partOfSpeech: "verb", principalParts: "afferō, afferre, attulī, allātum", conjugation: "3" }),
+	filing({ lemma: "prōsum", partOfSpeech: "verb", principalParts: "prōsum, prōdesse, prōfuī, prōfutūrus", conjugation: "irregular" }),
+	filing({ lemma: "absum", partOfSpeech: "verb", principalParts: "absum, abesse, āfuī, āfutūrus", conjugation: "irregular" }),
+	filing({ lemma: "redeō", partOfSpeech: "verb", principalParts: "redeō, redīre, rediī, reditum", conjugation: "irregular" }),
+	filing({ lemma: "faciō", partOfSpeech: "verb", principalParts: "faciō, facere, fēcī, factum", conjugation: "3io" }),
+	filing({ lemma: "ego", partOfSpeech: "pronoun" }),
+	filing({ lemma: "uterque", partOfSpeech: "pronoun", principalParts: "uterque, utraque, utrumque" }),
+	filing({ lemma: "uter", partOfSpeech: "pronoun", principalParts: "uter, utra, utrum" }),
+	filing({ lemma: "pater", partOfSpeech: "noun", principalParts: "patris", gender: "m", declension: "3" }),
 ].map((f, i) => ({ ...f, id: i + 1 }));
 const index = new FormIndex(fixtures);
 
@@ -204,7 +262,109 @@ const PROMISES: Array<[string, string]> = [
 	["uox", "vōx"],
 	["uocem", "vōx"],
 	["uetus", "vetus"],
+	// Phase 2: the passive, deponents and everything that is not finite.
+	["amatur", "amō"],
+	["amabantur", "amō"],
+	["amaris", "amō"],
+	["amere", "amō"],
+	["audiri", "audiō"],
+	["capi", "capiō"],
+	["caperis", "capiō"],
+	["hortatur", "hortor"],
+	["hortari", "hortor"],
+	["hortatus", "hortor"],
+	["hortans", "hortor"],
+	["loquitur", "loquor"],
+	["locuti", "loquor"],
+	["patiuntur", "patior"],
+	["passa", "patior"],
+	["ausus", "audeō"],
+	["audet", "audeō"],
+	["ama", "amō"],
+	["amate", "amō"],
+	["amanto", "amō"],
+	["dic", "dīcō"],
+	["cape", "capiō"],
+	["amantis", "amō"],
+	["amantium", "amō"],
+	["amandi", "amō"],
+	["amandum", "amō"],
+	["amandae", "amō"],
+	["amatum", "amō"],
+	["amatu", "amō"],
+	["amatae", "amō"],
+	["amaturus", "amō"],
+	["capientes", "capiō"],
+	["dicturi", "dīcō"],
+	["uult", "volō"],
+	["velle", "volō"],
+	["velim", "volō"],
+	["volebat", "volō"],
+	["volat", "volō"],
+	["noli", "nōlō"],
+	["nolite", "nōlō"],
+	["nollem", "nōlō"],
+	["fertur", "ferō"],
+	["ferat", "ferō"],
+	["ferret", "ferō"],
+	["ferri", "ferō"],
+	["ferens", "ferō"],
+	["lata", "ferō"],
+	["laturos", "ferō"],
+	["ferendum", "ferō"],
+	["fer", "ferō"],
+	["fore", "sum"],
+	["este", "sum"],
+	["attulit", "afferō"],
+	["affert", "afferō"],
+	["allatum", "afferō"],
+	["prodest", "prōsum"],
+	["prosunt", "prōsum"],
+	["afuit", "absum"],
+	["abest", "absum"],
+	["redit", "redeō"],
+	["redeunt", "redeō"],
+	["redire", "redeō"],
+	// Enclitics, tried only when the whole query matched nothing.
+	["bonumque", "bonus"],
+	["paterque", "pater"],
+	["amatne", "amō"],
+	["regisue", "rēx"],
+	["mecum", "ego"],
+	["nobiscum", "ego"],
+	["utrumque", "uterque"],
 ];
+// A typo in a form is offered the form: "Did you mean amāvissent (amō)?"
+for (const [typo, form, lemma] of [
+	["amavisent", "amāvissent", "amō"],
+	["regsi", "rēgis", "rēx"],
+] as const) {
+	checked++;
+	const offered = nearestSuggestions(typo, index.suggest(typo, maxEditsFor(typo)));
+	if (!offered.some((s) => formKey(s.text) === formKey(form) && s.of === lemma)) {
+		problems.push(`suggestion for "${typo}": expected ${form} (${lemma}), got ${offered.map((s) => `${s.text} (${s.of})`).join(", ") || "nothing"}`);
+	}
+}
+
+// Spellings that must not be found under a word, for the rules not to guess.
+const REFUSALS: Array<[string, string]> = [
+	["uult", "volō, volāre"],
+	["volabat", "volō, velle"],
+	["facitur", "faciō"],
+	["fert", "afferō"],
+	// uterque is a word of its own, not uter + -que.
+	["utrumque", "uter"],
+];
+for (const [query, owner] of REFUSALS) {
+	checked++;
+	const { forms } = index.lookup(formKey(query));
+	for (const id of forms.keys()) {
+		const f = index.filing(id);
+		if (f && (f.lemma === owner || f.principalParts?.startsWith(`${owner},`) || (owner.includes(",") && f.principalParts?.startsWith(owner)))) {
+			problems.push(`lookup "${query}": found under ${f.principalParts}, which has no such form`);
+		}
+	}
+}
 for (const [query, lemma] of PROMISES) {
 	checked++;
 	const { lemmaIds, forms } = index.lookup(formKey(query));
@@ -213,8 +373,6 @@ for (const [query, lemma] of PROMISES) {
 		problems.push(`lookup "${query}": expected ${lemma}, found ${found.join(", ") || "nothing"}`);
 	}
 }
-// volō is irregular with no table yet: the generator must not guess its forms.
-if (paradigm(fixtures.find((f) => f.conjugation === "irregular" && f.lemma === "volō") ?? fixtures[0]).length > 0) problems.push("volō: generated forms with no table to vouch for them");
 if (formKey("cælum") !== "caelum") problems.push(`formKey("cælum") is "${formKey("cælum")}", not "caelum"`);
 
 // --- every filed entry -------------------------------------------------------------

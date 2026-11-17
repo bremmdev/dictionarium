@@ -4,7 +4,7 @@ import {
 } from "#/components/conjugations/Conjugations.utils";
 import { CASES, type Case } from "#/components/declensions/Declensions.utils";
 import type { Gender } from "#/utils/entries/rules";
-import type { Cell, GrammaticalNumber } from "./types";
+import type { Cell, GrammaticalNumber, VerbalNoun } from "./types";
 
 /** Short on screen, the whole words for a screen reader, as PERSON_LABELS. */
 export type Label = { short: string; full: string };
@@ -34,6 +34,18 @@ const GENDER_LABELS: Record<Gender, Label> = {
 
 const GENDER_ORDER: Array<Gender> = ["m", "f", "n"];
 
+const VERBAL_NOUNS: Record<VerbalNoun, string> = {
+	presentParticiple: "present participle",
+	perfectParticiple: "perfect participle",
+	futureParticiple: "future participle",
+	gerundive: "gerundive",
+	gerund: "gerund",
+	supine: "supine",
+};
+
+/** The gerund and the supine have no number or gender to name. */
+const UNNUMBERED = new Set<VerbalNoun>(["gerund", "supine"]);
+
 function genderLabel(genders: Array<Gender>): Label | null {
 	if (genders.length === 0) return null;
 	if (genders.length === 3)
@@ -48,12 +60,18 @@ function genderLabel(genders: Array<Gender>): Label | null {
 function caseLabels(cells: Array<Cell>): Array<Label> {
 	const slots = new Map<
 		string,
-		{ number: GrammaticalNumber; c: Case; genders: Set<Gender> }
+		{
+			of?: VerbalNoun;
+			number: GrammaticalNumber;
+			c: Case;
+			genders: Set<Gender>;
+		}
 	>();
 	for (const { analysis } of cells) {
 		if (analysis.kind !== "case") continue;
-		const id = `${analysis.number}|${analysis.case}`;
+		const id = `${analysis.of ?? ""}|${analysis.number}|${analysis.case}`;
 		const slot = slots.get(id) ?? {
+			of: analysis.of,
 			number: analysis.number,
 			c: analysis.case,
 			genders: new Set(),
@@ -64,67 +82,115 @@ function caseLabels(cells: Array<Cell>): Array<Label> {
 
 	const groups = new Map<
 		string,
-		{ number: GrammaticalNumber; genders: Array<Gender>; cases: Array<Case> }
+		{
+			of?: VerbalNoun;
+			number: GrammaticalNumber;
+			genders: Array<Gender>;
+			cases: Array<Case>;
+		}
 	>();
-	for (const { number, c, genders } of slots.values()) {
+	for (const { of, number, c, genders } of slots.values()) {
 		const sorted = GENDER_ORDER.filter((g) => genders.has(g));
-		const id = `${number}|${sorted.join("")}`;
-		const group = groups.get(id) ?? { number, genders: sorted, cases: [] };
+		const id = `${of ?? ""}|${number}|${sorted.join("")}`;
+		const group = groups.get(id) ?? { of, number, genders: sorted, cases: [] };
 		group.cases.push(c);
 		groups.set(id, group);
 	}
 
-	return [...groups.values()]
-		.map((group) => ({
-			...group,
-			cases: CASES.filter((c) => group.cases.includes(c)),
-		}))
-		.sort(
-			(a, b) =>
-				(a.number === b.number ? 0 : a.number === "singular" ? -1 : 1) ||
-				CASES.indexOf(a.cases[0]) - CASES.indexOf(b.cases[0]),
-		)
-		.map(({ number, genders, cases }) => {
-			const gender = genderLabel(genders);
-			return {
-				short: [
-					cases.map((c) => CASE_SHORT[c]).join("/"),
-					NUMBER_LABELS[number].short,
-					gender?.short,
-				]
-					.filter(Boolean)
-					.join(" "),
-				full: [cases.join(" or "), NUMBER_LABELS[number].full, gender?.full]
-					.filter(Boolean)
-					.join(" "),
-			};
-		});
+	return (
+		[...groups.values()]
+			.map((group) => ({
+				...group,
+				cases: CASES.filter((c) => group.cases.includes(c)),
+			}))
+			.sort(
+				(a, b) =>
+					(a.number === b.number ? 0 : a.number === "singular" ? -1 : 1) ||
+					CASES.indexOf(a.cases[0]) - CASES.indexOf(b.cases[0]),
+			)
+			.map(({ of, number, genders, cases }) => {
+				const bare = of !== undefined && UNNUMBERED.has(of);
+				const gender = bare ? null : genderLabel(genders);
+				const numberLabel = bare ? null : NUMBER_LABELS[number];
+				return {
+					of,
+					short: [
+						cases.map((c) => CASE_SHORT[c]).join("/"),
+						numberLabel?.short,
+						gender?.short,
+					]
+						.filter(Boolean)
+						.join(" "),
+					full: [cases.join(" or "), numberLabel?.full, gender?.full]
+						.filter(Boolean)
+						.join(" "),
+				};
+			})
+			.reduce<Array<Label & { of?: VerbalNoun; parts: Array<Label> }>>(
+				(merged, { of, short, full }) => {
+					const same = merged.find((label) => label.of === of);
+					if (same) same.parts.push({ short, full });
+					else merged.push({ of, short, full, parts: [{ short, full }] });
+					return merged;
+				},
+				[],
+			)
+			// One label per participle: "perfect participle (nom. sg. neut., acc. sg. masc./neut.)".
+			.flatMap(({ of, parts }) => {
+				if (!of) return parts;
+				const join = (key: keyof Label, separator: string) =>
+					`${VERBAL_NOUNS[of]} (${parts.map((p) => p[key]).join(separator)})`;
+				return [{ short: join("short", ", "), full: join("full", "; ") }];
+			})
+	);
 }
 
 function verbLabel({ analysis }: Cell): Label | null {
+	if (analysis.kind === "case") return null;
+	// A deponent is passive in form only, so its voice is left unsaid.
+	const voice = analysis.deponent ? null : analysis.voice;
 	if (analysis.kind === "finite") {
-		const { person, tense, mood, voice } = analysis;
-		const rest = `${TENSE_LABELS[tense].en} ${mood} ${voice}`;
+		const { person, tense, mood } = analysis;
+		const rest = [TENSE_LABELS[tense].en, mood, voice]
+			.filter(Boolean)
+			.join(" ");
 		return {
 			short: `${PERSON_LABELS[person].short} ${rest}`,
 			full: `${PERSON_LABELS[person].full} ${rest}`,
 		};
 	}
-	if (analysis.kind === "infinitive") {
-		const text = `${analysis.tense} ${analysis.voice} infinitive`;
-		return { short: text, full: text };
+	if (analysis.kind === "imperative") {
+		const { person, tense } = analysis;
+		const rest = [tense, "imperative", voice].filter(Boolean).join(" ");
+		return {
+			short: `${PERSON_LABELS[person].short} ${rest}`,
+			full: `${PERSON_LABELS[person].full} ${rest}`,
+		};
 	}
-	return null;
+	const text = [analysis.tense, voice, "infinitive"].filter(Boolean).join(" ");
+	return { short: text, full: text };
 }
 
-/** The cells a query matched in one entry, one line per spelling. */
-export function describe(cells: Array<Cell>): Array<FormLine> {
+/**
+ * The cells a query matched in one entry, one line per spelling. An enclitic
+ * goes back on the form and gets a label of its own: virumque, "with -que".
+ */
+export function describe(
+	cells: Array<Cell>,
+	enclitic?: string,
+): Array<FormLine> {
 	const bySpelling = new Map<string, Array<Cell>>();
 	for (const cell of cells) {
 		bySpelling.set(cell.form, [...(bySpelling.get(cell.form) ?? []), cell]);
 	}
 
-	return [...bySpelling].map(([form, matched]) => {
+	return [...bySpelling].map(([form, all]) => {
+		// A rarer verb form is left out when the spelling has a main one: amāre is
+		// the infinitive, not also the -re form of amāris. Cases keep both (fīlī).
+		const hasMain = all.some((c) => !c.variant);
+		const matched = all.filter(
+			(c) => !(hasMain && c.variant && c.analysis.kind !== "case"),
+		);
 		const labels = [
 			...caseLabels(matched),
 			...matched.flatMap((c) => verbLabel(c) ?? []),
@@ -135,6 +201,13 @@ export function describe(cells: Array<Cell>): Array<FormLine> {
 			seen.add(full);
 			return true;
 		});
-		return { form, labels: unique };
+		if (!enclitic) return { form, labels: unique };
+		return {
+			form: form + enclitic,
+			labels: [
+				...unique,
+				{ short: `with -${enclitic}`, full: `with -${enclitic}` },
+			],
+		};
 	});
 }

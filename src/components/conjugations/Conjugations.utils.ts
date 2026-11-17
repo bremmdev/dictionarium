@@ -88,6 +88,34 @@ type MoodForms<M extends Mood> = Partial<
 	Record<Voice, Partial<Record<MoodTense<M>, TenseForms>>>
 >;
 
+export type ImperativePerson = "2sg" | "3sg" | "2pl" | "3pl";
+
+/**
+ * Everything that is not a finite tense, on the Cētera tab. Participles and the
+ * gerundive are their dictionary lines (salūtāns, salūtantis; salūtātus,
+ * salūtāta, salūtātum); the future and perfect passive infinitives are two words.
+ * Partial because an irregular verb lacks some (sum has no gerund); the check
+ * holds a regular verb to the whole set.
+ */
+export type Cetera = {
+	imperative: Partial<
+		Record<
+			Voice,
+			{
+				present: Partial<Record<ImperativePerson, Form>>;
+				future: Partial<Record<ImperativePerson, Form>>;
+			}
+		>
+	>;
+	infinitive: Partial<
+		Record<"present" | "perfect" | "future", Partial<Record<Voice, Form>>>
+	>;
+	participle: Partial<Record<"present" | "perfect" | "future", Form>>;
+	gerundive?: Form;
+	gerund?: Record<"genitive" | "dative" | "accusative" | "ablative", Form>;
+	supine?: Record<"accusative" | "ablative", Form>;
+};
+
 /** What a paradigm table needs, regular or irregular. */
 export type VerbParadigm = {
 	/** As the dictionary files them. The first part keys BLURBS and NOTES. */
@@ -103,6 +131,7 @@ export type VerbParadigm = {
 	perfectStem: string;
 	indicative: MoodForms<"indicative">;
 	subjunctive?: MoodForms<"subjunctive">;
+	cetera?: Cetera;
 };
 
 export type Verb = VerbParadigm & {
@@ -123,17 +152,47 @@ export type ConjugationEndings = {
 	subjunctive?: MoodEndings<"subjunctive">;
 };
 
-/** The personal endings every active tense is built from, and what they mean. */
+/** The personal endings every tense but the perfect is built from, and what they mean. */
 export const PERSONAL_ENDINGS: Record<
 	Person,
-	{ ending: string; example: string; english: string }
+	{ ending: string; passive: string; example: string; english: string }
 > = {
-	"1sg": { ending: "-ō / -m", example: "salūtō", english: "I greet" },
-	"2sg": { ending: "-s", example: "salūtās", english: "you greet" },
-	"3sg": { ending: "-t", example: "salūtat", english: "he, she, it greets" },
-	"1pl": { ending: "-mus", example: "salūtāmus", english: "we greet" },
-	"2pl": { ending: "-tis", example: "salūtātis", english: "you (all) greet" },
-	"3pl": { ending: "-nt", example: "salūtant", english: "they greet" },
+	"1sg": {
+		ending: "-ō / -m",
+		passive: "-or / -r",
+		example: "salūtō",
+		english: "I greet",
+	},
+	"2sg": {
+		ending: "-s",
+		passive: "-ris / -re",
+		example: "salūtās",
+		english: "you greet",
+	},
+	"3sg": {
+		ending: "-t",
+		passive: "-tur",
+		example: "salūtat",
+		english: "he, she, it greets",
+	},
+	"1pl": {
+		ending: "-mus",
+		passive: "-mur",
+		example: "salūtāmus",
+		english: "we greet",
+	},
+	"2pl": {
+		ending: "-tis",
+		passive: "-minī",
+		example: "salūtātis",
+		english: "you (all) greet",
+	},
+	"3pl": {
+		ending: "-nt",
+		passive: "-ntur",
+		example: "salūtant",
+		english: "they greet",
+	},
 };
 
 export const PRINCIPAL_PARTS = [
@@ -255,6 +314,56 @@ const SALUTO: Verb = {
 				"3pl": { form: "salūtāverint" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "salūtor" },
+				"2sg": { form: "salūtāris", alt: "salūtāre" },
+				"3sg": { form: "salūtātur" },
+				"1pl": { form: "salūtāmur" },
+				"2pl": { form: "salūtāminī" },
+				"3pl": { form: "salūtantur" },
+			},
+			imperfect: {
+				"1sg": { form: "salūtābar" },
+				"2sg": { form: "salūtābāris", alt: "salūtābāre" },
+				"3sg": { form: "salūtābātur" },
+				"1pl": { form: "salūtābāmur" },
+				"2pl": { form: "salūtābāminī" },
+				"3pl": { form: "salūtābantur" },
+			},
+			future: {
+				"1sg": { form: "salūtābor" },
+				"2sg": { form: "salūtāberis", alt: "salūtābere" },
+				"3sg": { form: "salūtābitur" },
+				"1pl": { form: "salūtābimur" },
+				"2pl": { form: "salūtābiminī" },
+				"3pl": { form: "salūtābuntur" },
+			},
+			perfect: {
+				"1sg": { form: "salūtātus sum" },
+				"2sg": { form: "salūtātus es" },
+				"3sg": { form: "salūtātus est" },
+				"1pl": { form: "salūtātī sumus" },
+				"2pl": { form: "salūtātī estis" },
+				"3pl": { form: "salūtātī sunt" },
+			},
+			pluperfect: {
+				"1sg": { form: "salūtātus eram" },
+				"2sg": { form: "salūtātus erās" },
+				"3sg": { form: "salūtātus erat" },
+				"1pl": { form: "salūtātī erāmus" },
+				"2pl": { form: "salūtātī erātis" },
+				"3pl": { form: "salūtātī erant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "salūtātus erō" },
+				"2sg": { form: "salūtātus eris" },
+				"3sg": { form: "salūtātus erit" },
+				"1pl": { form: "salūtātī erimus" },
+				"2pl": { form: "salūtātī eritis" },
+				"3pl": { form: "salūtātī erunt" },
+			},
+		},
 	},
 	subjunctive: {
 		active: {
@@ -290,6 +399,94 @@ const SALUTO: Verb = {
 				"2pl": { form: "salūtāvissētis" },
 				"3pl": { form: "salūtāvissent" },
 			},
+		},
+		passive: {
+			present: {
+				"1sg": { form: "salūter" },
+				"2sg": { form: "salūtēris", alt: "salūtēre" },
+				"3sg": { form: "salūtētur" },
+				"1pl": { form: "salūtēmur" },
+				"2pl": { form: "salūtēminī" },
+				"3pl": { form: "salūtentur" },
+			},
+			imperfect: {
+				"1sg": { form: "salūtārer" },
+				"2sg": { form: "salūtārēris", alt: "salūtārēre" },
+				"3sg": { form: "salūtārētur" },
+				"1pl": { form: "salūtārēmur" },
+				"2pl": { form: "salūtārēminī" },
+				"3pl": { form: "salūtārentur" },
+			},
+			perfect: {
+				"1sg": { form: "salūtātus sim" },
+				"2sg": { form: "salūtātus sīs" },
+				"3sg": { form: "salūtātus sit" },
+				"1pl": { form: "salūtātī sīmus" },
+				"2pl": { form: "salūtātī sītis" },
+				"3pl": { form: "salūtātī sint" },
+			},
+			pluperfect: {
+				"1sg": { form: "salūtātus essem" },
+				"2sg": { form: "salūtātus essēs" },
+				"3sg": { form: "salūtātus esset" },
+				"1pl": { form: "salūtātī essēmus" },
+				"2pl": { form: "salūtātī essētis" },
+				"3pl": { form: "salūtātī essent" },
+			},
+		},
+	},
+	cetera: {
+		imperative: {
+			active: {
+				present: {
+					"2sg": { form: "salūtā" },
+					"2pl": { form: "salūtāte" },
+				},
+				future: {
+					"2sg": { form: "salūtātō" },
+					"3sg": { form: "salūtātō" },
+					"2pl": { form: "salūtātōte" },
+					"3pl": { form: "salūtantō" },
+				},
+			},
+			passive: {
+				present: {
+					"2sg": { form: "salūtāre" },
+					"2pl": { form: "salūtāminī" },
+				},
+				future: {
+					"2sg": { form: "salūtātor" },
+					"3sg": { form: "salūtātor" },
+					"3pl": { form: "salūtantor" },
+				},
+			},
+		},
+		infinitive: {
+			present: { active: { form: "salūtāre" }, passive: { form: "salūtārī" } },
+			perfect: {
+				active: { form: "salūtāvisse" },
+				passive: { form: "salūtātus esse" },
+			},
+			future: {
+				active: { form: "salūtātūrus esse" },
+				passive: { form: "salūtātum īrī" },
+			},
+		},
+		participle: {
+			present: { form: "salūtāns, salūtantis" },
+			perfect: { form: "salūtātus, salūtāta, salūtātum" },
+			future: { form: "salūtātūrus, salūtātūra, salūtātūrum" },
+		},
+		gerundive: { form: "salūtandus, salūtanda, salūtandum" },
+		gerund: {
+			genitive: { form: "salūtandī" },
+			dative: { form: "salūtandō" },
+			accusative: { form: "salūtandum" },
+			ablative: { form: "salūtandō" },
+		},
+		supine: {
+			accusative: { form: "salūtātum" },
+			ablative: { form: "salūtātū" },
 		},
 	},
 };
@@ -350,6 +547,56 @@ const MONEO: Verb = {
 				"3pl": { form: "monuerint" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "moneor" },
+				"2sg": { form: "monēris", alt: "monēre" },
+				"3sg": { form: "monētur" },
+				"1pl": { form: "monēmur" },
+				"2pl": { form: "monēminī" },
+				"3pl": { form: "monentur" },
+			},
+			imperfect: {
+				"1sg": { form: "monēbar" },
+				"2sg": { form: "monēbāris", alt: "monēbāre" },
+				"3sg": { form: "monēbātur" },
+				"1pl": { form: "monēbāmur" },
+				"2pl": { form: "monēbāminī" },
+				"3pl": { form: "monēbantur" },
+			},
+			future: {
+				"1sg": { form: "monēbor" },
+				"2sg": { form: "monēberis", alt: "monēbere" },
+				"3sg": { form: "monēbitur" },
+				"1pl": { form: "monēbimur" },
+				"2pl": { form: "monēbiminī" },
+				"3pl": { form: "monēbuntur" },
+			},
+			perfect: {
+				"1sg": { form: "monitus sum" },
+				"2sg": { form: "monitus es" },
+				"3sg": { form: "monitus est" },
+				"1pl": { form: "monitī sumus" },
+				"2pl": { form: "monitī estis" },
+				"3pl": { form: "monitī sunt" },
+			},
+			pluperfect: {
+				"1sg": { form: "monitus eram" },
+				"2sg": { form: "monitus erās" },
+				"3sg": { form: "monitus erat" },
+				"1pl": { form: "monitī erāmus" },
+				"2pl": { form: "monitī erātis" },
+				"3pl": { form: "monitī erant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "monitus erō" },
+				"2sg": { form: "monitus eris" },
+				"3sg": { form: "monitus erit" },
+				"1pl": { form: "monitī erimus" },
+				"2pl": { form: "monitī eritis" },
+				"3pl": { form: "monitī erunt" },
+			},
+		},
 	},
 	subjunctive: {
 		active: {
@@ -386,6 +633,91 @@ const MONEO: Verb = {
 				"3pl": { form: "monuissent" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "monear" },
+				"2sg": { form: "moneāris", alt: "moneāre" },
+				"3sg": { form: "moneātur" },
+				"1pl": { form: "moneāmur" },
+				"2pl": { form: "moneāminī" },
+				"3pl": { form: "moneantur" },
+			},
+			imperfect: {
+				"1sg": { form: "monērer" },
+				"2sg": { form: "monērēris", alt: "monērēre" },
+				"3sg": { form: "monērētur" },
+				"1pl": { form: "monērēmur" },
+				"2pl": { form: "monērēminī" },
+				"3pl": { form: "monērentur" },
+			},
+			perfect: {
+				"1sg": { form: "monitus sim" },
+				"2sg": { form: "monitus sīs" },
+				"3sg": { form: "monitus sit" },
+				"1pl": { form: "monitī sīmus" },
+				"2pl": { form: "monitī sītis" },
+				"3pl": { form: "monitī sint" },
+			},
+			pluperfect: {
+				"1sg": { form: "monitus essem" },
+				"2sg": { form: "monitus essēs" },
+				"3sg": { form: "monitus esset" },
+				"1pl": { form: "monitī essēmus" },
+				"2pl": { form: "monitī essētis" },
+				"3pl": { form: "monitī essent" },
+			},
+		},
+	},
+	cetera: {
+		imperative: {
+			active: {
+				present: {
+					"2sg": { form: "monē" },
+					"2pl": { form: "monēte" },
+				},
+				future: {
+					"2sg": { form: "monētō" },
+					"3sg": { form: "monētō" },
+					"2pl": { form: "monētōte" },
+					"3pl": { form: "monentō" },
+				},
+			},
+			passive: {
+				present: {
+					"2sg": { form: "monēre" },
+					"2pl": { form: "monēminī" },
+				},
+				future: {
+					"2sg": { form: "monētor" },
+					"3sg": { form: "monētor" },
+					"3pl": { form: "monentor" },
+				},
+			},
+		},
+		infinitive: {
+			present: { active: { form: "monēre" }, passive: { form: "monērī" } },
+			perfect: {
+				active: { form: "monuisse" },
+				passive: { form: "monitus esse" },
+			},
+			future: {
+				active: { form: "monitūrus esse" },
+				passive: { form: "monitum īrī" },
+			},
+		},
+		participle: {
+			present: { form: "monēns, monentis" },
+			perfect: { form: "monitus, monita, monitum" },
+			future: { form: "monitūrus, monitūra, monitūrum" },
+		},
+		gerundive: { form: "monendus, monenda, monendum" },
+		gerund: {
+			genitive: { form: "monendī" },
+			dative: { form: "monendō" },
+			accusative: { form: "monendum" },
+			ablative: { form: "monendō" },
+		},
+		supine: { accusative: { form: "monitum" }, ablative: { form: "monitū" } },
 	},
 };
 
@@ -445,6 +777,56 @@ const DUCO: Verb = {
 				"3pl": { form: "dūxerint" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "dūcor" },
+				"2sg": { form: "dūceris", alt: "dūcere" },
+				"3sg": { form: "dūcitur" },
+				"1pl": { form: "dūcimur" },
+				"2pl": { form: "dūciminī" },
+				"3pl": { form: "dūcuntur" },
+			},
+			imperfect: {
+				"1sg": { form: "dūcēbar" },
+				"2sg": { form: "dūcēbāris", alt: "dūcēbāre" },
+				"3sg": { form: "dūcēbātur" },
+				"1pl": { form: "dūcēbāmur" },
+				"2pl": { form: "dūcēbāminī" },
+				"3pl": { form: "dūcēbantur" },
+			},
+			future: {
+				"1sg": { form: "dūcar" },
+				"2sg": { form: "dūcēris", alt: "dūcēre" },
+				"3sg": { form: "dūcētur" },
+				"1pl": { form: "dūcēmur" },
+				"2pl": { form: "dūcēminī" },
+				"3pl": { form: "dūcentur" },
+			},
+			perfect: {
+				"1sg": { form: "ductus sum" },
+				"2sg": { form: "ductus es" },
+				"3sg": { form: "ductus est" },
+				"1pl": { form: "ductī sumus" },
+				"2pl": { form: "ductī estis" },
+				"3pl": { form: "ductī sunt" },
+			},
+			pluperfect: {
+				"1sg": { form: "ductus eram" },
+				"2sg": { form: "ductus erās" },
+				"3sg": { form: "ductus erat" },
+				"1pl": { form: "ductī erāmus" },
+				"2pl": { form: "ductī erātis" },
+				"3pl": { form: "ductī erant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "ductus erō" },
+				"2sg": { form: "ductus eris" },
+				"3sg": { form: "ductus erit" },
+				"1pl": { form: "ductī erimus" },
+				"2pl": { form: "ductī eritis" },
+				"3pl": { form: "ductī erunt" },
+			},
+		},
 	},
 	subjunctive: {
 		active: {
@@ -481,6 +863,91 @@ const DUCO: Verb = {
 				"3pl": { form: "dūxissent" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "dūcar" },
+				"2sg": { form: "dūcāris", alt: "dūcāre" },
+				"3sg": { form: "dūcātur" },
+				"1pl": { form: "dūcāmur" },
+				"2pl": { form: "dūcāminī" },
+				"3pl": { form: "dūcantur" },
+			},
+			imperfect: {
+				"1sg": { form: "dūcerer" },
+				"2sg": { form: "dūcerēris", alt: "dūcerēre" },
+				"3sg": { form: "dūcerētur" },
+				"1pl": { form: "dūcerēmur" },
+				"2pl": { form: "dūcerēminī" },
+				"3pl": { form: "dūcerentur" },
+			},
+			perfect: {
+				"1sg": { form: "ductus sim" },
+				"2sg": { form: "ductus sīs" },
+				"3sg": { form: "ductus sit" },
+				"1pl": { form: "ductī sīmus" },
+				"2pl": { form: "ductī sītis" },
+				"3pl": { form: "ductī sint" },
+			},
+			pluperfect: {
+				"1sg": { form: "ductus essem" },
+				"2sg": { form: "ductus essēs" },
+				"3sg": { form: "ductus esset" },
+				"1pl": { form: "ductī essēmus" },
+				"2pl": { form: "ductī essētis" },
+				"3pl": { form: "ductī essent" },
+			},
+		},
+	},
+	cetera: {
+		imperative: {
+			active: {
+				present: {
+					"2sg": { form: "dūc", irregular: true },
+					"2pl": { form: "dūcite" },
+				},
+				future: {
+					"2sg": { form: "dūcitō" },
+					"3sg": { form: "dūcitō" },
+					"2pl": { form: "dūcitōte" },
+					"3pl": { form: "dūcuntō" },
+				},
+			},
+			passive: {
+				present: {
+					"2sg": { form: "dūcere" },
+					"2pl": { form: "dūciminī" },
+				},
+				future: {
+					"2sg": { form: "dūcitor" },
+					"3sg": { form: "dūcitor" },
+					"3pl": { form: "dūcuntor" },
+				},
+			},
+		},
+		infinitive: {
+			present: { active: { form: "dūcere" }, passive: { form: "dūcī" } },
+			perfect: {
+				active: { form: "dūxisse" },
+				passive: { form: "ductus esse" },
+			},
+			future: {
+				active: { form: "ductūrus esse" },
+				passive: { form: "ductum īrī" },
+			},
+		},
+		participle: {
+			present: { form: "dūcēns, dūcentis" },
+			perfect: { form: "ductus, ducta, ductum" },
+			future: { form: "ductūrus, ductūra, ductūrum" },
+		},
+		gerundive: { form: "dūcendus, dūcenda, dūcendum" },
+		gerund: {
+			genitive: { form: "dūcendī" },
+			dative: { form: "dūcendō" },
+			accusative: { form: "dūcendum" },
+			ablative: { form: "dūcendō" },
+		},
+		supine: { accusative: { form: "ductum" }, ablative: { form: "ductū" } },
 	},
 };
 
@@ -540,6 +1007,56 @@ const AUDIO: Verb = {
 				"3pl": { form: "audīverint" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "audior" },
+				"2sg": { form: "audīris", alt: "audīre" },
+				"3sg": { form: "audītur" },
+				"1pl": { form: "audīmur" },
+				"2pl": { form: "audīminī" },
+				"3pl": { form: "audiuntur" },
+			},
+			imperfect: {
+				"1sg": { form: "audiēbar" },
+				"2sg": { form: "audiēbāris", alt: "audiēbāre" },
+				"3sg": { form: "audiēbātur" },
+				"1pl": { form: "audiēbāmur" },
+				"2pl": { form: "audiēbāminī" },
+				"3pl": { form: "audiēbantur" },
+			},
+			future: {
+				"1sg": { form: "audiar" },
+				"2sg": { form: "audiēris", alt: "audiēre" },
+				"3sg": { form: "audiētur" },
+				"1pl": { form: "audiēmur" },
+				"2pl": { form: "audiēminī" },
+				"3pl": { form: "audientur" },
+			},
+			perfect: {
+				"1sg": { form: "audītus sum" },
+				"2sg": { form: "audītus es" },
+				"3sg": { form: "audītus est" },
+				"1pl": { form: "audītī sumus" },
+				"2pl": { form: "audītī estis" },
+				"3pl": { form: "audītī sunt" },
+			},
+			pluperfect: {
+				"1sg": { form: "audītus eram" },
+				"2sg": { form: "audītus erās" },
+				"3sg": { form: "audītus erat" },
+				"1pl": { form: "audītī erāmus" },
+				"2pl": { form: "audītī erātis" },
+				"3pl": { form: "audītī erant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "audītus erō" },
+				"2sg": { form: "audītus eris" },
+				"3sg": { form: "audītus erit" },
+				"1pl": { form: "audītī erimus" },
+				"2pl": { form: "audītī eritis" },
+				"3pl": { form: "audītī erunt" },
+			},
+		},
 	},
 	subjunctive: {
 		active: {
@@ -576,6 +1093,91 @@ const AUDIO: Verb = {
 				"3pl": { form: "audīvissent" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "audiar" },
+				"2sg": { form: "audiāris", alt: "audiāre" },
+				"3sg": { form: "audiātur" },
+				"1pl": { form: "audiāmur" },
+				"2pl": { form: "audiāminī" },
+				"3pl": { form: "audiantur" },
+			},
+			imperfect: {
+				"1sg": { form: "audīrer" },
+				"2sg": { form: "audīrēris", alt: "audīrēre" },
+				"3sg": { form: "audīrētur" },
+				"1pl": { form: "audīrēmur" },
+				"2pl": { form: "audīrēminī" },
+				"3pl": { form: "audīrentur" },
+			},
+			perfect: {
+				"1sg": { form: "audītus sim" },
+				"2sg": { form: "audītus sīs" },
+				"3sg": { form: "audītus sit" },
+				"1pl": { form: "audītī sīmus" },
+				"2pl": { form: "audītī sītis" },
+				"3pl": { form: "audītī sint" },
+			},
+			pluperfect: {
+				"1sg": { form: "audītus essem" },
+				"2sg": { form: "audītus essēs" },
+				"3sg": { form: "audītus esset" },
+				"1pl": { form: "audītī essēmus" },
+				"2pl": { form: "audītī essētis" },
+				"3pl": { form: "audītī essent" },
+			},
+		},
+	},
+	cetera: {
+		imperative: {
+			active: {
+				present: {
+					"2sg": { form: "audī" },
+					"2pl": { form: "audīte" },
+				},
+				future: {
+					"2sg": { form: "audītō" },
+					"3sg": { form: "audītō" },
+					"2pl": { form: "audītōte" },
+					"3pl": { form: "audiuntō" },
+				},
+			},
+			passive: {
+				present: {
+					"2sg": { form: "audīre" },
+					"2pl": { form: "audīminī" },
+				},
+				future: {
+					"2sg": { form: "audītor" },
+					"3sg": { form: "audītor" },
+					"3pl": { form: "audiuntor" },
+				},
+			},
+		},
+		infinitive: {
+			present: { active: { form: "audīre" }, passive: { form: "audīrī" } },
+			perfect: {
+				active: { form: "audīvisse" },
+				passive: { form: "audītus esse" },
+			},
+			future: {
+				active: { form: "audītūrus esse" },
+				passive: { form: "audītum īrī" },
+			},
+		},
+		participle: {
+			present: { form: "audiēns, audientis" },
+			perfect: { form: "audītus, audīta, audītum" },
+			future: { form: "audītūrus, audītūra, audītūrum" },
+		},
+		gerundive: { form: "audiendus, audienda, audiendum" },
+		gerund: {
+			genitive: { form: "audiendī" },
+			dative: { form: "audiendō" },
+			accusative: { form: "audiendum" },
+			ablative: { form: "audiendō" },
+		},
+		supine: { accusative: { form: "audītum" }, ablative: { form: "audītū" } },
 	},
 };
 
@@ -635,6 +1237,56 @@ const CAPIO: Verb = {
 				"3pl": { form: "cēperint" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "capior" },
+				"2sg": { form: "caperis", alt: "capere" },
+				"3sg": { form: "capitur" },
+				"1pl": { form: "capimur" },
+				"2pl": { form: "capiminī" },
+				"3pl": { form: "capiuntur" },
+			},
+			imperfect: {
+				"1sg": { form: "capiēbar" },
+				"2sg": { form: "capiēbāris", alt: "capiēbāre" },
+				"3sg": { form: "capiēbātur" },
+				"1pl": { form: "capiēbāmur" },
+				"2pl": { form: "capiēbāminī" },
+				"3pl": { form: "capiēbantur" },
+			},
+			future: {
+				"1sg": { form: "capiar" },
+				"2sg": { form: "capiēris", alt: "capiēre" },
+				"3sg": { form: "capiētur" },
+				"1pl": { form: "capiēmur" },
+				"2pl": { form: "capiēminī" },
+				"3pl": { form: "capientur" },
+			},
+			perfect: {
+				"1sg": { form: "captus sum" },
+				"2sg": { form: "captus es" },
+				"3sg": { form: "captus est" },
+				"1pl": { form: "captī sumus" },
+				"2pl": { form: "captī estis" },
+				"3pl": { form: "captī sunt" },
+			},
+			pluperfect: {
+				"1sg": { form: "captus eram" },
+				"2sg": { form: "captus erās" },
+				"3sg": { form: "captus erat" },
+				"1pl": { form: "captī erāmus" },
+				"2pl": { form: "captī erātis" },
+				"3pl": { form: "captī erant" },
+			},
+			futurePerfect: {
+				"1sg": { form: "captus erō" },
+				"2sg": { form: "captus eris" },
+				"3sg": { form: "captus erit" },
+				"1pl": { form: "captī erimus" },
+				"2pl": { form: "captī eritis" },
+				"3pl": { form: "captī erunt" },
+			},
+		},
 	},
 	subjunctive: {
 		active: {
@@ -671,10 +1323,97 @@ const CAPIO: Verb = {
 				"3pl": { form: "cēpissent" },
 			},
 		},
+		passive: {
+			present: {
+				"1sg": { form: "capiar" },
+				"2sg": { form: "capiāris", alt: "capiāre" },
+				"3sg": { form: "capiātur" },
+				"1pl": { form: "capiāmur" },
+				"2pl": { form: "capiāminī" },
+				"3pl": { form: "capiantur" },
+			},
+			imperfect: {
+				"1sg": { form: "caperer" },
+				"2sg": { form: "caperēris", alt: "caperēre" },
+				"3sg": { form: "caperētur" },
+				"1pl": { form: "caperēmur" },
+				"2pl": { form: "caperēminī" },
+				"3pl": { form: "caperentur" },
+			},
+			perfect: {
+				"1sg": { form: "captus sim" },
+				"2sg": { form: "captus sīs" },
+				"3sg": { form: "captus sit" },
+				"1pl": { form: "captī sīmus" },
+				"2pl": { form: "captī sītis" },
+				"3pl": { form: "captī sint" },
+			},
+			pluperfect: {
+				"1sg": { form: "captus essem" },
+				"2sg": { form: "captus essēs" },
+				"3sg": { form: "captus esset" },
+				"1pl": { form: "captī essēmus" },
+				"2pl": { form: "captī essētis" },
+				"3pl": { form: "captī essent" },
+			},
+		},
+	},
+	cetera: {
+		imperative: {
+			active: {
+				present: {
+					"2sg": { form: "cape" },
+					"2pl": { form: "capite" },
+				},
+				future: {
+					"2sg": { form: "capitō" },
+					"3sg": { form: "capitō" },
+					"2pl": { form: "capitōte" },
+					"3pl": { form: "capiuntō" },
+				},
+			},
+			passive: {
+				present: {
+					"2sg": { form: "capere" },
+					"2pl": { form: "capiminī" },
+				},
+				future: {
+					"2sg": { form: "capitor" },
+					"3sg": { form: "capitor" },
+					"3pl": { form: "capiuntor" },
+				},
+			},
+		},
+		infinitive: {
+			present: { active: { form: "capere" }, passive: { form: "capī" } },
+			perfect: {
+				active: { form: "cēpisse" },
+				passive: { form: "captus esse" },
+			},
+			future: {
+				active: { form: "captūrus esse" },
+				passive: { form: "captum īrī" },
+			},
+		},
+		participle: {
+			present: { form: "capiēns, capientis" },
+			perfect: { form: "captus, capta, captum" },
+			future: { form: "captūrus, captūra, captūrum" },
+		},
+		gerundive: { form: "capiendus, capienda, capiendum" },
+		gerund: {
+			genitive: { form: "capiendī" },
+			dative: { form: "capiendō" },
+			accusative: { form: "capiendum" },
+			ablative: { form: "capiendō" },
+		},
+		supine: { accusative: { form: "captum" }, ablative: { form: "captū" } },
 	},
 };
 
 export type ConjugationGroup = {
+	/** The group's anchor: /grammar/conjugations#first. An entry page links here. */
+	id: string;
 	conjugation: RegularConjugation;
 	/** The heading: "First conjugation". Also keys the blurb in Paradigms.tsx. */
 	title: string;
@@ -686,30 +1425,35 @@ export type ConjugationGroup = {
 // Mixed last: capiō is explained as part third, part fourth.
 export const CONJUGATION_GROUPS: ConjugationGroup[] = [
 	{
+		id: "first",
 		conjugation: "1",
 		title: "First conjugation",
 		stem: "ā-stems",
 		verbs: [SALUTO],
 	},
 	{
+		id: "second",
 		conjugation: "2",
 		title: "Second conjugation",
 		stem: "ē-stems",
 		verbs: [MONEO],
 	},
 	{
+		id: "third",
 		conjugation: "3",
 		title: "Third conjugation",
 		stem: "consonant stems",
 		verbs: [DUCO],
 	},
 	{
+		id: "fourth",
 		conjugation: "4",
 		title: "Fourth conjugation",
 		stem: "ī-stems",
 		verbs: [AUDIO],
 	},
 	{
+		id: "mixed",
 		conjugation: "3io",
 		title: "Mixed conjugation",
 		stem: "third-conjugation -iō verbs",

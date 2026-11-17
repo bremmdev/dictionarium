@@ -3,6 +3,8 @@
  * keys (normalizeLemma output), so the server can rank lemmas without SQL.
  */
 
+import { formKey } from "#/utils/inflection/key";
+
 /** Below this a query is one edit from too many short words to be worth guessing. */
 export const MIN_SUGGESTION_LENGTH = 4;
 
@@ -56,34 +58,57 @@ export function editDistance(a: string, b: string, max: number) {
 	return Math.min(previous[b.length], max + 1);
 }
 
-/**
- * The lemmas nearest the key, only from the closest distance found: two edits
- * are offered only when nothing is one edit away. Same first letter first
- * (people rarely mistype it), then alphabetical; homographs appear once.
- */
-export function suggestLemmas(key: string, candidates: Array<Candidate>) {
+/** A link to search for, and for a form the word it belongs to: salūtāvissent (salūtō). */
+export type Suggestion = { text: string; of?: string };
+
+/** A suggestion with the key it was measured on and its distance from the query. */
+export type Scored = Suggestion & { key: string; distance: number };
+
+/** Every lemma within the key's budget, scored. */
+export function scoreLemmas(key: string, candidates: Array<Candidate>) {
 	const max = maxEditsFor(key);
 	if (max === 0) return [];
+	return candidates.flatMap((c): Array<Scored> => {
+		const distance = editDistance(key, c.lemmaPlain, max);
+		return distance === 0 || distance > max
+			? []
+			: [{ text: c.lemma, key: c.lemmaPlain, distance }];
+	});
+}
 
-	let closest = max + 1;
-	let nearest: Array<Candidate> = [];
-	for (const candidate of candidates) {
-		const distance = editDistance(key, candidate.lemmaPlain, max);
-		if (distance === 0 || distance > max || distance > closest) continue;
-		if (distance < closest) {
-			closest = distance;
-			nearest = [];
-		}
-		nearest.push(candidate);
-	}
-
-	const opensLikeKey = (c: Candidate) => (c.lemmaPlain[0] === key[0] ? 0 : 1);
-	nearest.sort(
-		(a, b) =>
-			opensLikeKey(a) - opensLikeKey(b) ||
-			a.lemmaPlain.localeCompare(b.lemmaPlain) ||
-			a.lemma.localeCompare(b.lemma),
+/**
+ * The suggestions nearest the key, lemmas and forms in one list, only from the
+ * closest distance found: two edits are offered only when nothing is one edit
+ * away. Same first letter first (people rarely mistype it), then alphabetical;
+ * a search appears once per word.
+ */
+export function nearestSuggestions(
+	key: string,
+	scored: Array<Scored>,
+): Array<Suggestion> {
+	const closest = Math.min(...scored.map((s) => s.distance));
+	const opensLikeKey = (s: Scored) => (s.key[0] === key[0] ? 0 : 1);
+	const nearest = scored
+		.filter((s) => s.distance === closest)
+		.sort(
+			(a, b) =>
+				opensLikeKey(a) - opensLikeKey(b) ||
+				a.key.localeCompare(b.key) ||
+				a.text.localeCompare(b.text),
+		);
+	const seen = new Set<string>();
+	return (
+		nearest
+			// A form spelled like its own lemma is the lemma suggestion: amō, not amō (amō).
+			.map((s) => (s.of === s.text ? { ...s, of: undefined } : s))
+			// rēgis and rēgīs are one link, since the search is the same.
+			.filter(({ text, of }) => {
+				const id = `${formKey(text)}|${of ?? ""}`;
+				if (seen.has(id)) return false;
+				seen.add(id);
+				return true;
+			})
+			.slice(0, MAX_SUGGESTIONS)
+			.map(({ text, of }) => (of ? { text, of } : { text }))
 	);
-
-	return [...new Set(nearest.map((c) => c.lemma))].slice(0, MAX_SUGGESTIONS);
 }

@@ -4,13 +4,14 @@ import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { TextLink } from "#/components/TextLink";
 import type { SearchResult } from "#/server/search";
+import type { Suggestion } from "#/utils/search/suggestions";
 import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
 	results: Array<SearchResult>;
-	/** Lemmas close to the query, offered when it found nothing. */
-	suggestions: Array<string>;
+	/** Lemmas and forms close to the query, offered when it found nothing. */
+	suggestions: Array<Suggestion>;
 	/** Following a suggestion unmounts its link, so the caller gets focus back. */
 	onSuggestion: () => void;
 	/** Every lemma in the dictionary is one word, so this is the word count. */
@@ -62,7 +63,10 @@ export function Results({
 				announcement += ` ${formCount} ${formCount === 1 ? "matches" : "match"} it as a form.`;
 			}
 			if (results.length === 0 && suggestions.length > 0) {
-				announcement += ` Did you mean ${orList.format(suggestions)}?`;
+				const spoken = suggestions.map(({ text, of }) =>
+					of ? `${text}, a form of ${of}` : text,
+				);
+				announcement += ` Did you mean ${orList.format(spoken)}?`;
 			}
 		}
 	}
@@ -117,18 +121,25 @@ export function Results({
 				!isFetching && (
 					<p className="mt-3 text-center text-ink-600 text-lg">
 						Did you mean{" "}
-						{suggestions.map((lemma, i) => (
-							<Fragment key={lemma}>
+						{suggestions.map(({ text, of }, i) => (
+							<Fragment key={`${text}|${of ?? ""}`}>
 								{i > 0 && (i === suggestions.length - 1 ? " or " : ", ")}
 								<TextLink
 									to="/"
-									search={{ q: lemma }}
+									search={{ q: text }}
 									resetScroll={false}
 									onClick={onSuggestion}
 									lang="la"
 								>
-									{lemma}
+									{text}
 								</TextLink>
+								{of && (
+									<>
+										{" "}
+										(<span className="sr-only">a form of </span>
+										<span lang="la">{of}</span>)
+									</>
+								)}
 							</Fragment>
 						))}
 						?

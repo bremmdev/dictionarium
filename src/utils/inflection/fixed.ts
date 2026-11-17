@@ -1,7 +1,7 @@
 /**
- * Words that are not stem + ending, keyed by lemma the way fullTableFor is:
- * the pages' own tables, so a table added there is searchable with nothing
- * else to do.
+ * Words that are not stem + ending, keyed the way fullTableFor is (a verb by
+ * lemma and infinitive): the pages' own tables, so a table added there is
+ * searchable with nothing else to do.
  */
 import type { AdjectiveCase } from "#/components/declensions/Adjectives.utils";
 import type { Form } from "#/components/declensions/Declensions.utils";
@@ -19,11 +19,13 @@ import type { Gender } from "#/utils/entries/rules";
 import { firstSecond } from "./adjectives";
 import {
 	type Cell,
+	type Filing,
 	firstForm,
 	type GrammaticalNumber,
 	type Inflection,
+	partsOf,
 } from "./types";
-import { tableInflection } from "./verbs";
+import { compoundInflection, tableInflection } from "./verbs";
 
 const NUMBERS: Array<GrammaticalNumber> = ["singular", "plural"];
 const GENDERS: Array<Gender> = ["m", "f", "n"];
@@ -175,16 +177,28 @@ for (const [key, lemma] of [
 	);
 }
 
-const CONJUGATED = new Map(
-	IRREGULAR_VERBS.map((verb) => [
-		verb.principalParts[0],
-		() => fixed(() => tableInflection(verb).cells()),
-	]),
-);
+/**
+ * By lemma and infinitive, so volō, velle has the table and volō, volāre
+ * (to fly) the rules. Then a compound: afferō, abeō, prōsum.
+ */
+function conjugated(filing: Filing) {
+	const { lemma } = filing;
+	const [, infinitive] = partsOf(filing.principalParts);
+	const own = IRREGULAR_VERBS.find(
+		({ principalParts: [l, i] }) => l === lemma && i === infinitive,
+	);
+	if (own) return fixed(() => tableInflection(own).cells());
+	const base = IRREGULAR_VERBS.find(
+		({ principalParts: [l, i] }) =>
+			lemma.endsWith(l) && lemma !== l && infinitive?.endsWith(i),
+	);
+	return base ? compoundInflection(filing, base) : undefined;
+}
 
 /** A table for this word, or undefined when the rules apply. */
-export function fixedInflection(lemma: string, partOfSpeech: string) {
-	if (partOfSpeech === "verb") return CONJUGATED.get(lemma)?.();
+export function fixedInflection(filing: Filing) {
+	const { lemma, partOfSpeech } = filing;
+	if (partOfSpeech === "verb") return conjugated(filing);
 	if (
 		partOfSpeech === "pronoun" ||
 		partOfSpeech === "adjective" ||

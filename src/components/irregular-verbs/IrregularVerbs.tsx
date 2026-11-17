@@ -45,6 +45,41 @@ const BLURBS: Record<string, React.ReactNode> = {
 			<LatinWord>fertur</LatinWord>, <em>I am carried</em> and so on.
 		</>
 	),
+	volō: (
+		<>
+			<em>Want</em>, <em>be willing</em>. Two vowels alternate in its root:{" "}
+			<LatinWord>vol-</LatinWord> in <LatinWord>volō</LatinWord>,{" "}
+			<LatinWord>volumus</LatinWord>, <LatinWord>volēbam</LatinWord>,{" "}
+			<LatinWord>vel-</LatinWord> in the infinitive <LatinWord>velle</LatinWord>{" "}
+			and the whole subjunctive. It has no passive, no imperative and no supine.
+			Do not confuse it with the regular <LatinWord>volō, volāre</LatinWord>,{" "}
+			<em>fly</em>.
+		</>
+	),
+	nōlō: (
+		<>
+			<LatinWord>nē</LatinWord> + <LatinWord>volō</LatinWord>: <em>not want</em>
+			, <em>be unwilling</em>. In three forms the negative stays a word of its
+			own: <LatinWord>nōn vīs</LatinWord>, <LatinWord>nōn vult</LatinWord>,{" "}
+			<LatinWord>nōn vultis</LatinWord>. Its imperative is the usual way to
+			forbid: <LatinWord>nōlī</LatinWord> or <LatinWord>nōlīte</LatinWord> with
+			an infinitive, <LatinWord>nōlī timēre</LatinWord>,{" "}
+			<em>do not be afraid</em>.
+		</>
+	),
+	mālō: (
+		<>
+			<LatinWord>magis</LatinWord> + <LatinWord>volō</LatinWord>:{" "}
+			<em>want more</em>, <em>prefer</em>. It follows{" "}
+			<LatinWord>volō</LatinWord> form for form with <LatinWord>mā-</LatinWord>{" "}
+			in front, except that <LatinWord>māvīs</LatinWord>,{" "}
+			<LatinWord>māvult</LatinWord> and <LatinWord>māvultis</LatinWord> keep the{" "}
+			<LatinWord>v</LatinWord> of <LatinWord>vīs</LatinWord>. What is preferred
+			comes with <LatinWord>quam</LatinWord>:{" "}
+			<LatinWord>pācem quam bellum mālō</LatinWord>,{" "}
+			<em>I prefer peace to war</em>.
+		</>
+	),
 };
 
 const PRESENT_NOTES: Record<string, React.ReactNode> = {
@@ -99,6 +134,27 @@ const PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>fert</LatinWord>, <LatinWord>fertis</LatinWord> and the
 			infinitive <LatinWord>ferre</LatinWord>. The passive does the same.
 			Elsewhere it is regular.
+		</>
+	),
+	volō: (
+		<>
+			<LatinWord>vīs</LatinWord> is a different root, not{" "}
+			<LatinWord>vol-</LatinWord> at all. <LatinWord>vult</LatinWord> and{" "}
+			<LatinWord>vultis</LatinWord> have the older spellings{" "}
+			<LatinWord>volt</LatinWord> and <LatinWord>voltis</LatinWord>. The future
+			is third conjugation: <LatinWord>volam</LatinWord>,{" "}
+			<LatinWord>volēs</LatinWord>.
+		</>
+	),
+};
+
+const PASSIVE_NOTES: Record<string, React.ReactNode> = {
+	ferō: (
+		<>
+			The same short forms as the active: <LatinWord>ferris</LatinWord>,{" "}
+			<LatinWord>fertur</LatinWord>, and the infinitive{" "}
+			<LatinWord>ferrī</LatinWord>, but <LatinWord>ferimur</LatinWord> and{" "}
+			<LatinWord>feriminī</LatinWord>.
 		</>
 	),
 };
@@ -159,6 +215,22 @@ const SUBJUNCTIVE_PRESENT_NOTES: Record<string, React.ReactNode> = {
 			<LatinWord>foret</LatinWord>, <LatinWord>forent</LatinWord> stand in for
 			it, as <LatinWord>fore</LatinWord> does for{" "}
 			<LatinWord>futūrum esse</LatinWord>.
+		</>
+	),
+	ferō: (
+		<>
+			The present is regular third conjugation: <LatinWord>feram</LatinWord>,{" "}
+			<LatinWord>ferās</LatinWord>. The imperfect is the short infinitive with
+			the endings on it: <LatinWord>ferre</LatinWord> +{" "}
+			<LatinWord>-m</LatinWord>, <LatinWord>ferrem</LatinWord>.
+		</>
+	),
+	volō: (
+		<>
+			An <LatinWord>ī</LatinWord>, as in <LatinWord>sīs</LatinWord>:{" "}
+			<LatinWord>velim</LatinWord>, <LatinWord>velīs</LatinWord>. The imperfect
+			is the infinitive <LatinWord>velle</LatinWord> with the endings on it, and
+			so are <LatinWord>nōllem</LatinWord> and <LatinWord>māllem</LatinWord>.
 		</>
 	),
 };
@@ -278,14 +350,17 @@ function IrregularVerbSection({ verb }: { verb: IrregularVerb }) {
 				verb={verb}
 				headingAs="h3"
 				notes={{
-					indicative: {
-						present: PRESENT_NOTES[lemma],
-						perfect: PERFECT_NOTES[lemma],
+					active: {
+						indicative: {
+							present: PRESENT_NOTES[lemma],
+							perfect: PERFECT_NOTES[lemma],
+						},
+						subjunctive: {
+							present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
+							perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
+						},
 					},
-					subjunctive: {
-						present: SUBJUNCTIVE_PRESENT_NOTES[lemma],
-						perfect: SUBJUNCTIVE_PERFECT_NOTES[lemma],
-					},
+					passive: { indicative: { present: PASSIVE_NOTES[lemma] } },
 				}}
 			/>
 			<Compounds verb={verb} />

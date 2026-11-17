@@ -430,6 +430,8 @@ const FIFTH: Paradigm[] = [
 ];
 
 export type DeclensionGroup = {
+	/** The group's anchor: /grammar/declensions#second. An entry page links here. */
+	id: string;
 	/** The heading: "First declension". Also keys the blurb in Paradigms.tsx. */
 	title: string;
 	/** The stem the declension is named for — printed beside the heading. */
@@ -438,13 +440,24 @@ export type DeclensionGroup = {
 };
 
 export const DECLENSION_GROUPS: DeclensionGroup[] = [
-	{ title: "First declension", stem: "a-stems", paradigms: FIRST },
-	{ title: "Second declension", stem: "o-stems", paradigms: SECOND },
+	{ id: "first", title: "First declension", stem: "a-stems", paradigms: FIRST },
 	{
+		id: "second",
+		title: "Second declension",
+		stem: "o-stems",
+		paradigms: SECOND,
+	},
+	{
+		id: "third",
 		title: "Third declension",
 		stem: "consonant and i-stems",
 		paradigms: THIRD,
 	},
-	{ title: "Fourth declension", stem: "u-stems", paradigms: FOURTH },
-	{ title: "Fifth declension", stem: "e-stems", paradigms: FIFTH },
+	{
+		id: "fourth",
+		title: "Fourth declension",
+		stem: "u-stems",
+		paradigms: FOURTH,
+	},
+	{ id: "fifth", title: "Fifth declension", stem: "e-stems", paradigms: FIFTH },
 ];

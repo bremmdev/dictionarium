@@ -307,12 +307,15 @@ When a search finds nothing, `searchEntries` also returns `suggestions`: up to `
 - **The limit scales with the key**: under 4 letters no suggestions (a short key is one edit from too many words), 4–7 letters one edit, 8 or more two.
 - **Two edits only when nothing is one edit away.** The closest distance found wins, so a long key never mixes one- and two-edit suggestions.
 - **Ranked** same first letter first, then alphabetically; homographs appear once.
+- **Lemmas and forms in one list**, closest first (below).
 
 It compares every distinct lemma in JS rather than in SQL, and only on a miss. That is a few milliseconds at the dictionary's expected size.
 
 A suggestion links to `/?q=<lemma>`, so following it is an ordinary search. Its link unmounts once the new results land, so `Search` hands focus back to the input, as _dēlē_ does. The announcement adds the suggestions to the result count.
 
-Inflected forms are not typos: _amābat_ is four edits from _amō_, so it is found as a form instead (tier 2, above). Suggestions still come from lemmas only; suggestions from forms are phase 2 of [forms.md](./forms.md).
+Inflected forms are not typos: _amābat_ is four edits from _amō_, so it is found as a form instead (tier 2, above). A typo in a form gets a form back: _amavisent_ gives "Did you mean _amāvissent_ (_amō_)?". `FormIndex.suggest` takes the entries with a key within one edit of the start of the query, measures the query against their generated forms, and `nearestSuggestions` ranks lemmas and forms in one list with the same budget and rules. The link searches the form; "(a form of …)" is sr-only text around the visible "(amō)". Two spellings with the same key (_rēgis_, _rēgīs_) are one suggestion.
+
+When nothing matches, an enclitic is stripped and the lookup tried again: _virumque_, _amatne_, _regisve_, and _-cum_ after a pronoun's ablative (_mēcum_). The card says "with -que".
 
 A form match's card says why it is there ("_rēgis_: gen. sg."), short labels on screen and the full words as sr-only text. When the word itself or a form matched, contains-matches sit under "Other words containing …", and the announcement says how many results are forms.
 

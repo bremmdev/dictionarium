@@ -6,18 +6,20 @@ import { PersonLabel } from "./Labels";
 
 const COLUMNS = [
 	{ key: "person", label: "Person" },
-	{ key: "ending", label: "Ending" },
+	{ key: "ending", label: "Active" },
+	{ key: "passive", label: "Passive" },
 	{ key: "example", label: "Example" },
 	{ key: "english", label: "English" },
 ];
 
 const ROWS = PERSONS.map((person) => {
-	const { ending, example, english } = PERSONAL_ENDINGS[person];
+	const { ending, passive, example, english } = PERSONAL_ENDINGS[person];
 	return {
 		id: person,
 		cells: {
 			person: <PersonLabel person={person} />,
 			ending: <LatinWord>{ending}</LatinWord>,
+			passive: <LatinWord>{passive}</LatinWord>,
 			example: <LatinWord>{example}</LatinWord>,
 			english,
 		},
@@ -65,6 +67,19 @@ export function Persons() {
 				<LatinWord>-m</LatinWord> where it does not,{" "}
 				<LatinWord>dūcam</LatinWord>. The future perfect always has{" "}
 				<LatinWord>-ō</LatinWord>: <LatinWord>salūtāverō</LatinWord>.
+			</p>
+			<p>
+				The passive swaps these for its own six and keeps everything in front of
+				them: <LatinWord>salūtat</LatinWord>, <em>he greets</em>, becomes{" "}
+				<LatinWord>salūtātur</LatinWord>, <em>he is greeted</em>, and{" "}
+				<LatinWord>salūtābant</LatinWord> becomes{" "}
+				<LatinWord>salūtābantur</LatinWord>. Where the active has{" "}
+				<LatinWord>-ō</LatinWord> the passive has <LatinWord>-or</LatinWord>,
+				and where it has <LatinWord>-m</LatinWord>, <LatinWord>-r</LatinWord>:{" "}
+				<LatinWord>salūtor</LatinWord>, <LatinWord>salūtābar</LatinWord>. The
+				perfect passive is two words, the participle and{" "}
+				<LatinWord>sum</LatinWord>: <LatinWord>salūtātus est</LatinWord>,{" "}
+				<em>he was greeted</em>.
 			</p>
 		</section>
 	);
