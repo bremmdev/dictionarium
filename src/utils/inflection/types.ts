@@ -1,4 +1,5 @@
 import type {
+	ImperativePerson,
 	Mood,
 	Person,
 	Tense,
@@ -22,6 +23,18 @@ export type Filing = Pick<
 
 export type GrammaticalNumber = "singular" | "plural";
 
+/** The declined parts of a verb, each with its own label. */
+export type VerbalNoun =
+	| "presentParticiple"
+	| "perfectParticiple"
+	| "futureParticiple"
+	| "gerundive"
+	| "gerund"
+	| "supine";
+
+/** Passive in form, active in meaning: hortātur is "he urges", so no voice is printed. */
+type Deponent = { deponent?: true };
+
 export type Analysis =
 	| {
 			kind: "case";
@@ -29,9 +42,27 @@ export type Analysis =
 			number: GrammaticalNumber;
 			/** Only where the word inflects for gender: adjectives and pronouns. */
 			gender?: Gender;
+			/** Set when this is a participle, the gerund or the like, not the word itself. */
+			of?: VerbalNoun;
 	  }
-	| { kind: "finite"; person: Person; tense: Tense; mood: Mood; voice: Voice }
-	| { kind: "infinitive"; tense: "present" | "perfect"; voice: Voice };
+	| ({
+			kind: "finite";
+			person: Person;
+			tense: Tense;
+			mood: Mood;
+			voice: Voice;
+	  } & Deponent)
+	| ({
+			kind: "infinitive";
+			tense: "present" | "perfect" | "future";
+			voice: Voice;
+	  } & Deponent)
+	| ({
+			kind: "imperative";
+			tense: "present" | "future";
+			person: ImperativePerson;
+			voice: Voice;
+	  } & Deponent);
 
 /** One form in one slot. `variant`: a genuine alternative, or one of the i-stem pair. */
 export type Cell = { form: string; analysis: Analysis; variant?: true };

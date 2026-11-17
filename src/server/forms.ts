@@ -48,10 +48,15 @@ export type FoundForms = {
 	lines: Map<number, Array<FormLine>>;
 };
 
+/** Forms close to a query that found nothing, scored for nearestSuggestions. */
+export function suggestForms(key: string, max: number) {
+	return currentIndex().suggest(key, max);
+}
+
 /** `key` is already formKey'd. */
 export function findForms(key: string): FoundForms {
 	const current = currentIndex();
-	const { lemmaIds, forms } = current.lookup(key);
+	const { lemmaIds, forms, enclitic } = current.lookup(key);
 
 	const rankOf = (id: number) => {
 		const filing = current.filing(id);
@@ -65,6 +70,8 @@ export function findForms(key: string): FoundForms {
 		.sort((a, b) => a.rank - b.rank)
 		.map(({ id }) => id);
 
-	const lines = new Map([...forms].map(([id, cells]) => [id, describe(cells)]));
+	const lines = new Map(
+		[...forms].map(([id, cells]) => [id, describe(cells, enclitic)]),
+	);
 	return { lemmaIds, formIds, lines };
 }

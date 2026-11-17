@@ -85,6 +85,9 @@ const TABLES: Record<string, Table> = {
 	},
 };
 
+/** Nouns with a table of their own: deus, domus, vīs, bōs, Iuppiter. */
+export const IRREGULAR_NOUNS = new Set(Object.keys(TABLES));
+
 function tableCells(table: Table) {
 	const cells: Array<Cell> = [];
 	for (const number of ["singular", "plural"] as const) {

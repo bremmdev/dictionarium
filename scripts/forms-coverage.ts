@@ -1,7 +1,7 @@
 /**
  * How much of real Latin the forms search finds (vault/forms.md). For every
  * LASLA token whose lemma is filed here, the lookup has to return that entry.
- * Tokens in forms not built yet (comparison, participles, the passive…) are
+ * Tokens in forms not built yet (comparison, the future infinitive) are
  * counted apart by LASLA's own tags, not as misses.
  *
  *   git clone --depth 1 https://github.com/CIRCSE/LASLA
@@ -55,9 +55,6 @@ function owners(lemma: string, upos: string, flcat: string) {
 function notYet(feats: string, inflected: boolean) {
 	const has = (pair: string) => feats.split("|").includes(pair);
 	if (has("Degree=Cmp") || has("Degree=Abs")) return "comparison";
-	if (/VerbForm=(Part|Ger|Gdv|Sup|Conv)/.test(feats)) return "participle, gerund, gerundive or supine";
-	if (has("Voice=Pass")) return "passive or deponent";
-	if (has("Mood=Imp")) return "imperative";
 	if (has("VerbForm=Inf") && has("Tense=Fut")) return "future infinitive";
 	if (!inflected) return "a word with no paradigm yet";
 	return null;

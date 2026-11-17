@@ -31,6 +31,8 @@ type Genders = {
 };
 
 export type AdjectiveParadigm = {
+	/** The anchor an entry page links to: /grammar/declensions#fortis. */
+	id: string;
 	/** The dictionary line: bonus, bona, bonum. */
 	lemma: string;
 	english: string;
@@ -88,6 +90,7 @@ export const EXAMPLE_COLUMNS = [
 
 export const FIRST_SECOND: AdjectiveParadigm[] = [
 	{
+		id: "bonus",
 		lemma: "bonus, bona, bonum",
 		english: "good",
 		label: "the pattern",
@@ -107,6 +110,7 @@ export const FIRST_SECOND: AdjectiveParadigm[] = [
 		},
 	},
 	{
+		id: "pulcher",
 		lemma: "pulcher, pulchra, pulchrum",
 		english: "beautiful",
 		label: "the -er type",
@@ -129,6 +133,7 @@ export const FIRST_SECOND: AdjectiveParadigm[] = [
 
 export const THIRD: AdjectiveParadigm[] = [
 	{
+		id: "acer",
 		lemma: "ācer, ācris, ācre",
 		english: "sharp, keen",
 		label: "three terminations",
@@ -148,6 +153,7 @@ export const THIRD: AdjectiveParadigm[] = [
 		},
 	},
 	{
+		id: "fortis",
 		lemma: "fortis, forte",
 		english: "strong, brave",
 		label: "two terminations",
@@ -167,6 +173,7 @@ export const THIRD: AdjectiveParadigm[] = [
 		},
 	},
 	{
+		id: "felix",
 		lemma: "fēlīx, fēlīcis",
 		english: "lucky, fortunate",
 		label: "one termination",

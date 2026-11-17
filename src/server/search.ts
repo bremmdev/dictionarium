@@ -14,7 +14,7 @@ import {
 import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { type Entry, entries, type ShownEntry } from "#/db/schema";
-import { findForms } from "#/server/forms";
+import { findForms, suggestForms } from "#/server/forms";
 import { withFrequency } from "#/server/frequency";
 import { recordSearch } from "#/server/recording";
 import { type FullTable, fullTableFor } from "#/utils/entries/tables";
@@ -25,7 +25,12 @@ import {
 	MIN_QUERY_LENGTH,
 	normalizeLemma,
 } from "#/utils/search/rules";
-import { maxEditsFor, suggestLemmas } from "#/utils/search/suggestions";
+import {
+	maxEditsFor,
+	nearestSuggestions,
+	type Suggestion,
+	scoreLemmas,
+} from "#/utils/search/suggestions";
 
 /** Why a result is listed: the query is its lemma, one of its forms, or inside its lemma. */
 export type SearchResult = ShownEntry & {
@@ -36,8 +41,8 @@ export type SearchResult = ShownEntry & {
 
 export type SearchOutcome = {
 	results: Array<SearchResult>;
-	/** Macronned lemmas close to the query. Only filled when results is empty. */
-	suggestions: Array<string>;
+	/** Lemmas and forms close to the query. Only filled when results is empty. */
+	suggestions: Array<Suggestion>;
 	/** Every entry the query matches, of which results holds the first MAX_RESULTS. */
 	matchCount: number;
 };
@@ -145,16 +150,23 @@ function countMatches(where: SQL) {
 	return row?.n ?? 0;
 }
 
-/** Read only on a miss; every lemma is compared in JS — see vault/search.md. */
+/**
+ * Read only on a miss; every lemma is compared in JS — see vault/search.md.
+ * Forms are measured on formKey, so uideo and video are the same distance.
+ */
 function findSuggestions(key: string, resultCount: number) {
-	if (resultCount > 0 || maxEditsFor(key) === 0) {
+	const max = maxEditsFor(key);
+	if (resultCount > 0 || max === 0) {
 		return [];
 	}
 	const candidates = db
 		.selectDistinct({ lemma: entries.lemma, lemmaPlain: entries.lemmaPlain })
 		.from(entries)
 		.all();
-	return suggestLemmas(key, candidates);
+	return nearestSuggestions(key, [
+		...scoreLemmas(key, candidates),
+		...suggestForms(formKey(key), max),
+	]);
 }
 
 function findEntry(where: SQL | undefined) {

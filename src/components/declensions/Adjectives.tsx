@@ -147,22 +147,24 @@ const EXAMPLE_ROWS = EXAMPLES.map(({ phrase, english, agreeing }) => ({
 }));
 
 function Paradigm({ paradigm }: { paradigm: AdjectiveParadigm }) {
-	const { lemma, english, label, singular, plural } = paradigm;
+	const { id, lemma, english, label, singular, plural } = paradigm;
 	return (
-		<GenderedParadigm
-			title={
-				<>
-					<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
-					<span className="font-normal text-ink-600 normal-case">
-						({label}) — {english}
-					</span>
-				</>
-			}
-			lemma={lemma}
-			singular={singular}
-			plural={plural}
-			note={NOTES[lemma]}
-		/>
+		<div id={id} className="scroll-mt-8">
+			<GenderedParadigm
+				title={
+					<>
+						<LatinWord className="normal-case">{lemma}</LatinWord>{" "}
+						<span className="font-normal text-ink-600 normal-case">
+							({label}) — {english}
+						</span>
+					</>
+				}
+				lemma={lemma}
+				singular={singular}
+				plural={plural}
+				note={NOTES[lemma]}
+			/>
+		</div>
 	);
 }
 
@@ -206,7 +208,8 @@ export function Adjectives() {
 			<Heading
 				variant="h3"
 				as="h3"
-				className="mx-auto pt-4 text-center uppercase tracking-wide"
+				id="adjectives-first-second"
+				className="scroll-mt-8 mx-auto pt-4 text-center uppercase tracking-wide"
 			>
 				First and second declension{" "}
 				<span className="font-normal text-ink-600 normal-case">
@@ -225,7 +228,8 @@ export function Adjectives() {
 			<Heading
 				variant="h3"
 				as="h3"
-				className="mx-auto pt-4 text-center uppercase tracking-wide"
+				id="adjectives-third"
+				className="scroll-mt-8 mx-auto pt-4 text-center uppercase tracking-wide"
 			>
 				Third declension{" "}
 				<span className="font-normal text-ink-600 normal-case">

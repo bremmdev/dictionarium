@@ -398,18 +398,21 @@ function FullTableLink({ entry }: { entry: EntryPage }) {
 		return null;
 	}
 
+	const verb = entry.partOfSpeech === "verb" ? "Conjugated" : "Declined";
+	const pattern = table.pattern;
 	return (
 		<p>
 			<TextLink to={table.to} hash={table.hash} icon={Table2}>
 				{table.like ? (
 					<>
-						{entry.partOfSpeech === "verb" ? "Conjugated" : "Declined"} like{" "}
-						<span lang="la">{table.like}</span>
+						{verb} like <span lang="la">{table.like}</span>
+						{pattern && `, ${pattern}`}
 					</>
-				) : entry.partOfSpeech === "verb" ? (
-					"Conjugated in full"
+				) : pattern && !table.own ? (
+					// ager fits none of the page's models: the declension alone.
+					pattern[0].toUpperCase() + pattern.slice(1)
 				) : (
-					"Declined in full"
+					`${verb} in full${pattern ? `: ${pattern}` : ""}`
 				)}
 			</TextLink>
 		</p>

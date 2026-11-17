@@ -3,7 +3,9 @@
 
 import type {
 	ConjugationEndings,
+	ImperativePerson,
 	RegularConjugation,
+	Voice,
 } from "#/components/conjugations/Conjugations.utils";
 import type { Case } from "#/components/declensions/Declensions.utils";
 
@@ -41,6 +43,32 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"3pl": "-ābunt",
 				},
 			},
+			passive: {
+				present: {
+					"1sg": "-or",
+					"2sg": "-āris / -āre",
+					"3sg": "-ātur",
+					"1pl": "-āmur",
+					"2pl": "-āminī",
+					"3pl": "-antur",
+				},
+				imperfect: {
+					"1sg": "-ābar",
+					"2sg": "-ābāris / -ābāre",
+					"3sg": "-ābātur",
+					"1pl": "-ābāmur",
+					"2pl": "-ābāminī",
+					"3pl": "-ābantur",
+				},
+				future: {
+					"1sg": "-ābor",
+					"2sg": "-āberis / -ābere",
+					"3sg": "-ābitur",
+					"1pl": "-ābimur",
+					"2pl": "-ābiminī",
+					"3pl": "-ābuntur",
+				},
+			},
 		},
 		subjunctive: {
 			active: {
@@ -59,6 +87,24 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-ārēmus",
 					"2pl": "-ārētis",
 					"3pl": "-ārent",
+				},
+			},
+			passive: {
+				present: {
+					"1sg": "-er",
+					"2sg": "-ēris / -ēre",
+					"3sg": "-ētur",
+					"1pl": "-ēmur",
+					"2pl": "-ēminī",
+					"3pl": "-entur",
+				},
+				imperfect: {
+					"1sg": "-ārer",
+					"2sg": "-ārēris / -ārēre",
+					"3sg": "-ārētur",
+					"1pl": "-ārēmur",
+					"2pl": "-ārēminī",
+					"3pl": "-ārentur",
 				},
 			},
 		},
@@ -91,6 +137,32 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"3pl": "-ēbunt",
 				},
 			},
+			passive: {
+				present: {
+					"1sg": "-eor",
+					"2sg": "-ēris / -ēre",
+					"3sg": "-ētur",
+					"1pl": "-ēmur",
+					"2pl": "-ēminī",
+					"3pl": "-entur",
+				},
+				imperfect: {
+					"1sg": "-ēbar",
+					"2sg": "-ēbāris / -ēbāre",
+					"3sg": "-ēbātur",
+					"1pl": "-ēbāmur",
+					"2pl": "-ēbāminī",
+					"3pl": "-ēbantur",
+				},
+				future: {
+					"1sg": "-ēbor",
+					"2sg": "-ēberis / -ēbere",
+					"3sg": "-ēbitur",
+					"1pl": "-ēbimur",
+					"2pl": "-ēbiminī",
+					"3pl": "-ēbuntur",
+				},
+			},
 		},
 		subjunctive: {
 			active: {
@@ -109,6 +181,24 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-ērēmus",
 					"2pl": "-ērētis",
 					"3pl": "-ērent",
+				},
+			},
+			passive: {
+				present: {
+					"1sg": "-ear",
+					"2sg": "-eāris / -eāre",
+					"3sg": "-eātur",
+					"1pl": "-eāmur",
+					"2pl": "-eāminī",
+					"3pl": "-eantur",
+				},
+				imperfect: {
+					"1sg": "-ērer",
+					"2sg": "-ērēris / -ērēre",
+					"3sg": "-ērētur",
+					"1pl": "-ērēmur",
+					"2pl": "-ērēminī",
+					"3pl": "-ērentur",
 				},
 			},
 		},
@@ -141,6 +231,32 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"3pl": "-ent",
 				},
 			},
+			passive: {
+				present: {
+					"1sg": "-or",
+					"2sg": "-eris / -ere",
+					"3sg": "-itur",
+					"1pl": "-imur",
+					"2pl": "-iminī",
+					"3pl": "-untur",
+				},
+				imperfect: {
+					"1sg": "-ēbar",
+					"2sg": "-ēbāris / -ēbāre",
+					"3sg": "-ēbātur",
+					"1pl": "-ēbāmur",
+					"2pl": "-ēbāminī",
+					"3pl": "-ēbantur",
+				},
+				future: {
+					"1sg": "-ar",
+					"2sg": "-ēris / -ēre",
+					"3sg": "-ētur",
+					"1pl": "-ēmur",
+					"2pl": "-ēminī",
+					"3pl": "-entur",
+				},
+			},
 		},
 		subjunctive: {
 			active: {
@@ -159,6 +275,24 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-erēmus",
 					"2pl": "-erētis",
 					"3pl": "-erent",
+				},
+			},
+			passive: {
+				present: {
+					"1sg": "-ar",
+					"2sg": "-āris / -āre",
+					"3sg": "-ātur",
+					"1pl": "-āmur",
+					"2pl": "-āminī",
+					"3pl": "-antur",
+				},
+				imperfect: {
+					"1sg": "-erer",
+					"2sg": "-erēris / -erēre",
+					"3sg": "-erētur",
+					"1pl": "-erēmur",
+					"2pl": "-erēminī",
+					"3pl": "-erentur",
 				},
 			},
 		},
@@ -191,6 +325,32 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"3pl": "-ient",
 				},
 			},
+			passive: {
+				present: {
+					"1sg": "-ior",
+					"2sg": "-īris / -īre",
+					"3sg": "-ītur",
+					"1pl": "-īmur",
+					"2pl": "-īminī",
+					"3pl": "-iuntur",
+				},
+				imperfect: {
+					"1sg": "-iēbar",
+					"2sg": "-iēbāris / -iēbāre",
+					"3sg": "-iēbātur",
+					"1pl": "-iēbāmur",
+					"2pl": "-iēbāminī",
+					"3pl": "-iēbantur",
+				},
+				future: {
+					"1sg": "-iar",
+					"2sg": "-iēris / -iēre",
+					"3sg": "-iētur",
+					"1pl": "-iēmur",
+					"2pl": "-iēminī",
+					"3pl": "-ientur",
+				},
+			},
 		},
 		subjunctive: {
 			active: {
@@ -209,6 +369,24 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-īrēmus",
 					"2pl": "-īrētis",
 					"3pl": "-īrent",
+				},
+			},
+			passive: {
+				present: {
+					"1sg": "-iar",
+					"2sg": "-iāris / -iāre",
+					"3sg": "-iātur",
+					"1pl": "-iāmur",
+					"2pl": "-iāminī",
+					"3pl": "-iantur",
+				},
+				imperfect: {
+					"1sg": "-īrer",
+					"2sg": "-īrēris / -īrēre",
+					"3sg": "-īrētur",
+					"1pl": "-īrēmur",
+					"2pl": "-īrēminī",
+					"3pl": "-īrentur",
 				},
 			},
 		},
@@ -241,6 +419,32 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"3pl": "-ient",
 				},
 			},
+			passive: {
+				present: {
+					"1sg": "-ior",
+					"2sg": "-eris / -ere",
+					"3sg": "-itur",
+					"1pl": "-imur",
+					"2pl": "-iminī",
+					"3pl": "-iuntur",
+				},
+				imperfect: {
+					"1sg": "-iēbar",
+					"2sg": "-iēbāris / -iēbāre",
+					"3sg": "-iēbātur",
+					"1pl": "-iēbāmur",
+					"2pl": "-iēbāminī",
+					"3pl": "-iēbantur",
+				},
+				future: {
+					"1sg": "-iar",
+					"2sg": "-iēris / -iēre",
+					"3sg": "-iētur",
+					"1pl": "-iēmur",
+					"2pl": "-iēminī",
+					"3pl": "-ientur",
+				},
+			},
 		},
 		subjunctive: {
 			active: {
@@ -259,6 +463,24 @@ export const ENDINGS: Record<RegularConjugation, ConjugationEndings> = {
 					"1pl": "-erēmus",
 					"2pl": "-erētis",
 					"3pl": "-erent",
+				},
+			},
+			passive: {
+				present: {
+					"1sg": "-iar",
+					"2sg": "-iāris / -iāre",
+					"3sg": "-iātur",
+					"1pl": "-iāmur",
+					"2pl": "-iāminī",
+					"3pl": "-iantur",
+				},
+				imperfect: {
+					"1sg": "-erer",
+					"2sg": "-erēris / -erēre",
+					"3sg": "-erētur",
+					"1pl": "-erēmur",
+					"2pl": "-erēminī",
+					"3pl": "-erentur",
 				},
 			},
 		},
@@ -321,6 +543,19 @@ export const PERFECT_ENDINGS: ConjugationEndings = {
 		},
 	},
 };
+
+/**
+ * The perfect passive is two words: the participle (-us, or -ī in the plural)
+ * and this tense of sum. salūtātus sum, salūtātī erant.
+ */
+export const PERFECT_PASSIVE_AUXILIARY = {
+	indicative: {
+		perfect: "present",
+		pluperfect: "imperfect",
+		futurePerfect: "future",
+	},
+	subjunctive: { perfect: "present", pluperfect: "imperfect" },
+} as const;
 
 /**
  * The whole page on two grids. The vocative is left out because it is the
@@ -422,3 +657,148 @@ export const PLURAL_ENDINGS: DeclensionEndingRow[] = [
 		fifth: "-ēbus",
 	},
 ];
+
+export const IMPERATIVE_PERSONS: ReadonlyArray<ImperativePerson> = [
+	"2sg",
+	"3sg",
+	"2pl",
+	"3pl",
+];
+type ImperativeRow = Partial<Record<ImperativePerson, string>>;
+
+/** Everything but the finite tenses that is built on the present stem. */
+export type NonFiniteEndings = {
+	infinitive: { active: string; passive: string };
+	imperative: Record<Voice, { present: ImperativeRow; future: ImperativeRow }>;
+	/** Nominative and genitive, declined like a one-termination adjective. */
+	presentParticiple: string;
+	/** Masculine, feminine, neuter, declined like bonus. */
+	gerundive: string;
+	/** The genitive: the dative and ablative end in -ō, the accusative in -um. */
+	gerund: string;
+};
+
+export const NON_FINITE: Record<RegularConjugation, NonFiniteEndings> = {
+	"1": {
+		infinitive: { active: "-āre", passive: "-ārī" },
+		imperative: {
+			active: {
+				present: { "2sg": "-ā", "2pl": "-āte" },
+				future: {
+					"2sg": "-ātō",
+					"3sg": "-ātō",
+					"2pl": "-ātōte",
+					"3pl": "-antō",
+				},
+			},
+			passive: {
+				present: { "2sg": "-āre", "2pl": "-āminī" },
+				future: { "2sg": "-ātor", "3sg": "-ātor", "3pl": "-antor" },
+			},
+		},
+		presentParticiple: "-āns, -antis",
+		gerundive: "-andus, -anda, -andum",
+		gerund: "-andī",
+	},
+	"2": {
+		infinitive: { active: "-ēre", passive: "-ērī" },
+		imperative: {
+			active: {
+				present: { "2sg": "-ē", "2pl": "-ēte" },
+				future: {
+					"2sg": "-ētō",
+					"3sg": "-ētō",
+					"2pl": "-ētōte",
+					"3pl": "-entō",
+				},
+			},
+			passive: {
+				present: { "2sg": "-ēre", "2pl": "-ēminī" },
+				future: { "2sg": "-ētor", "3sg": "-ētor", "3pl": "-entor" },
+			},
+		},
+		presentParticiple: "-ēns, -entis",
+		gerundive: "-endus, -enda, -endum",
+		gerund: "-endī",
+	},
+	"3": {
+		infinitive: { active: "-ere", passive: "-ī" },
+		imperative: {
+			active: {
+				present: { "2sg": "-e", "2pl": "-ite" },
+				future: {
+					"2sg": "-itō",
+					"3sg": "-itō",
+					"2pl": "-itōte",
+					"3pl": "-untō",
+				},
+			},
+			passive: {
+				present: { "2sg": "-ere", "2pl": "-iminī" },
+				future: { "2sg": "-itor", "3sg": "-itor", "3pl": "-untor" },
+			},
+		},
+		presentParticiple: "-ēns, -entis",
+		gerundive: "-endus, -enda, -endum",
+		gerund: "-endī",
+	},
+	"4": {
+		infinitive: { active: "-īre", passive: "-īrī" },
+		imperative: {
+			active: {
+				present: { "2sg": "-ī", "2pl": "-īte" },
+				future: {
+					"2sg": "-ītō",
+					"3sg": "-ītō",
+					"2pl": "-ītōte",
+					"3pl": "-iuntō",
+				},
+			},
+			passive: {
+				present: { "2sg": "-īre", "2pl": "-īminī" },
+				future: { "2sg": "-ītor", "3sg": "-ītor", "3pl": "-iuntor" },
+			},
+		},
+		presentParticiple: "-iēns, -ientis",
+		gerundive: "-iendus, -ienda, -iendum",
+		gerund: "-iendī",
+	},
+	"3io": {
+		infinitive: { active: "-ere", passive: "-ī" },
+		imperative: {
+			active: {
+				present: { "2sg": "-e", "2pl": "-ite" },
+				future: {
+					"2sg": "-itō",
+					"3sg": "-itō",
+					"2pl": "-itōte",
+					"3pl": "-iuntō",
+				},
+			},
+			passive: {
+				present: { "2sg": "-ere", "2pl": "-iminī" },
+				future: { "2sg": "-itor", "3sg": "-itor", "3pl": "-iuntor" },
+			},
+		},
+		presentParticiple: "-iēns, -ientis",
+		gerundive: "-iendus, -ienda, -iendum",
+		gerund: "-iendī",
+	},
+};
+
+/** On the supine stem (salūtāt-), the same for every conjugation. */
+export const SUPINE_ENDINGS = {
+	perfectParticiple: "-us, -a, -um",
+	futureParticiple: "-ūrus, -ūra, -ūrum",
+	supine: "-um / -ū",
+} as const;
+
+/** dīc, dūc, fac, fer: the short imperatives, compounds of dīcō and dūcō included. */
+export const SHORT_IMPERATIVES: Record<string, string> = {
+	dīcō: "dīc",
+	dūcō: "dūc",
+	faciō: "fac",
+};
+
+/** Verbs whose present-system passive is another verb: faciō's is fīō. Compounds in -ficiō are regular. */
+export const SUPPLETIVE_PASSIVE = ["faciō"];

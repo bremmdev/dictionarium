@@ -7,7 +7,7 @@ import { regularInflection } from "./verbs";
 
 /** How an entry inflects: a table by lemma first, then the rules for its part of speech. */
 export function inflectionOf(filing: Filing): Inflection | null {
-	const fixed = fixedInflection(filing.lemma, filing.partOfSpeech);
+	const fixed = fixedInflection(filing);
 	if (fixed !== undefined) return fixed;
 
 	switch (filing.partOfSpeech) {
