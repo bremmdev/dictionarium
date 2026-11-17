@@ -79,7 +79,7 @@ This is the same function that wrote `lemma_plain` — see [above](#rulests-one-
 ```ts
 const key = normalizeLemma(q);
 if (key.length < MIN_QUERY_LENGTH) {
-  return { results: [], suggestions: [] };
+  return { results: [], suggestions: [], matchCount: 0 };
 }
 ```
 

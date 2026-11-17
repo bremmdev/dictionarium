@@ -66,7 +66,7 @@ Showing them is in [search.md](./search.md#showing-the-homograph-number); filing
 | `part_of_speech`  | yes      | `verb`, `noun`, `adverb`, …                                                                                           |
 | `principal_parts` | no       | four parts (verb), genitive (noun), or the terminations (adjective)                                                   |
 | `gender`          | no       | nouns: `m` / `f` / `n`                                                                                                |
-| `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`; NULL only where the question does not apply                                    |
+| `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`, `irregular`; NULL only where the question does not apply                       |
 | `terminations`    | no       | 3rd-declension adjectives: `1` / `2` / `3`; same NULL rule                                                            |
 | `conjugation`     | no       | text — `1`…`4`, `3io`, `irregular`; same NULL rule                                                                    |
 | `governs`         | no       | prepositions: the case(s) it takes — `accusative`, `accusative,ablative`; see [below](#governs-the-case-a-word-takes) |
@@ -100,6 +100,7 @@ So the fix is a **value, not a column**. No `indeclinable` boolean sitting besid
 | `1` … `5`             | declines, and here is which table                                                                   |
 | `1-2`                 | an adjective using 1st-declension endings for the feminine, 2nd for the rest (_bonus, bona, bonum_) |
 | `indeclinable`        | the word never changes shape                                                                        |
+| `irregular`           | a pronoun that declines its own way (_hic_, _ego_); see below                                       |
 | NULL                  | the question does not apply to this part of speech                                                  |
 
 Not every value answers for every part of speech. `DECLENSIONS_BY_PART_OF_SPEECH` in `src/utils/entries/rules.ts` narrows the list, and the form's chips, `parseEntryDraft`, the Wiktionary fill and `check-inflection.ts` all read it:
@@ -179,7 +180,7 @@ The label is not wrong, it is from another inventory. Wiktionary applies one par
 Three things would break if it were added:
 
 1. **The declensions page already teaches them as adjectives.** `Adjectives.tsx` carries all nine as a footnote under _bonus, bona, bonum_: "Nine adjectives break the genitive and dative singular — _ūnus, sōlus, tōtus, nūllus, ūllus, alius, alter, uter_ and _neuter_". A `/verbum/alius` card reading "determiner" would make the dictionary disagree with its own worked example.
-2. **The filing rules are written in terms of `adjective`.** `hasPrincipalParts` admits `noun | verb | adjective`, so a determiner's lemma would be its whole filing — and `check-inflection.ts` would report _alius, alia, aliud_ as principal parts that should be NULL. The repair is to widen `hasPrincipalParts` and `hasTerminations` to admit `determiner`, at which point it is `adjective` under a second name, which is the drift the guard exists to catch.
+2. **The filing rules are written in terms of `adjective`.** `hasPrincipalParts` admits `noun | verb | adjective | pronoun`, so a determiner's lemma would be its whole filing — and `check-inflection.ts` would report _alius, alia, aliud_ as principal parts that should be NULL. The repair is to widen `hasPrincipalParts` and `hasTerminations` to admit `determiner`, at which point it is `adjective` under a second name, which is the drift the guard exists to catch.
 3. **The set does not line up with anything.** What actually distinguishes these words is the **pronominal declension** — genitive singular _-īus_, dative singular _-ī_, in all three genders — and that cuts straight across the filing labels: _ūnus_ is a `numeral` here, _uter_ is a pronoun on Wiktionary, _tōtus_ an adjective. No part of speech selects the nine.
 
 So they file as `adjective`, `1-2`, with the irregularity in `notes` — the same shape as the _ūnus_ row above:
@@ -347,7 +348,7 @@ Inflected forms are not rows. When they arrive, they hang off a lemma — they d
 The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
 1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool.
-2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: five of the seven read the database, so anything running `npm run check` has to migrate before it can open the gate.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: five of the eight read the database, so anything running `npm run check` has to migrate before it can open the gate.
 
 Parked: synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
@@ -357,7 +358,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 
 ### The check chain
 
-`npm run check` is the gate. It runs the seven guards, then Biome:
+`npm run check` is the gate. It runs the eight guards, then Biome:
 
 | Guard                 | Alone                      | What it holds                                                                                                                    |
 | --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -368,6 +369,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 | `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
 | `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
 | `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/grammar/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
+| `check-pronouns.ts`   | `npm run check:pronouns`   | every patterned form on `/grammar/pronouns` is its stem plus the endings sheet — [pronouns.md](./pronouns.md)                    |
 
 Each names the rows it objects to, and exits non-zero:
 
