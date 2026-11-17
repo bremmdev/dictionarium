@@ -1,12 +1,25 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq, like, ne, type SQL, sql } from "drizzle-orm";
+import {
+	and,
+	count,
+	eq,
+	inArray,
+	like,
+	ne,
+	or,
+	type SQL,
+	sql,
+} from "drizzle-orm";
 
 import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { type Entry, entries, type ShownEntry } from "#/db/schema";
+import { findForms } from "#/server/forms";
 import { withFrequency } from "#/server/frequency";
 import { recordSearch } from "#/server/recording";
 import { type FullTable, fullTableFor } from "#/utils/entries/tables";
+import type { FormLine } from "#/utils/inflection/describe";
+import { formKey } from "#/utils/inflection/key";
 import {
 	MAX_RESULTS,
 	MIN_QUERY_LENGTH,
@@ -14,8 +27,15 @@ import {
 } from "#/utils/search/rules";
 import { maxEditsFor, suggestLemmas } from "#/utils/search/suggestions";
 
+/** Why a result is listed: the query is its lemma, one of its forms, or inside its lemma. */
+export type SearchResult = ShownEntry & {
+	match: "lemma" | "form" | "other";
+	/** For a form match, what the query is in this entry: "rēgis: gen. sg.". */
+	forms: Array<FormLine>;
+};
+
 export type SearchOutcome = {
-	results: Array<ShownEntry>;
+	results: Array<SearchResult>;
 	/** Macronned lemmas close to the query. Only filled when results is empty. */
 	suggestions: Array<string>;
 	/** Every entry the query matches, of which results holds the first MAX_RESULTS. */
@@ -41,12 +61,40 @@ export const searchEntries = createServerFn({ method: "GET" })
 			return { results: [], suggestions: [], matchCount: 0 };
 		}
 
-		const matches = like(entries.lemmaPlain, `%${key}%`);
+		// Forms are looked up in memory and come back as ids, so the cap and the count still hold.
+		const found = findForms(formKey(q));
+		const lemmaIds = [...found.lemmaIds];
+		const { formIds } = found;
+		const contains = like(entries.lemmaPlain, `%${key}%`);
+		const listed = [...lemmaIds, ...formIds];
+		const matches =
+			listed.length > 0
+				? (or(contains, inArray(entries.id, listed)) as SQL)
+				: contains;
+		const isLemma =
+			lemmaIds.length > 0
+				? or(eq(entries.lemmaPlain, key), inArray(entries.id, lemmaIds))
+				: eq(entries.lemmaPlain, key);
+		const isForm =
+			formIds.length > 0 ? inArray(entries.id, formIds) : sql`false`;
+		// Commonest first among the form matches, in the order findForms ranked them.
+		// Left out when there are none: a bare ORDER BY 0 is a column number to SQLite.
+		const formOrder =
+			formIds.length > 0
+				? [
+						sql`case ${entries.id} ${sql.join(
+							formIds.map((id, i) => sql`when ${id} then ${i}`),
+							sql` `,
+						)} else ${formIds.length} end`,
+					]
+				: [];
+
 		const results = await db.query.entries.findMany({
 			where: matches,
-			// Exact word, then words starting with the query, then the rest; shortest first in each, so am finds amō before ambulō.
+			// The word itself, then a word it is a form of, then words starting with the query, then the rest; shortest first in each, so am finds amō before ambulō.
 			orderBy: [
-				sql`case when ${entries.lemmaPlain} = ${key} then 0 when ${entries.lemmaPlain} like ${`${key}%`} then 1 else 2 end`,
+				sql`case when ${isLemma} then 0 when ${isForm} then 1 when ${entries.lemmaPlain} like ${`${key}%`} then 2 else 3 end`,
+				...formOrder,
 				sql`length(${entries.lemmaPlain})`,
 				entries.lemmaPlain,
 				entries.lemma,
@@ -73,7 +121,19 @@ export const searchEntries = createServerFn({ method: "GET" })
 		}
 
 		return {
-			results: results.map(withFrequency),
+			results: results.map((entry): SearchResult => {
+				const forms = found.lines.get(entry.id);
+				return {
+					...withFrequency(entry),
+					match:
+						entry.lemmaPlain === key || found.lemmaIds.has(entry.id)
+							? "lemma"
+							: forms
+								? "form"
+								: "other",
+					forms: forms ?? [],
+				};
+			}),
 			suggestions: findSuggestions(key, results.length),
 			matchCount,
 		};

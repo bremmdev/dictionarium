@@ -5,6 +5,7 @@ import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { entries, senses } from "#/db/schema";
 import { authMiddleware } from "#/server/auth";
+import { invalidateForms } from "#/server/forms";
 import {
 	closeGaps,
 	place,
@@ -56,7 +57,7 @@ export const createEntry = createServerFn({ method: "POST" })
 		const { senses: drafted, ...columns } = draft;
 
 		// One transaction, because an entry with no senses is not an entry
-		return db.transaction((tx): FilingResult => {
+		const result = db.transaction((tx): FilingResult => {
 			// UNIQUE on (lemma, homonym) is what actually stops a collision. Asking
 			// first is so the answer is a sentence, or a question for the editor.
 			const placement = place(tx, columns, homograph);
@@ -87,6 +88,9 @@ export const createEntry = createServerFn({ method: "POST" })
 
 			return filed(tx, created.id, columns.lemma);
 		});
+		// The forms search reads the filing.
+		invalidateForms();
+		return result;
 	});
 
 /**
@@ -122,7 +126,7 @@ export const updateEntry = createServerFn({ method: "POST" })
 	.handler(async ({ data: { id, draft, homograph } }) => {
 		const { senses: drafted, ...columns } = draft;
 
-		return db.transaction((tx): FilingResult => {
+		const result = db.transaction((tx): FilingResult => {
 			// The row may have been deleted since the form read it. Asking is what
 			// turns "0 rows updated" into a sentence.
 			const existing = tx
@@ -182,6 +186,8 @@ export const updateEntry = createServerFn({ method: "POST" })
 
 			return filed(tx, id, columns.lemma);
 		});
+		invalidateForms();
+		return result;
 	});
 
 /**

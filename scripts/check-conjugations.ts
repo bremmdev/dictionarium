@@ -6,9 +6,7 @@
  */
 import {
 	CONJUGATION_GROUPS,
-	ENDINGS,
 	type Mood,
-	PERFECT_ENDINGS,
 	PERSONS,
 	SYSTEMS,
 	type Tense,
@@ -16,6 +14,7 @@ import {
 	type Verb,
 	type Voice,
 } from "#/components/conjugations/Conjugations.utils";
+import { ENDINGS, PERFECT_ENDINGS } from "#/utils/inflection/endings";
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 
 const MOODS: Mood[] = ["indicative", "subjunctive"];

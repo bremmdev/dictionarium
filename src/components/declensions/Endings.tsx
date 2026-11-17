@@ -1,11 +1,8 @@
 import { Heading } from "#/components/Heading";
 import { LatinWord } from "#/components/LatinWord";
 import { Table } from "#/components/Table";
-import {
-	ENDING_COLUMNS,
-	PLURAL_ENDINGS,
-	SINGULAR_ENDINGS,
-} from "./Declensions.utils";
+import { PLURAL_ENDINGS, SINGULAR_ENDINGS } from "#/utils/inflection/endings";
+import { ENDING_COLUMNS } from "./Declensions.utils";
 
 // null is the third declension nominative singular. It has no ending of its
 // own, so the cell says so with a dash rather than inventing one.
