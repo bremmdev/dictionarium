@@ -29,6 +29,8 @@ npx tsx scripts/build-frequency.ts path/to/LASLA/conllup
 
 Rebuild only when LASLA publishes new files.
 
+The same clone measures the forms search: `npm run report:forms -- path/to/LASLA/conllup` (`scripts/forms-coverage.ts`, see [forms.md](./forms.md#checks)).
+
 ## Matching an entry to a LASLA word
 
 `matchLexeme` takes the entry's `lemma_plain` with v→u and j→i (LASLA writes _nouus_, _iacio_), then narrows the candidates:

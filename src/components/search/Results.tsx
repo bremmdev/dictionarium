@@ -1,12 +1,14 @@
 import { useAnnounce } from "@bremmdev/m7kit";
 import { Fragment, useEffect, useId, useRef } from "react";
+import { Heading } from "#/components/Heading";
+import { LatinWord } from "#/components/LatinWord";
 import { TextLink } from "#/components/TextLink";
-import type { ShownEntry } from "#/db/schema";
+import type { SearchResult } from "#/server/search";
 import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
-	results: Array<ShownEntry>;
+	results: Array<SearchResult>;
 	/** Lemmas close to the query, offered when it found nothing. */
 	suggestions: Array<string>;
 	/** Following a suggestion unmounts its link, so the caller gets focus back. */
@@ -37,6 +39,12 @@ export function Results({
 	const isTooShort =
 		trimmed.length > 0 && normalizeLemma(trimmed).length < MIN_QUERY_LENGTH;
 	const isCut = matchCount > results.length;
+	const formCount = results.filter((r) => r.match === "form").length;
+	// Contains-matches get their own heading only when something matched the word itself.
+	const direct = results.filter((r) => r.match !== "other");
+	const others =
+		direct.length > 0 ? results.filter((r) => r.match === "other") : [];
+	const othersId = useId();
 
 	// Announce the outcome, never the in-between. Firing on every keystroke of a
 	// pending search would just talk over the user.
@@ -50,6 +58,9 @@ export function Results({
 				: `${results.length} ${
 						results.length === 1 ? "result" : "results"
 					} for ${trimmed}.`;
+			if (formCount > 0) {
+				announcement += ` ${formCount} ${formCount === 1 ? "matches" : "match"} it as a form.`;
+			}
 			if (results.length === 0 && suggestions.length > 0) {
 				announcement += ` Did you mean ${orList.format(suggestions)}?`;
 			}
@@ -135,14 +146,49 @@ export function Results({
 			)}
 
 			{results.length > 0 && (
-				<ul className="divide-y divide-parchment-200 rounded-sm border border-parchment-200 bg-surface-subtle/50">
-					{results.map((entry) => (
-						<li key={entry.id}>
-							<EntryCard entry={entry} query={trimmed} />
-						</li>
-					))}
-				</ul>
+				<ResultList
+					results={others.length > 0 ? direct : results}
+					query={trimmed}
+				/>
+			)}
+
+			{others.length > 0 && (
+				<>
+					<Heading
+						variant="h4"
+						as="h3"
+						weight="normal"
+						id={othersId}
+						className="mt-6 mb-3 text-ink-700"
+					>
+						Other words containing <LatinWord>{trimmed}</LatinWord>
+					</Heading>
+					<ResultList results={others} query={trimmed} labelledBy={othersId} />
+				</>
 			)}
 		</div>
+	);
+}
+
+function ResultList({
+	results,
+	query,
+	labelledBy,
+}: {
+	results: Array<SearchResult>;
+	query: string;
+	labelledBy?: string;
+}) {
+	return (
+		<ul
+			aria-labelledby={labelledBy}
+			className="divide-y divide-parchment-200 rounded-sm border border-parchment-200 bg-surface-subtle/50"
+		>
+			{results.map((entry) => (
+				<li key={entry.id}>
+					<EntryCard entry={entry} query={query} />
+				</li>
+			))}
+		</ul>
 	);
 }

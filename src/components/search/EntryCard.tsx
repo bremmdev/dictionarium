@@ -1,12 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { Fragment } from "react";
 import { CaseTag } from "#/components/CaseTag";
 import { FrequencyTag } from "#/components/FrequencyTag";
 import { Heading } from "#/components/Heading";
+import { LatinWord } from "#/components/LatinWord";
 import { Lemma } from "#/components/Lemma";
 import type { Entry, ShownEntry } from "#/db/schema";
 import { entryLink } from "#/utils/entries/links";
 import { caseLabel } from "#/utils/entries/rules";
+import type { FormLine } from "#/utils/inflection/describe";
 
 const ORDINALS: Record<string, string> = {
 	"1": "1st",
@@ -94,7 +97,7 @@ export function GrammarLine({ entry }: { entry: ShownEntry }) {
 
 type EntryCardProps = {
 	/** Needs the senses, not just the entry: the card shows the core meaning. */
-	entry: ShownEntry;
+	entry: ShownEntry & { forms?: Array<FormLine> };
 	/** Carried into the detail page so its back link can restore this search. */
 	query: string;
 };
@@ -133,6 +136,10 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 				aria-hidden="true"
 			/>
 
+			{entry.forms && entry.forms.length > 0 && (
+				<FormsLine forms={entry.forms} />
+			)}
+
 			{entry.principalParts && (
 				<p className="text-ink-700 italic" lang="la">
 					{entry.principalParts}
@@ -153,5 +160,26 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 				</p>
 			)}
 		</div>
+	);
+}
+
+/** Why a form match is listed: "rēgis: gen. sg.", short on screen and in full for a screen reader. */
+function FormsLine({ forms }: { forms: Array<FormLine> }) {
+	return (
+		<p className="text-ink-700">
+			{forms.map(({ form, labels }, i) => (
+				<Fragment key={form}>
+					{i > 0 && "; "}
+					<LatinWord>{form}</LatinWord>:{" "}
+					{labels.map(({ short, full }, j) => (
+						<Fragment key={full}>
+							{j > 0 && ", "}
+							<span aria-hidden="true">{short}</span>
+							<span className="sr-only">{full}</span>
+						</Fragment>
+					))}
+				</Fragment>
+			))}
+		</p>
 	);
 }

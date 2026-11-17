@@ -87,10 +87,12 @@ Below `MIN_QUERY_LENGTH` (2) it returns no results and no suggestions without to
 
 The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
 
-**Ranks exact, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`. But the word itself, then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
+**Ranks exact, then forms, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`, plus `id IN (…)` for the words the query is a form of: _bonae_ finds _bonus_ (see [forms.md](./forms.md)). The form lookup runs in memory and hands back ids, so the cap and `matchCount` still hold. The word itself, then a word the query is a form of (commonest first by LASLA rank), then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
 
 ```sql
-case when lemma_plain = 'am' then 0 when lemma_plain like 'am%' then 1 else 2 end,
+case when lemma_plain = 'am' or id in (lemmaIds) then 0 when id in (formIds) then 1
+     when lemma_plain like 'am%' then 2 else 3 end,
+case id when … end,  -- formIds in LASLA order; only when there are any
 length(lemma_plain), lemma_plain
 ```
 
@@ -310,7 +312,9 @@ It compares every distinct lemma in JS rather than in SQL, and only on a miss. T
 
 A suggestion links to `/?q=<lemma>`, so following it is an ordinary search. Its link unmounts once the new results land, so `Search` hands focus back to the input, as _dēlē_ does. The announcement adds the suggestions to the result count.
 
-Inflected forms are not typos: _amābat_ is four edits from _amō_ and gets no suggestion.
+Inflected forms are not typos: _amābat_ is four edits from _amō_, so it is found as a form instead (tier 2, above). Suggestions still come from lemmas only; suggestions from forms are phase 2 of [forms.md](./forms.md).
+
+A form match's card says why it is there ("_rēgis_: gen. sg."), short labels on screen and the full words as sr-only text. When the word itself or a form matched, contains-matches sit under "Other words containing …", and the announcement says how many results are forms.
 
 ## Gotchas
 
