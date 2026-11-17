@@ -269,7 +269,9 @@ A live region inserted into the DOM at the same moment its text appears is routi
 
 Only a change is news. The outcome the page loaded with is already on screen, so it is not announced, as with the old region, which a screen reader does not read at load either. The announcement is also suppressed while `isFetching` — announcing every intermediate state talks over the user — and the `id` drops a count still waiting to be read when the next search lands, so quick searches announce only the last.
 
-Focus is never moved to the results. The polite announcement is the affordance; yanking focus out of the input would be hostile. The one place focus _is_ moved is the _dēlē_ button, which unmounts itself on clear and hands focus back to the input rather than dropping it on `<body>`.
+Focus is never moved to the results, except on a touch screen (below). The polite announcement is the affordance; yanking focus out of the input would be hostile. The one place focus _is_ moved is the _dēlē_ button, which unmounts itself on clear and hands focus back to the input rather than dropping it on `<body>`.
+
+**The exception: a touch screen closes its keyboard.** On `pointer: coarse`, a submit moves focus to the hidden "Search results" heading (`showResults` in `Search.tsx`). Leaving the input is the only way to close the on-screen keyboard, and the box can't lift to the top while the keyboard is still resizing the viewport. The heading has `tabIndex={-1}`, so focus lands on something real rather than `<body>`, and the count is still announced as usual. With a mouse or keyboard, focus stays in the input.
 
 ## Results link out
 
