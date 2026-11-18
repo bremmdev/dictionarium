@@ -253,7 +253,7 @@ const PASSIVE_NOTES: Record<string, React.ReactNode> = {
 	),
 	capiō: (
 		<>
-			<LatinWord>caperis</LatinWord>, not <em>capiris</em>: before{" "}
+			<LatinWord>caperis</LatinWord>, not <em lang="la">capiris</em>: before{" "}
 			<LatinWord>r</LatinWord> the short <LatinWord>i</LatinWord> becomes{" "}
 			<LatinWord>e</LatinWord>, as in <LatinWord>capere</LatinWord>. That makes
 			it look like <LatinWord>dūceris</LatinWord>.
