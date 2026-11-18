@@ -54,7 +54,7 @@ const TOGGLE =
  */
 const FILING: Record<
 	"noun" | "verb" | "adjective" | "pronoun",
-	{ legend: string; hint: string; placeholder: string }
+	{ legend: string; hint: React.ReactNode; placeholder: string }
 > = {
 	verb: {
 		legend: "Principal parts",
@@ -73,7 +73,12 @@ const FILING: Record<
 	},
 	pronoun: {
 		legend: "Forms",
-		hint: "The filing as a dictionary prints it, lemma first: the three genders, or the genitive where there are none (ego, meī).",
+		hint: (
+			<>
+				The filing as a dictionary prints it, lemma first: the three genders, or
+				the genitive where there are none (<span lang="la">ego, meī</span>).
+			</>
+		),
 		placeholder: "hic, haec, hoc",
 	},
 };

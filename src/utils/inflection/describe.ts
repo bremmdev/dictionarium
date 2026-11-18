@@ -10,7 +10,12 @@ import type { Cell, GrammaticalNumber, VerbalNoun } from "./types";
 export type Label = { short: string; full: string };
 
 /** One spelling of the query in one entry, with its macrons, and what it is. */
-export type FormLine = { form: string; labels: Array<Label> };
+export type FormLine = {
+	form: string;
+	labels: Array<Label>;
+	/** Apart from the labels so the Latin can carry lang: "with -que". */
+	enclitic?: string;
+};
 
 const CASE_SHORT: Record<Case, string> = {
 	nominative: "nom.",
@@ -173,7 +178,7 @@ function verbLabel({ analysis }: Cell): Label | null {
 
 /**
  * The cells a query matched in one entry, one line per spelling. An enclitic
- * goes back on the form and gets a label of its own: virumque, "with -que".
+ * goes back on the form and is named after the labels: virumque, "with -que".
  */
 export function describe(
 	cells: Array<Cell>,
@@ -202,12 +207,6 @@ export function describe(
 			return true;
 		});
 		if (!enclitic) return { form, labels: unique };
-		return {
-			form: form + enclitic,
-			labels: [
-				...unique,
-				{ short: `with -${enclitic}`, full: `with -${enclitic}` },
-			],
-		};
+		return { form: form + enclitic, labels: unique, enclitic };
 	});
 }

@@ -167,7 +167,7 @@ export function EntryCard({ entry, query }: EntryCardProps) {
 function FormsLine({ forms }: { forms: Array<FormLine> }) {
 	return (
 		<p className="text-ink-700">
-			{forms.map(({ form, labels }, i) => (
+			{forms.map(({ form, labels, enclitic }, i) => (
 				<Fragment key={form}>
 					{i > 0 && "; "}
 					<LatinWord>{form}</LatinWord>:{" "}
@@ -178,6 +178,12 @@ function FormsLine({ forms }: { forms: Array<FormLine> }) {
 							<span className="sr-only">{full}</span>
 						</Fragment>
 					))}
+					{enclitic && (
+						<>
+							{labels.length > 0 && ", "}
+							with <span lang="la">-{enclitic}</span>
+						</>
+					)}
 				</Fragment>
 			))}
 		</p>
