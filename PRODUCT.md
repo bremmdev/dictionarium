@@ -18,6 +18,23 @@ The common job: meet a Latin word, find its lemma, and leave knowing its princip
 
 Dictionarium Latinum is a Latin–English dictionary for learners ("Verba sub manū", words at hand). You look up a Latin word and get its principal parts, part of speech, inflection and senses in order of use, linked to the grammar that explains its forms. It is working when a learner finds the word, trusts what it says, and can follow the entry into the table that explains the form they met.
 
+## Goal and Milestones
+
+Built for learners and for the editor equally: what serves a stranger looking a word up serves the editor too. Free and non-commercial for good, which the LASLA licence (CC BY-NC-SA) requires anyway.
+
+| Milestone | Done when                                                  | Due                         |
+| --------- | ---------------------------------------------------------- | --------------------------- |
+| v1        | all 1,004 Core words are filed                             | 31 March 2027 at the latest |
+| v2        | 2,000 entries are filed, Core or not                       | set when v1 ships           |
+| v3        | every Core and Common word is filed (LASLA ranks 1–3,000) | set when v1 ships           |
+
+- **Only production counts.** A word is filed when it is saved there and passes the desk's checks. That is the whole bar.
+- **Core is LASLA's**, as `data/lasla-frequency.json` stands now, matched by the badge rules (`vault/frequency.md`). No exclusions. A spelling LASLA has twice (_tempus_, _ōs_) counts once an entry with that spelling and part of speech is filed. A LASLA rebuild before v1 says how Core changed, and a word already filed stays counted.
+- **50 Core words a week**, Monday to Sunday, recalculated monthly from what is left. Filing runs alongside grammar, bugs and maintenance. When the pace slips, the target rises; the deadline stays.
+- **In sight on `/admin/stats`** (not built yet): Core filed of 1,004, this week against the target, and the v1 date projected from the last four weeks, marked _Behind_ when it falls after the deadline. No scheduled report.
+- **What to file next** comes from the desk (not built yet): Core words on the editor's reading list first, in lesson order, and its other words separately for v2. When _Behind_, the remaining Core words in LASLA rank order instead. The reading list is private and never in the repo.
+- **What v1 cannot happen without** is listed under _Before v1_ in `TODO.md`.
+
 ## Positioning
 
 - **Hand-filed by one editor.** Every entry is read and filed by a person. Wiktionary only pre-fills the editor's form, the submit is a separate press after review, and nothing is bulk-imported.
