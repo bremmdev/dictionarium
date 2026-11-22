@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { type AnalyticsSummary, summarize } from "#/db/analytics";
 import { authMiddleware } from "#/server/auth";
+import { currentV1Progress } from "#/server/progress";
 import { recordView } from "#/server/recording";
 import { parsePeriod } from "#/utils/analytics/rules";
+import type { V1Progress } from "#/utils/progress/rules";
 
 /**
  * The two analytics RPCs, and nothing else.
@@ -11,8 +13,8 @@ import { parsePeriod } from "#/utils/analytics/rules";
  * Kept bare deliberately: the client bundles this module for its stubs, so
  * anything living here that is not a server function would carry its imports
  * into the browser. The write path is in `recording.ts`, the queries in
- * `#/db/analytics` — both reached only from the handlers below, and both
- * stripped from the client build with them.
+ * `#/db/analytics` and v1 progress in `progress.ts` — all reached only from
+ * the handlers below, and all stripped from the client build with them.
  */
 
 /**
@@ -36,7 +38,7 @@ export const recordEntryView = createServerFn({ method: "POST" })
 	.handler(({ data: { lemma, homonym } }) => recordView(lemma, homonym));
 
 /**
- * The dashboard's one round trip.
+ * The dashboard's one round trip, v1 progress included.
  *
  * `authMiddleware` is what actually protects these numbers. The route's
  * `beforeLoad` guard is a redirect for humans — this RPC is reachable directly,
@@ -45,4 +47,7 @@ export const recordEntryView = createServerFn({ method: "POST" })
 export const getAnalyticsSummary = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.validator(parsePeriod)
-	.handler(({ data: days }): AnalyticsSummary => summarize(days));
+	.handler(({ data: days }): AnalyticsSummary & { v1: V1Progress } => ({
+		...summarize(days),
+		v1: currentV1Progress(),
+	}));

@@ -5,6 +5,14 @@ import { getAnalyticsSummary } from "#/server/analytics";
 import { getIsAdmin } from "#/server/auth";
 import { DEFAULT_PERIOD, parsePeriod, PERIODS } from "#/utils/analytics/rules";
 import { homonymLabel } from "#/utils/entries/links";
+import {
+	type Day,
+	DEADLINE,
+	PACE_WEEKS,
+	toDate,
+	type V1Progress,
+	WEEKLY_TARGET,
+} from "#/utils/progress/rules";
 
 // "admin_" rather than "admin": the trailing underscore opts this route out of
 // nesting, so it serves /admin/stats without turning the existing /admin page
@@ -48,12 +56,25 @@ function PanelHeading({ la, en }: { la: string; en: string }) {
 	);
 }
 
-/** One number, large, with what it counts underneath. */
-function Figure({ value, label }: { value: number; label: string }) {
+/** One number, large, with what it counts underneath; `of` is what it is out of. */
+function Figure({
+	value,
+	of,
+	label,
+}: {
+	value: number | string;
+	of?: number;
+	label: string;
+}) {
 	return (
 		<div className="rounded-lg border border-parchment-200 bg-parchment-100 px-4 py-3">
 			<p className="font-bold text-3xl text-ink-900 tabular-nums">
 				{value.toLocaleString()}
+				{of !== undefined && (
+					<span className="font-semibold text-ink-600 text-lg">
+						{` of ${of.toLocaleString()}`}
+					</span>
+				)}
 			</p>
 			<p className="mt-1 font-semibold text-gold-600 text-label uppercase tracking-[0.18em]">
 				{label}
@@ -100,6 +121,63 @@ function TopTable({
 	);
 }
 
+/** "25 February 2027"; a Day is a UTC midnight, so it is formatted in UTC. */
+function formatDate(day: Day) {
+	return toDate(day).toLocaleDateString("en-GB", {
+		timeZone: "UTC",
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
+}
+
+/** "Monday 16 November". */
+function formatWeekday(day: Day) {
+	return toDate(day).toLocaleDateString("en-GB", {
+		timeZone: "UTC",
+		weekday: "long",
+		day: "numeric",
+		month: "long",
+	});
+}
+
+function V1Panel({ v1 }: { v1: V1Progress }) {
+	const pace = v1.pace.toLocaleString("en", { maximumFractionDigits: 1 });
+
+	return (
+		<section className="space-y-4">
+			<div className="flex flex-wrap items-center gap-3">
+				<PanelHeading la="Prōgressus" en="progress towards v1" />
+				{v1.behind && (
+					<span className="rounded-full border border-accent px-2 py-0.5 font-semibold text-accent text-label uppercase tracking-[0.18em]">
+						Behind
+					</span>
+				)}
+			</div>
+
+			<div className="grid gap-3 sm:grid-cols-3">
+				<Figure value={v1.filed} of={v1.total} label="Core filed" />
+				<Figure value={v1.week.filed} of={v1.week.target} label="this week" />
+				<Figure
+					value={v1.projected ? formatDate(v1.projected) : "—"}
+					label="projected v1"
+				/>
+			</div>
+
+			<p className="text-ink-600 text-sm">
+				{v1.remaining === 0
+					? "Every Core word is filed: v1 is reached."
+					: v1.projected === null
+						? `Nothing was filed in the last ${PACE_WEEKS} weeks, so there is no pace to project from.`
+						: `At ${pace} a week over the last ${PACE_WEEKS} weeks, the ${v1.remaining.toLocaleString()} Core words left are filed by ${formatDate(v1.projected)}.`}{" "}
+				The deadline is {formatDate(DEADLINE)}. This week began{" "}
+				{formatWeekday(v1.week.start)}, Amsterdam time; its target is set each
+				month from what is left, and never below {WEEKLY_TARGET}.
+			</p>
+		</section>
+	);
+}
+
 function PeriodPicker({ current }: { current: number }) {
 	return (
 		<nav aria-label="Reporting period" className="flex flex-wrap gap-2">
@@ -124,14 +202,17 @@ function PeriodPicker({ current }: { current: number }) {
 
 function Stats() {
 	const summary = Route.useLoaderData();
-	const { wordsAdded, searches, views, untimedWords, days } = summary;
+	const { wordsAdded, searches, views, untimedWords, days, v1 } = summary;
 
 	return (
 		<section className="mx-auto max-w-4xl space-y-12 px-4 sm:px-8 py-12 md:py-16">
+			<Heading variant="h2" as="h1">
+				Stats
+			</Heading>
+
+			<V1Panel v1={v1} />
+
 			<div className="space-y-4">
-				<Heading variant="h2" as="h1">
-					Stats
-				</Heading>
 				<p className="text-ink-600">
 					Counted in this dictionary&rsquo;s own database, nowhere else. The
 					window is the last {days} days, rolling — not calendar days, so no

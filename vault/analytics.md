@@ -72,7 +72,7 @@ A user agent is self-reported, so this is a heuristic: it catches the honest maj
 
 ## Where the code lives, and why it is split that way
 
-Four modules, and the seam between them is a build constraint rather than taste:
+Five modules, and the seam between them is a build constraint rather than taste:
 
 | Module                    | Holds                                            | Client-visible                         |
 | ------------------------- | ------------------------------------------------ | -------------------------------------- |
@@ -80,6 +80,7 @@ Four modules, and the seam between them is a build constraint rather than taste:
 | `src/server/recording.ts` | `record`, `recordSearch`, `recordView`           | no                                     |
 | `src/server/visitor.ts`   | `isUncounted` — the session and user-agent reads | no                                     |
 | `src/db/analytics.ts`     | `summarize` — queries, no request awareness      | no                                     |
+| `src/server/progress.ts`  | `currentV1Progress` — entries matched to LASLA   | no                                     |
 
 A module that exports a server function is bundled for the browser, so **anything else living in it drags its imports along** — `#/db`, and through `visitor.ts` the server-only request helpers from `@tanstack/react-start/server`. TanStack's import-protection plugin refuses that outright, and it refuses it at `vite build`, not in dev: the dev server happily served every one of these paths before the build rejected them. The fix is the same shape as `auth.ts` keeping `useAppSession` over in `session.ts` — everything reached only from inside a handler is stripped from the client graph along with the handler.
 
@@ -104,6 +105,16 @@ The callbacks are synchronous because better-sqlite3 is, which is what makes the
 What it does copy verbatim, because all three are load-bearing: the `globalThis` idempotence guard (Vite re-evaluates modules, Nitro re-runs plugins, and two timers deleting from one table would each race the other's read), `.unref()` on the timers, and log-and-continue on failure.
 
 **It is not folded into the backup tick**, tempting as the single timer is — and it would even have the nicety that a dump would never carry rows about to be deleted. Setting `DB_BACKUP_INTERVAL_HOURS=0` would then silently disable retention too, and the table would grow forever with nothing in the log to say why.
+
+## v1 progress
+
+The top panel of `/admin/stats` tracks v1 (PRODUCT.md, Goal and Milestones). It is computed on read from `entries` and the LASLA data, like the badges, so nothing is stored. `currentV1Progress` (`src/server/progress.ts`) does the reading and `v1Progress` (`src/utils/progress/rules.ts`) the maths, which is what `rules.test.ts` covers.
+
+- **Core filed** counts LASLA words ranked Core (1,004, since ranks tie) that some entry files. `filedLexemes` takes every LASLA word with the entry's spelling and part of speech, with no class or gender test, so _tempus_ counts though it has no badge, and one _domus_ files both of LASLA's (4th and 2nd declension).
+- **A word is dated by its first filing.** An entry with no `created_at` counts towards the total but never towards a week.
+- **Weeks are calendar weeks**, Monday to Sunday in Europe/Amsterdam, unlike the rolling windows below. The milestone is stated in weeks, so here the timezone question has to be answered.
+- **The weekly target** is set on the 1st of the month the week starts in: what was left then over the weeks to 31 March 2027, never below 50.
+- **The pace** is the average of the four complete weeks before this one, so it does not move during a week. The projection runs from today; no pace means no date, and that is _Behind_ too.
 
 ## Operations
 

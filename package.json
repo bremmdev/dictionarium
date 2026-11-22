@@ -29,7 +29,8 @@
     "check:pronouns": "arca run -- tsx scripts/check-pronouns.ts",
     "check:forms": "arca run -- tsx scripts/check-forms.ts",
     "report:frequency": "arca run -- tsx scripts/frequency-report.ts",
-    "report:forms": "arca run -- tsx scripts/forms-coverage.ts"
+    "report:forms": "arca run -- tsx scripts/forms-coverage.ts",
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@bremmdev/m7kit": "^0.67.0",

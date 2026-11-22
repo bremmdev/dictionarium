@@ -147,10 +147,7 @@ export function matchLexeme(
 	entry: Filed,
 	candidates: ReadonlyArray<Lexeme>,
 ): Lexeme | null {
-	const tags = UPOS[entry.partOfSpeech] ?? [];
-	const fits = candidates.filter(
-		(c) => tags.includes(c.upos) && sameLengths(entry.lemma, c.prosody),
-	);
+	const fits = filedLexemes(entry, candidates);
 	const exact = fits.filter((c) => sameClass(entry, c));
 	const classed =
 		exact.length > 0 ? exact : fits.filter((c) => irregularEitherWay(entry, c));
@@ -172,6 +169,17 @@ export function matchLexeme(
 		return null;
 	}
 	return first;
+}
+
+/** The LASLA words with an entry's spelling and part of speech, all counted as filed for v1. */
+export function filedLexemes(
+	entry: Filed,
+	candidates: ReadonlyArray<Lexeme>,
+): Array<Lexeme> {
+	const tags = UPOS[entry.partOfSpeech] ?? [];
+	return candidates.filter(
+		(c) => tags.includes(c.upos) && sameLengths(entry.lemma, c.prosody),
+	);
 }
 
 export function frequencyOf(lexeme: Lexeme | null): Frequency | null {

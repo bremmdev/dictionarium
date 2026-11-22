@@ -31,7 +31,7 @@ Built for learners and for the editor equally: what serves a stranger looking a 
 - **Only production counts.** A word is filed when it is saved there and passes the desk's checks. That is the whole bar.
 - **Core is LASLA's**, as `data/lasla-frequency.json` stands now, matched by the badge rules (`vault/frequency.md`). No exclusions. A spelling LASLA has twice (_tempus_, _ōs_) counts once an entry with that spelling and part of speech is filed. A LASLA rebuild before v1 says how Core changed, and a word already filed stays counted.
 - **50 Core words a week**, Monday to Sunday, recalculated monthly from what is left. Filing runs alongside grammar, bugs and maintenance. When the pace slips, the target rises; the deadline stays.
-- **In sight on `/admin/stats`** (not built yet): Core filed of 1,004, this week against the target, and the v1 date projected from the last four weeks, marked _Behind_ when it falls after the deadline. No scheduled report.
+- **In sight on `/admin/stats`**: Core filed of 1,004, this week against the target, and the v1 date projected from the last four weeks, marked _Behind_ when it falls after the deadline. No scheduled report.
 - **What to file next** comes from the desk (not built yet): Core words on the editor's reading list first, in lesson order, and its other words separately for v2. When _Behind_, the remaining Core words in LASLA rank order instead. The reading list is private and never in the repo.
 - **What v1 cannot happen without** is listed under _Before v1_ in `TODO.md`.
 
