@@ -351,7 +351,7 @@ Inflected forms are not rows. When they arrive, they hang off a lemma — they d
 The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
 1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool.
-2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). Open question that belongs there rather than here: _when_ `drizzle-kit migrate` runs — at build time, at boot, or by hand. The guards add a second one: five of the eight read the database, so anything running `npm run check` has to migrate before it can open the gate.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). _When_ migrations run was the open question here; the answer is by hand, before the code ([migrations.md](./migrations.md)). The guards add a second one: five of the eight read the database, so anything running `npm run check` has to migrate before it can open the gate.
 
 Parked: synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
@@ -394,6 +394,8 @@ The schema is applied by a migration chain in `drizzle/`, generated from `schema
 npm run db:generate   # diff schema.ts against the last snapshot → drizzle/NNNN_*.sql
 npm run db:migrate    # apply what has not been applied
 ```
+
+Production runs the same chain with `scripts/migrate.mjs`, by hand, in a deploy of its own before the code: [migrations.md](./migrations.md).
 
 `push` is not a beginner's tool that got outgrown — the Drizzle docs are explicit that teams run it in production. It was dropped because of what it _takes as input_: it reads the TypeScript schema, compares it with the live database, and applies the difference. Every input to that is a **shape**. Nowhere in it is there a place to say "and the contents of this column must end up over there". Asked to add `senses` and drop `meaning_en` in one go, push would do both, and the words would be gone.
 

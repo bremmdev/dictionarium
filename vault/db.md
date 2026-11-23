@@ -87,6 +87,8 @@ Two consequences of the same synchronicity:
 
 WAL adds two sidecar files next to the database, `-wal` and `-shm`, both gitignored. They are part of the database: copying `dictionarium.db` alone, while the server is running, does not give you a consistent backup. Use `VACUUM INTO 'backup.db'` or stop the process first.
 
+Migrating the production file is in [migrations.md](./migrations.md).
+
 ### Backups
 
 `src/db/backup.ts` writes a dump on a schedule; a Nitro plugin starts it. This is the only backup there is — there is no platform-level snapshot underneath it.
