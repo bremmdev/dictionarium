@@ -42,6 +42,7 @@ const filing = (fields: Partial<Filing> & Pick<Filing, "lemma" | "partOfSpeech">
 	gender: null,
 	declension: null,
 	terminations: null,
+	stemClass: null,
 	conjugation: null,
 	...fields,
 });
@@ -95,6 +96,7 @@ DECLENSION_GROUPS.forEach(({ paradigms }, i) => {
 			principalParts: p.genitive,
 			gender: p.gender[0] as Filing["gender"],
 			declension: String(i + 1),
+			stemClass: p.stemClass ?? null,
 		});
 		compare(p.lemma, page, paradigm(entry));
 	}
@@ -120,6 +122,8 @@ for (const [declension, paradigms] of [["1-2", FIRST_SECOND], ["3", THIRD]] as c
 			principalParts: p.lemma,
 			declension,
 			terminations: declension === "3" ? (TERMINATIONS[p.label] ?? null) : null,
+			// "These are i-stems", as the page says.
+			stemClass: declension === "3" ? "i-stem" : null,
 		});
 		compare(p.lemma, page, paradigm(entry));
 	}
@@ -216,9 +220,12 @@ const fixtures: Array<Indexed> = [
 	filing({ lemma: "amō", partOfSpeech: "verb", principalParts: "amō, amāre, amāvī, amātum", conjugation: "1" }),
 	filing({ lemma: "īdem", partOfSpeech: "pronoun", principalParts: "īdem, eadem, idem", declension: "irregular" }),
 	filing({ lemma: "sum", partOfSpeech: "verb", principalParts: "sum, esse, fuī, futūrus", conjugation: "irregular" }),
-	filing({ lemma: "rēx", partOfSpeech: "noun", principalParts: "rēgis", gender: "m", declension: "3" }),
-	filing({ lemma: "vōx", partOfSpeech: "noun", principalParts: "vōcis", gender: "f", declension: "3" }),
-	filing({ lemma: "vetus", partOfSpeech: "adjective", principalParts: "vetus, veteris", declension: "3", terminations: "1" }),
+	filing({ lemma: "rēx", partOfSpeech: "noun", principalParts: "rēgis", gender: "m", declension: "3", stemClass: "consonant" }),
+	filing({ lemma: "vōx", partOfSpeech: "noun", principalParts: "vōcis", gender: "f", declension: "3", stemClass: "consonant" }),
+	filing({ lemma: "vetus", partOfSpeech: "adjective", principalParts: "vetus, veteris", declension: "3", terminations: "1", stemClass: "consonant" }),
+	filing({ lemma: "urbs", partOfSpeech: "noun", principalParts: "urbis", gender: "f", declension: "3", stemClass: "i-stem" }),
+	filing({ lemma: "mare", partOfSpeech: "noun", principalParts: "maris", gender: "n", declension: "3", stemClass: "i-stem" }),
+	filing({ lemma: "ingēns", partOfSpeech: "adjective", principalParts: "ingēns, ingentis", declension: "3", terminations: "1", stemClass: "i-stem" }),
 	filing({ lemma: "volō", partOfSpeech: "verb", principalParts: "volō, velle, voluī, volitūrus", conjugation: "irregular" }),
 	filing({ lemma: "audiō", partOfSpeech: "verb", principalParts: "audiō, audīre, audīvī, audītum", conjugation: "4" }),
 	filing({ lemma: "hortor", partOfSpeech: "verb", principalParts: "hortor, hortārī, hortātus sum", conjugation: "1" }),
@@ -238,7 +245,7 @@ const fixtures: Array<Indexed> = [
 	filing({ lemma: "ego", partOfSpeech: "pronoun" }),
 	filing({ lemma: "uterque", partOfSpeech: "pronoun", principalParts: "uterque, utraque, utrumque" }),
 	filing({ lemma: "uter", partOfSpeech: "pronoun", principalParts: "uter, utra, utrum" }),
-	filing({ lemma: "pater", partOfSpeech: "noun", principalParts: "patris", gender: "m", declension: "3" }),
+	filing({ lemma: "pater", partOfSpeech: "noun", principalParts: "patris", gender: "m", declension: "3", stemClass: "consonant" }),
 ].map((f, i) => ({ ...f, id: i + 1 }));
 const index = new FormIndex(fixtures);
 
@@ -262,6 +269,14 @@ const PROMISES: Array<[string, string]> = [
 	["uox", "vōx"],
 	["uocem", "vōx"],
 	["uetus", "vetus"],
+	["veterum", "vetus"],
+	["patrum", "pater"],
+	["urbium", "urbs"],
+	["urbis", "urbs"],
+	["maria", "mare"],
+	["marium", "mare"],
+	["ingentium", "ingēns"],
+	["ingentia", "ingēns"],
 	// Phase 2: the passive, deponents and everything that is not finite.
 	["amatur", "amō"],
 	["amabantur", "amō"],
@@ -354,6 +369,15 @@ const REFUSALS: Array<[string, string]> = [
 	["fert", "afferō"],
 	// uterque is a word of its own, not uter + -que.
 	["utrumque", "uter"],
+	// The stem class picks one side where i-stems differ.
+	["patrium", "pater"],
+	["regium", "rēx"],
+	["veterium", "vetus"],
+	["veteria", "vetus"],
+	["urbum", "urbs"],
+	["mara", "mare"],
+	["marum", "mare"],
+	["ingentum", "ingēns"],
 ];
 for (const [query, owner] of REFUSALS) {
 	checked++;

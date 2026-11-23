@@ -26,14 +26,17 @@ import {
 	GENDERS,
 	GOVERNED_CASES,
 	hasGoverns,
+	hasStemClass,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
 	isDeclensionFor,
 	isGender,
 	isPartOfSpeech,
+	isStemClass,
 	isTerminations,
 	readCases,
+	STEM_CLASSES,
 	senseGoverns,
 	TERMINATIONS,
 	theCases,
@@ -63,6 +66,7 @@ export type WiktionaryRow = {
 	gender?: string;
 	declension?: string;
 	terminations?: string;
+	stemClass?: string;
 	conjugation?: string;
 	/** Prepositions only: the cases the headword line lists, canonical. */
 	governs?: string;
@@ -317,6 +321,8 @@ type Candidate = {
 	gender?: string;
 	/** Every headword line as text: where "third conjugation, deponent" lives. */
 	grammar: string;
+	/** The line over the declension table: "Third-declension noun (i-stem)." */
+	declensionLine?: string;
 	/** The case words of every "(+ …)" on the headword lines — a preposition's governs, unfiltered. */
 	governs: Array<string>;
 	senses: Array<ReadSense>;
@@ -334,6 +340,7 @@ function splitByHeading(html: string) {
 
 	return found.map((match, i) => ({
 		title: toText(match[2]).toLowerCase(),
+		level: Number(match[1]),
 		html: html.slice(
 			match.index + match[0].length,
 			found[i + 1]?.index ?? html.length,
@@ -623,8 +630,19 @@ function readSenses(
 
 function parseCandidates(sectionHtml: string) {
 	const candidates: Array<Candidate> = [];
+	// The section a Declension heading sits under, past any Usage notes.
+	let owner: { candidate: Candidate; level: number } | undefined;
 
 	for (const block of splitByHeading(sectionHtml)) {
+		if (owner && block.level <= owner.level) owner = undefined;
+		if (/^declension\b/.test(block.title)) {
+			const line = extractTag(block.html, "p");
+			if (owner && line && owner.candidate.declensionLine === undefined) {
+				owner.candidate.declensionLine = toText(line.inner);
+			}
+			continue;
+		}
+
 		// "Adverb 2", under a second etymology, is still an adverb.
 		const partOfSpeech = block.title.replace(/\s+\d+$/, "");
 		if (!WIKTIONARY_PARTS_OF_SPEECH.has(partOfSpeech)) continue;
@@ -653,7 +671,7 @@ function parseCandidates(sectionHtml: string) {
 
 		const grammar = segments.map((s) => toText(s.paragraph)).join(" ");
 
-		candidates.push({
+		const candidate: Candidate = {
 			partOfSpeech,
 			headword: toText(headword[1]),
 			forms: readForms(line.inner),
@@ -667,7 +685,9 @@ function parseCandidates(sectionHtml: string) {
 				})),
 				partOfSpeech,
 			),
-		});
+		};
+		candidates.push(candidate);
+		owner = { candidate, level: block.level };
 	}
 	return candidates;
 }
@@ -706,6 +726,22 @@ function readTerminations(grammar: string) {
 	return counted
 		? String(["one", "two", "three"].indexOf(counted[1]) + 1)
 		: undefined;
+}
+
+/**
+ * Wiktionary marks the exception: a noun's table says "(i-stem)" when it is
+ * one, an adjective's headword "(non-i-stem)" when it is not.
+ */
+function readStemClass(candidate: Candidate) {
+	const line = candidate.declensionLine ?? "";
+	const said = `${candidate.grammar} ${line}`;
+	if (/\bnon-i-stem\b/.test(said)) return "consonant";
+	if (/\bi-stem\b/.test(said)) return "i-stem";
+	if (candidate.partOfSpeech === "adjective") {
+		return /\bthird[- ]declension\b/i.test(said) ? "i-stem" : undefined;
+	}
+	// Anything else in brackets ("(Greek-type)") is for a person to read.
+	return /^third-declension noun\.?$/i.test(line) ? "consonant" : undefined;
 }
 
 function readConjugation(grammar: string) {
@@ -1080,6 +1116,10 @@ function toRow(
 			candidate.partOfSpeech === "adjective"
 				? readTerminations(candidate.grammar)
 				: undefined,
+		stemClass:
+			isNoun || candidate.partOfSpeech === "adjective"
+				? readStemClass(candidate)
+				: undefined,
 		conjugation:
 			candidate.partOfSpeech === "verb"
 				? readConjugation(candidate.grammar)
@@ -1247,6 +1287,7 @@ function toDraft(row: WiktionaryRow, warn: (message: string) => void) {
 		gender: row.gender ?? "",
 		declension: row.declension ?? "",
 		terminations: row.terminations ?? "",
+		stemClass: row.stemClass ?? "",
 		conjugation: row.conjugation ?? "",
 	};
 
@@ -1261,6 +1302,7 @@ function toDraft(row: WiktionaryRow, warn: (message: string) => void) {
 			? read.declension
 			: "",
 		terminations: isTerminations(read.terminations) ? read.terminations : "",
+		stemClass: isStemClass(read.stemClass) ? read.stemClass : "",
 		conjugation: isConjugation(read.conjugation) ? read.conjugation : "",
 		// Already filtered to the vocabulary, and warned about, in lookupEntry.
 		governs: row.governs ?? "",
@@ -1274,6 +1316,7 @@ function toDraft(row: WiktionaryRow, warn: (message: string) => void) {
 		["gender", GENDERS],
 		["declension", declensionsFor(partOfSpeech)],
 		["terminations", TERMINATIONS],
+		["stemClass", STEM_CLASSES],
 		["conjugation", CONJUGATIONS],
 	] as const) {
 		if (read[field] !== "" && draft[field] === "") {
@@ -1336,6 +1379,12 @@ export async function suggestFromWiktionary(
 	) {
 		warnings.push(
 			"Wiktionary does not say how many terminations this adjective has, so that is for you to answer",
+		);
+	}
+
+	if (hasStemClass(partOfSpeech, draft.declension) && draft.stemClass === "") {
+		warnings.push(
+			"Wiktionary does not say whether this is an i-stem, so that is for you to answer",
 		);
 	}
 

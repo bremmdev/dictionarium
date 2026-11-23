@@ -132,11 +132,15 @@ function endings(...forms: Array<string>) {
 /**
  * A noun points at its declension on /grammar/declensions, and at a model
  * there when it fits one: the same nominative and genitive endings, and a
- * neuter only like a neuter. servus, servī is like dominus; ager, agrī fits
- * none, so it gets the declension alone, as do deus and fīlius.
+ * neuter only like a neuter, an i-stem only like an i-stem. servus, servī is
+ * like dominus; ager, agrī fits none, so it gets the declension alone, as do
+ * deus and fīlius.
  */
 function declensionFor(
-	entry: Pick<Entry, "lemma" | "declension" | "gender" | "principalParts">,
+	entry: Pick<
+		Entry,
+		"lemma" | "declension" | "gender" | "principalParts" | "stemClass"
+	>,
 ): FullTable | null {
 	const group = DECLENSION_GROUPS[Number(entry.declension) - 1];
 	if (!group) return null;
@@ -158,7 +162,9 @@ function declensionFor(
 	const ending = endings(entry.lemma, genitive);
 	const model = group.paradigms.find(
 		(p) =>
-			(p.gender === "n.") === neuter && endings(p.lemma, p.genitive) === ending,
+			(p.gender === "n.") === neuter &&
+			(p.stemClass === undefined || p.stemClass === entry.stemClass) &&
+			endings(p.lemma, p.genitive) === ending,
 	);
 	return model ? { ...base, like: model.lemma } : base;
 }
@@ -172,12 +178,13 @@ const TERMINATIONS: Record<string, string> = {
 /**
  * An adjective points at a model in the adjectives section when its filing
  * ends the same way: laetus, laeta, laetum like bonus. miser keeps its e and
- * vetus is a consonant stem, so they get the class alone.
+ * vetus is a consonant stem, so they get the class alone: the third-declension
+ * models are all i-stems.
  */
 function adjectiveFor(
 	entry: Pick<
 		Entry,
-		"lemma" | "declension" | "terminations" | "principalParts"
+		"lemma" | "declension" | "terminations" | "principalParts" | "stemClass"
 	>,
 ): FullTable | null {
 	const terminations = TERMINATIONS[entry.terminations ?? ""];
@@ -197,7 +204,10 @@ function adjectiveFor(
 	if (!hash || !models) return null;
 	const base = { to: "/grammar/declensions", hash, pattern } as const;
 	const ending = endings(...partsOf(entry.principalParts));
-	const model = models.find((m) => endings(...partsOf(m.lemma)) === ending);
+	const fits = entry.declension !== "3" || entry.stemClass === "i-stem";
+	const model = fits
+		? models.find((m) => endings(...partsOf(m.lemma)) === ending)
+		: undefined;
 	if (!model) return base;
 	const [like] = partsOf(model.lemma);
 	return like === entry.lemma
@@ -216,6 +226,7 @@ export function fullTableFor(
 		| "declension"
 		| "gender"
 		| "terminations"
+		| "stemClass"
 	>,
 ): FullTable | null {
 	if (entry.partOfSpeech === "verb") {

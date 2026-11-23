@@ -15,6 +15,7 @@ import {
 	formatCases,
 	hasGoverns,
 	hasPrincipalParts,
+	hasStemClass,
 	hasTerminations,
 	INFLECTS,
 	isDeclensionFor,
@@ -69,6 +70,8 @@ export type DraftFields = {
 	declension: string;
 	/** 3rd-declension adjectives only: '1' | '2' | '3'. See hasTerminations. */
 	terminations: string;
+	/** 3rd-declension nouns and adjectives: 'consonant' | 'i-stem'. See hasStemClass. */
+	stemClass: string;
 	conjugation: string;
 	/** Prepositions only: the cases it takes, canonical. See hasGoverns. */
 	governs: string;
@@ -213,6 +216,7 @@ const EMPTY_DRAFT: DraftFields = {
 	gender: "",
 	declension: "",
 	terminations: "",
+	stemClass: "",
 	conjugation: "",
 	governs: "",
 	notes: "",
@@ -252,6 +256,7 @@ export function entryFormState(entry: EntryWithSenses): FormState {
 			gender: entry.gender ?? "",
 			declension: entry.declension ?? "",
 			terminations: entry.terminations ?? "",
+			stemClass: entry.stemClass ?? "",
 			conjugation: entry.conjugation ?? "",
 			governs: entry.governs ?? "",
 			notes: entry.notes ?? "",
@@ -313,6 +318,7 @@ function clearInapplicable(draft: DraftFields): DraftFields {
 		terminations: hasTerminations(partOfSpeech, declension)
 			? draft.terminations
 			: "",
+		stemClass: hasStemClass(partOfSpeech, declension) ? draft.stemClass : "",
 		principalParts: hasPrincipalParts(partOfSpeech, declension)
 			? draft.principalParts
 			: "",

@@ -21,6 +21,7 @@ import {
 	GOVERNED_CASES,
 	hasGoverns,
 	hasPrincipalParts,
+	hasStemClass,
 	hasTerminations,
 	INFLECTS,
 	isPartOfSpeech,
@@ -28,6 +29,7 @@ import {
 	PARTS_OF_SPEECH,
 	parseEntryDraft,
 	readCases,
+	STEM_CLASSES,
 	senseGoverns,
 	TERMINATIONS,
 } from "#/utils/entries/rules";
@@ -736,6 +738,18 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 							value={draft.terminations}
 							error={errors.terminations}
 							onChange={setField("terminations")}
+						/>
+					)}
+
+					{hasStemClass(draft.partOfSpeech, draft.declension) && (
+						<ChipGroup
+							legend="Stem"
+							hint="An i-stem takes -ium in the genitive plural: urbs, urbium, but pater, patrum. Most 3rd-declension adjectives are i-stems; vetus is not."
+							name={`${fieldId}-stem-class`}
+							options={STEM_CLASSES}
+							value={draft.stemClass}
+							error={errors.stemClass}
+							onChange={setField("stemClass")}
 						/>
 					)}
 

@@ -12,14 +12,17 @@ import {
 	GOVERNED_CASES,
 	hasGoverns,
 	hasPrincipalParts,
+	hasStemClass,
 	hasTerminations,
 	INFLECTS,
 	isConjugation,
 	isDeclension,
 	isDeclensionFor,
 	isPartOfSpeech,
+	isStemClass,
 	isTerminations,
 	readCases,
+	STEM_CLASSES,
 	senseGoverns,
 	TERMINATIONS,
 	theCases,
@@ -231,6 +234,23 @@ export function checkInflection(rows: ReadonlyArray<Entry>) {
 		} else if (r.terminations !== null) {
 			push(
 				`terminations is "${r.terminations}" — only a 3rd-declension adjective is asked, so it must be NULL`,
+			);
+		}
+
+		// The other follow-up to `3`, asked of nouns as well.
+		if (hasStemClass(r.partOfSpeech, r.declension ?? "")) {
+			if (r.stemClass === null) {
+				push(
+					`stem_class is NULL — a 3rd-declension word is a consonant stem or an i-stem (${STEM_CLASSES.join(" | ")})`,
+				);
+			} else if (!isStemClass(r.stemClass)) {
+				push(
+					`stem_class is "${r.stemClass}", not one of ${STEM_CLASSES.join(" | ")}`,
+				);
+			}
+		} else if (r.stemClass !== null) {
+			push(
+				`stem_class is "${r.stemClass}" — only a 3rd-declension noun or adjective is asked, so it must be NULL`,
 			);
 		}
 

@@ -3,7 +3,7 @@ import {
 	type Case,
 	type Form,
 } from "#/components/declensions/Declensions.utils";
-import type { Gender } from "#/utils/entries/rules";
+import { type Gender, isStemClass } from "#/utils/entries/rules";
 import { type Declension, sheet } from "./nouns";
 import {
 	type Cell,
@@ -121,12 +121,14 @@ export function firstSecond(
 /**
  * The 3rd declension, stem by terminations: ācer, ācris, ācre from the
  * feminine; fortis, forte from the lemma; vetus, veteris from the genitive.
- * i-stem and consonant-stem forms both, where they differ.
+ * Where i-stems differ, the stem class picks; unfiled, both forms.
  */
 export function third(
 	line: string | null,
 	terminations: string | null,
+	stemClass: string | null = null,
 ): Inflection | null {
+	const filed = stemClass !== null && isStemClass(stemClass) ? stemClass : null;
 	const parts = partsOf(line);
 	const source = { "1": parts[1], "2": parts[0], "3": parts[1] }[
 		terminations ?? ""
@@ -154,7 +156,11 @@ export function third(
 			g: Gender,
 			i: string,
 			consonant: string,
-		) => add(number, c, g, on([i, consonant]), true);
+		) => {
+			if (filed === "i-stem") add(number, c, g, on([i]));
+			else if (filed === "consonant") add(number, c, g, on([consonant]));
+			else add(number, c, g, on([i, consonant]), true);
+		};
 
 		for (const g of GENDERS) {
 			for (const c of CASES) {
@@ -169,7 +175,10 @@ export function third(
 				else if (c === "dative" || c === "ablative")
 					add("plural", c, g, on(sheet("plural", "3", c)));
 				else if (g === "n") both("plural", c, g, "ia", "a");
-				else if (c === "accusative") both("plural", c, g, "ēs", "īs");
+				else if (c === "accusative" && filed !== null) {
+					add("plural", c, g, on(["ēs"]));
+					if (filed === "i-stem") add("plural", c, g, on(["īs"]), true);
+				} else if (c === "accusative") both("plural", c, g, "ēs", "īs");
 				else add("plural", c, g, on(sheet("plural", "3", "nominative")));
 			}
 		}
@@ -182,6 +191,6 @@ export function third(
 export function adjectiveInflection(filing: Filing): Inflection | null {
 	if (filing.declension === "1-2") return firstSecond(filing.principalParts);
 	if (filing.declension === "3")
-		return third(filing.principalParts, filing.terminations);
+		return third(filing.principalParts, filing.terminations, filing.stemClass);
 	return null;
 }

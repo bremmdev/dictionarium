@@ -32,6 +32,7 @@ function currentIndex() {
 			gender: entries.gender,
 			declension: entries.declension,
 			terminations: entries.terminations,
+			stemClass: entries.stemClass,
 			conjugation: entries.conjugation,
 		})
 		.from(entries)

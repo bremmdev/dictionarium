@@ -30,6 +30,8 @@ export const entries = sqliteTable(
 		// 3rd-declension adjectives: '1' | '2' | '3' — how many nominative
 		// terminations it files with. NULL wherever the question does not apply.
 		terminations: text("terminations"),
+		// 3rd-declension nouns and adjectives: 'consonant' | 'i-stem'. Same NULL rule.
+		stemClass: text("stem_class"),
 		conjugation: text("conjugation"), // verbs: '1'..'4' | 'irregular'
 		// prepositions: the case or cases it takes, e.g. "accusative,ablative".
 		// NULL for every other part of speech — see hasGoverns.

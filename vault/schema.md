@@ -68,6 +68,7 @@ Showing them is in [search.md](./search.md#showing-the-homograph-number); filing
 | `gender`          | no       | nouns: `m` / `f` / `n`                                                                                                |
 | `declension`      | no       | text — `1`…`5`, `1-2`, `indeclinable`, `irregular`; NULL only where the question does not apply                       |
 | `terminations`    | no       | 3rd-declension adjectives: `1` / `2` / `3`; same NULL rule                                                            |
+| `stem_class`      | no       | 3rd-declension nouns and adjectives: `consonant` / `i-stem`; same NULL rule — see [forms.md](./forms.md#i-stems)      |
 | `conjugation`     | no       | text — `1`…`4`, `3io`, `irregular`; same NULL rule                                                                    |
 | `governs`         | no       | prepositions: the case(s) it takes — `accusative`, `accusative,ablative`; see [below](#governs-the-case-a-word-takes) |
 | `notes`           | no       | free text                                                                                                             |
@@ -151,9 +152,11 @@ This makes `terminations` the only column whose applicability turns on **another
 
 It also means the admin form has a field that appears when a _different_ field changes, and two ways to strand an answer instead of one: moving an adjective off `3` leaves a termination count with no question, and moving it onto `indeclinable` leaves a filing with no forms. `clearInapplicable` empties both in the same pass that handles a changed part of speech.
 
-#### What is deliberately not a column
+#### `stem_class`, the other follow-up to `3`
 
-**i-stem vs consonant-stem.** Most 3rd-declension adjectives are i-stems; _vetus_, _pauper_, _dīves_, _prīnceps_ and _particeps_ are not, and decline with ablative singular _-e_ and genitive plural _-um_. Wiktionary says so — its line for _vetus_ reads "third-declension one-termination adjective (non-i-stem)". It stays in `notes` until something generates full paradigms, because it is a handful of exceptions rather than a class to filter on. The line: **terminations is a class, consonant-stem is an exception.**
+Most 3rd-declension adjectives are i-stems; _vetus_, _pauper_, _dīves_, _prīnceps_ and _particeps_ are not, and decline with ablative singular _-e_ and genitive plural _-um_. Among nouns the split is closer to even, and the rules of thumb fail on _pater_ and _canis_. This used to stay in `notes`, "until something generates full paradigms". The forms search is that thing ([forms.md](./forms.md#i-stems)): without the answer it described _patrium_ as a form of _pater_. So it is a column, asked by `hasStemClass(partOfSpeech, declension)` of 3rd-declension nouns and adjectives, NULL everywhere else.
+
+#### What is deliberately not a column
 
 **Numerals.** _trēs, tria_ is 3rd-declension and files with two forms, but `hasTerminations` asks adjectives only. If a numeral ever needs the answer it is one condition, not a new column.
 
@@ -216,7 +219,7 @@ Five rules fall out of that map — three from the map itself, two more from the
 
 Then the same shape again, one question further down, for the two columns that hold a word's filing rather than its inflection class:
 
-4. a 3rd-declension adjective must say how many terminations it has, and nothing else may carry the answer;
+4. a 3rd-declension adjective must say how many terminations it has, a 3rd-declension noun or adjective whether it is an i-stem, and nothing else may carry either answer;
 5. a word whose filing is more than its lemma must hold it — a verb's four parts, a noun's genitive, an adjective's terminations — and a word whose lemma is the whole filing must leave it NULL.
 
 The third rule is the one that earns the script. `adjective` and `pronoun` sat in the map for a long time with nothing filed under them; the day the first adjective arrived, either its declension was there or the check named the word. What cannot happen is a new word class slipping past on the reading "both columns are NULL, so presumably it does not inflect" — the script holds no opinion it was not given, and says so rather than guessing.
@@ -366,7 +369,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 | `check-lemmas.ts`     | `npm run check:lemmas`     | every `lemma_plain` still equals `normalizeLemma(lemma)` — [search.md](./search.md)                                              |
 | `check-homonyms.ts`   | `npm run check:homonyms`   | the homonyms of a lemma run 1..n — [above](#unique-on-lemma-homonym)                                                             |
 | `check-senses.ts`     | `npm run check:senses`     | every entry has senses, and their ranks run 1..n — [above](#senses)                                                              |
-| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
+| `check-inflection.ts` | `npm run check:inflection` | NULL in `declension` / `conjugation` / `terminations` / `stem_class` / `principal_parts` means one thing — [above](#the-invariant-this-creates) |
 | `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
 | `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/grammar/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
 | `check-pronouns.ts`   | `npm run check:pronouns`   | every patterned form on `/grammar/pronouns` is its stem plus the endings sheet — [pronouns.md](./pronouns.md)                    |

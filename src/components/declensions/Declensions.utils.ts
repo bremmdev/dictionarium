@@ -8,6 +8,8 @@
 // fīliā (abl.), manus (nom. sg.) from manūs (gen. sg., nom./acc. pl.). Drop the
 // macron and the paradigm stops teaching the distinction it exists to teach.
 
+import type { StemClass } from "#/utils/entries/rules";
+
 /** The six cases, in the order every Latin grammar in English prints them. */
 export const CASES = [
 	"nominative",
@@ -35,6 +37,8 @@ export type Paradigm = {
 	lemma: string;
 	genitive: string;
 	gender: "m." | "f." | "n.";
+	/** 3rd declension only, as entries file it. */
+	stemClass?: StemClass;
 	english: string;
 	singular: Record<Case, Form>;
 	plural: Record<Case, Form>;
@@ -271,6 +275,7 @@ const THIRD: Paradigm[] = [
 		lemma: "prīnceps",
 		genitive: "prīncipis",
 		gender: "m.",
+		stemClass: "consonant",
 		english: "chief, leader",
 		singular: {
 			nominative: { form: "prīnceps" },
@@ -293,6 +298,7 @@ const THIRD: Paradigm[] = [
 		lemma: "urbs",
 		genitive: "urbis",
 		gender: "f.",
+		stemClass: "i-stem",
 		english: "city",
 		singular: {
 			nominative: { form: "urbs" },
@@ -315,6 +321,7 @@ const THIRD: Paradigm[] = [
 		lemma: "nōmen",
 		genitive: "nōminis",
 		gender: "n.",
+		stemClass: "consonant",
 		english: "name",
 		singular: {
 			nominative: { form: "nōmen" },

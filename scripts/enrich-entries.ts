@@ -40,6 +40,7 @@ const COLUMN_ORDER: Array<
     "gender",
     "declension",
     "terminations",
+    "stemClass",
     "conjugation",
     "governs",
     "notes",

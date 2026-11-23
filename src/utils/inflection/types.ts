@@ -18,6 +18,7 @@ export type Filing = Pick<
 	| "gender"
 	| "declension"
 	| "terminations"
+	| "stemClass"
 	| "conjugation"
 >;
 
@@ -64,7 +65,7 @@ export type Analysis =
 			voice: Voice;
 	  } & Deponent);
 
-/** One form in one slot. `variant`: a genuine alternative, or one of the i-stem pair. */
+/** One form in one slot. `variant`: a genuine alternative, or one of the i-stem pair while the stem class is unfiled. */
 export type Cell = { form: string; analysis: Analysis; variant?: true };
 
 /**

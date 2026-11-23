@@ -41,6 +41,13 @@ export const CONJUGATIONS = ["1", "2", "3", "4", "3io", "irregular"] as const;
  */
 export const TERMINATIONS = ["1", "2", "3"] as const;
 
+/**
+ * Whether a 3rd-declension word is an i-stem: urbium, not patrum. Not derivable
+ * from the filing either; the rules of thumb fail on pater, canis and iuvenis.
+ * A neuter i-stem (mare, animal) also takes -ī and -ia; vault/forms.md.
+ */
+export const STEM_CLASSES = ["consonant", "i-stem"] as const;
+
 export const GENDERS = ["m", "f", "n"] as const;
 
 /**
@@ -64,6 +71,7 @@ export type Declension = (typeof DECLENSIONS)[number];
 export type Conjugation = (typeof CONJUGATIONS)[number];
 export type Gender = (typeof GENDERS)[number];
 export type Terminations = (typeof TERMINATIONS)[number];
+export type StemClass = (typeof STEM_CLASSES)[number];
 
 /** The parts of speech INFLECTS asks a declension of. */
 export type DeclinedPartOfSpeech = {
@@ -134,6 +142,10 @@ export function isTerminations(value: string): value is Terminations {
 	return (TERMINATIONS as ReadonlyArray<string>).includes(value);
 }
 
+export function isStemClass(value: string): value is StemClass {
+	return (STEM_CLASSES as ReadonlyArray<string>).includes(value);
+}
+
 /**
  * Nouns file their genitive there, verbs their principal parts, adjectives their
  * terminations, pronouns their other forms (hic, haec, hoc; ego, meī); see
@@ -166,6 +178,14 @@ export function hasPrincipalParts(
  */
 export function hasTerminations(partOfSpeech: string, declension: string) {
 	return partOfSpeech === "adjective" && declension === "3";
+}
+
+/** Only a 3rd-declension noun or adjective is asked whether it is an i-stem. */
+export function hasStemClass(partOfSpeech: string, declension: string) {
+	return (
+		(partOfSpeech === "noun" || partOfSpeech === "adjective") &&
+		declension === "3"
+	);
 }
 
 /**
@@ -320,6 +340,7 @@ export type EntryDraft = {
 	gender: Gender | null;
 	declension: Declension | null;
 	terminations: Terminations | null;
+	stemClass: StemClass | null;
 	conjugation: Conjugation | null;
 	/** Prepositions only: the cases it takes, canonical — see hasGoverns. */
 	governs: string | null;
@@ -522,6 +543,26 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 				: `Only an adjective is filed by its terminations, and this is ${aWord(partOfSpeech)}.`;
 	}
 
+	// --- stem class ----------------------------------------------------------
+	// The other follow-up to `3`, for nouns as well as adjectives.
+	const stemClassInput = text(raw.stemClass);
+	let stemClass: StemClass | null = null;
+
+	if (hasStemClass(partOfSpeech, declensionInput)) {
+		if (stemClassInput === "") {
+			fields.stemClass = `A 3rd-declension word is a consonant stem or an i-stem (${STEM_CLASSES.join(" | ")}) — pater, patrum; urbs, urbium.`;
+		} else if (!isStemClass(stemClassInput)) {
+			fields.stemClass = `“${stemClassInput}” is not one of ${STEM_CLASSES.join(" | ")}.`;
+		} else {
+			stemClass = stemClassInput;
+		}
+	} else if (stemClassInput !== "") {
+		fields.stemClass =
+			partOfSpeech === "noun" || partOfSpeech === "adjective"
+				? `Only the 3rd declension has i-stems, and this ${partOfSpeech} is ${declensionInput === "" ? "not yet given a declension" : `“${declensionInput}”`}.`
+				: `Only a noun or an adjective is an i-stem or a consonant stem, and this is ${aWord(partOfSpeech)}.`;
+	}
+
 	// --- gender ------------------------------------------------------------
 	// A noun's third filing fact, and nothing else has one: an adjective
 	// inflects for every gender rather than having one of its own.
@@ -706,6 +747,7 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 		gender,
 		declension,
 		terminations,
+		stemClass,
 		conjugation,
 		governs,
 		notes: text(raw.notes) || null,

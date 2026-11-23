@@ -1,4 +1,5 @@
 import type { Case } from "#/components/declensions/Declensions.utils";
+import { isStemClass, type StemClass } from "#/utils/entries/rules";
 import {
 	type DeclensionEndingRow,
 	PLURAL_ENDINGS,
@@ -153,6 +154,10 @@ export function nounInflection(filing: Filing): Inflection | null {
 				ending,
 				pluralOnly,
 				neuter: filing.gender === "n",
+				stemClass:
+					filing.stemClass !== null && isStemClass(filing.stemClass)
+						? filing.stemClass
+						: null,
 			}),
 	};
 }
@@ -166,6 +171,8 @@ type Parsed = {
 	ending: string;
 	pluralOnly: boolean;
 	neuter: boolean;
+	/** The 3rd declension's; null while unfiled. */
+	stemClass: StemClass | null;
 };
 
 function nounCells(p: Parsed): Array<Cell> {
@@ -187,13 +194,22 @@ function nounCells(p: Parsed): Array<Cell> {
 	};
 	const on = (endings: Array<string>) => endings.map((e) => stem + e);
 	const ends = (number: GrammaticalNumber, c: Case) => sheet(number, d, c);
-	// Where i-stems differ, both forms are generated and both marked (vault/forms.md).
-	const iStem = (
+	// A 3rd-declension cell where i-stems can differ. Unfiled, both forms are
+	// generated and both marked (vault/forms.md).
+	const third = (
 		number: GrammaticalNumber,
 		c: Case,
-		consonant: string,
-		i: string,
-	) => add(number, c, on([consonant, i]), true);
+		[consonant, i]: [string, string],
+		iStem: Array<string>,
+		iVariant: Array<string> = [],
+	) => {
+		if (p.stemClass === null) add(number, c, on([consonant, i]), true);
+		else if (p.stemClass === "consonant") add(number, c, on([consonant]));
+		else {
+			add(number, c, on(iStem));
+			add(number, c, on(iVariant), true);
+		}
+	};
 
 	if (!p.pluralOnly) {
 		add("singular", "nominative", [lemma]);
@@ -209,10 +225,12 @@ function nounCells(p: Parsed): Array<Cell> {
 		else add("singular", "dative", on(ends("singular", "dative")));
 
 		if (neuter) add("singular", "accusative", [lemma]);
-		else if (d === "3") iStem("singular", "accusative", "em", "im");
+		else if (d === "3") third("singular", "accusative", ["em", "im"], ["em"]);
 		else add("singular", "accusative", on(ends("singular", "accusative")));
 
-		if (d === "3") iStem("singular", "ablative", "e", "ī");
+		// mare, marī; urbs, urbe.
+		if (d === "3")
+			third("singular", "ablative", ["e", "ī"], [neuter ? "ī" : "e"]);
 		else add("singular", "ablative", on(ends("singular", "ablative")));
 
 		if (d === "2" && !neuter && lemma.endsWith("ius")) {
@@ -228,14 +246,14 @@ function nounCells(p: Parsed): Array<Cell> {
 	const nominative = (c: Case) => {
 		if (p.pluralOnly) add("plural", c, [lemma]);
 		else if (!neuter) add("plural", c, on(ends("plural", "nominative")));
-		else if (d === "3") iStem("plural", c, "a", "ia");
+		else if (d === "3") third("plural", c, ["a", "ia"], ["ia"]);
 		else add("plural", c, on([d === "4" ? "ua" : "a"]));
 	};
 
 	nominative("nominative");
 
 	if (p.pluralOnly) add("plural", "genitive", [p.genitive]);
-	else if (d === "3") iStem("plural", "genitive", "um", "ium");
+	else if (d === "3") third("plural", "genitive", ["um", "ium"], ["ium"]);
 	else add("plural", "genitive", on(ends("plural", "genitive")));
 	if (d === "2" && (GENITIVE_UM.has(lemma) || lemma.endsWith("vir"))) {
 		add("plural", "genitive", on(["um"]), true);
@@ -248,7 +266,8 @@ function nounCells(p: Parsed): Array<Cell> {
 	}
 
 	if (neuter) nominative("accusative");
-	else if (d === "3") iStem("plural", "accusative", "ēs", "īs");
+	else if (d === "3")
+		third("plural", "accusative", ["ēs", "īs"], ["ēs"], ["īs"]);
 	else add("plural", "accusative", on(ends("plural", "accusative")));
 
 	nominative("vocative");

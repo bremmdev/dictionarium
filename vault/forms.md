@@ -8,12 +8,13 @@ Searching _bonae_ should find _bonus_; _salūtāvit_ and _salūtāverō_ should 
 - **2026-11-17, phase 1 built.** `src/utils/inflection/`, tier 2 and the card line, `check:forms` and `report:forms`. Against LASLA the lookup finds 99.6% of in-scope tokens of the locally filed words; the misses are _ferō_'s present and imperfect subjunctive (not in its table) and archaic spellings (_seruom_, _aquai_, _huiusce_). Also in: syncopated perfects (_amāsse_, _audiit_), and the perfect system of _possum_, _eō_ and _ferō_ where their tables stop.
 - **2026-11-17, phase 2 started.** Done: the passive (present system; the perfect passive is two words, so its participle is what is found), imperatives, the present/perfect/future infinitives that are one word (*fore*), participles, gerund, gerundive and supine, all from new sheets in `endings.ts` that /grammar/conjugations prints on new tabs (see [conjugations.md](./conjugations.md)); deponents and semi-deponents read off the filing (the card prints no voice for them); *faciō* without a passive of its own (`SUPPLETIVE_PASSIVE`); *dīc*, *dūc*, *fac* (`SHORT_IMPERATIVES`); *ferō* in full, *volō*, *nōlō*, *mālō*, and Cētera for the irregular tables; irregular tables matched by lemma *and* infinitive, so *volō, volāre* keeps the rules; compounds of irregulars by prefix per stem (`compoundInflection`); enclitics; form suggestions. A rarer verb reading is dropped from the card when the spelling has a main one (*amāre* is not also "2nd sg. passive"). LASLA: 99.7% of 289,789 in-scope tokens (phase 1: 99.6% of 266,460); the misses are archaic spellings and *faxō*. Still to do: the missing pronouns on /grammar/pronouns, *fīō*, *edō*, and the overrides for *dō*, *ōdī*, *meminī*, *coepī*, *inquam*, *aiō*.
 - **2026-11-17, reviewed.** Added: unprefixed forms as fixed forms, the _-ūrus_ 4th part, _-ēre_ and gen. pl. _-um_, æ/œ in the key, the LASLA check moved to phase 1.
+- **2026-11-23, the i-stem column.** `entries.stem_class` (`consonant` | `i-stem`), asked of 3rd-declension nouns and adjectives, prefilled by the Wiktionary fill, required by `check:inflection`. The generator follows it; only an unfiled row still gets both variants. See [i-stems](#i-stems).
 
 ## Decisions
 
 - **Generate from the filing; do not strip endings off the query.** The principal parts give every stem exactly: _cucurr-_, _tul-_, _lāt-_, _rēg-_ from _rēgis_. Stripping is ambiguous (_regis_: _rēx_ or _regō_?) and needs a stem index anyway. Generating also gives the macronned form and the analysis to print, and it is the engine full paradigms on entry pages will need.
 - **One request, every kind of match, merged.** A query can be a lemma and a form at once (_amor_: the noun, and "I am loved" from _amō_), or a form of several words (_est_: _sum_ and _edō_). There is no mode to switch into. Each result says why it is there.
-- **i-stems: both variants for now.** The filing does not say whether a 3rd-declension word is an i-stem, and the rules of thumb fail on _pater_, _māter_, _frāter_, _canis_ and _iuvenis_. So the generator emits both wherever the two differ. The column comes later (see [Later](#later), and `TODO.md`).
+- **i-stems: a column, not a rule of thumb.** The genitive does not say whether a 3rd-declension word is an i-stem, and the rules of thumb fail on _pater_, _māter_, _frāter_, _canis_ and _iuvenis_. So the editor says, in `stem_class` (see [i-stems](#i-stems)).
 - **The nine _-īus_ adjectives are read from `PRONOMINAL_ADJECTIVES`** and `PRONOMINAL_COMPOUNDS` in `src/components/pronouns/Pronouns.utils.ts`, by lemma. A closed class, so no new `declension` value, which [schema.md](./schema.md) had parked as an option.
 - **The passive of intransitive verbs is generated.** Nobody meets _venior_ in a text, so it costs search nothing. Full tables on entry pages will need a transitivity answer first.
 - **The typo budget stays `maxEditsFor`** for forms too: no suggestion under 4 letters, 1 edit for 4–7, 2 from 8. _salataverissent_ is not a form, and the nearest one, _salūtāvissent_, is 3 edits away, so it gets no suggestion. Accepted.
@@ -55,14 +56,14 @@ Filed: nominative, genitive, gender, declension.
 - Stem: the genitive minus its ending. Nominative and vocative singular come from the lemma.
 - Rules: neuter nom. = acc. = voc.; 2nd _-ius_ vocative _fīlī_, with genitive _-ī_ as a variant; _-er_ nouns through the genitive (_puer-ī_, _libr-ī_); 1st dat./abl. pl. _-ābus_ as a variant (_deābus_, _fīliābus_); 2nd gen. pl. _-um_ as a variant (_virum_, _līberum_, _socium_, _nummum_, _fabrum_); 4th neuter _-ū_; _-ubus_ (_lacubus_); 5th _-ēī_ after a vowel (_diēī_), _-eī_ otherwise (_reī_).
 - Plural only when the genitive is filed plural (_-ārum_, _-ōrum_, _-um_, _-ium_, _-uum_, _-ērum_): _castra, castrōrum_.
-- 3rd declension, both variants where i-stems differ: gen. pl. _-um_ / _-ium_, abl. sg. _-e_ / _-ī_, acc. pl. _-ēs_ / _-īs_, neuter pl. _-a_ / _-ia_, acc. sg. _-em_ / _-im_.
+- 3rd declension, by `stem_class`: a consonant stem takes gen. pl. _-um_, abl. sg. _-e_, acc. pl. _-ēs_, neuter pl. _-a_ (_patrum_, _nōmina_); an i-stem gen. pl. _-ium_ and acc. pl. _-ēs_ with _-īs_ as a variant (_urbium_, _urbīs_), and a neuter i-stem abl. sg. _-ī_ and pl. _-ia_ as well (_marī_, _maria_). Unfiled, both forms of each pair, and acc. sg. _-em_ / _-im_.
 - Overrides by lemma: _deus_, _domus_, _vīs_, _bōs_, _Iuppiter_.
 - Indeclinable: the lemma only.
 
 ### Adjectives
 
 - `1-2`: stem = feminine minus _-a_ (_bon-_, _pulchr-_, _līber-_).
-- `3`, stem by terminations: three, the feminine minus _-is_ (_ācr-_); two, the lemma minus _-is_ (_fort-_); one, the genitive minus _-is_ (_veter-_). Both i-stem and consonant-stem variants, as for nouns.
+- `3`, stem by terminations: three, the feminine minus _-is_ (_ācr-_); two, the lemma minus _-is_ (_fort-_); one, the genitive minus _-is_ (_veter-_). An i-stem takes abl. sg. _-ī_, gen. pl. _-ium_, neuter pl. _-ia_ and acc. pl. _-ēs_ / _-īs_ (_fortī_, _fortium_, _fortia_); a consonant stem _-e_, _-um_, _-a_, _-ēs_ (_vetere_, _veterum_, _vetera_). Unfiled, both. Present participles are not filed, so they keep both.
 - The nine with _-īus_ / _-ī_, and _uterque_: from the lists above.
 - Comparison (phase 3): _-ior_ / _-ius_; _-issimus_; _-errimus_ from the lemma (_pulcherrimus_); _-illimus_ (_facilis_ and five others); an irregular table (_melior_ / _optimus_, _peior_ / _pessimus_, _maior_ / _maximus_, _minor_ / _minimus_, _plūs_ / _plūrimus_).
 
@@ -119,7 +120,7 @@ Lemma suggestions cannot reach a form. For form suggestions, the candidates are 
 
 ## Checks
 
-- **The generator does not guess.** A cell it cannot vouch for (no supine, no table for an irregular) is not generated. The i-stem variants are the one stated exception, until the column.
+- **The generator does not guess.** A cell it cannot vouch for (no supine, no table for an irregular) is not generated. The i-stem variants of a row with no `stem_class` are the one stated exception, and `check:inflection` does not let such a row stand.
 - **The grammar pages are the fixtures.** _salūtō, moneō, dūcō, audiō, capiō_, the declension paradigms, _bonus_, _ācer_, and the pronoun and irregular tables: the generator has to produce each one cell for cell. `check:conjugations` checks the pages against the endings; this checks the generator against the pages.
 - **LASLA measures coverage.** For every corpus token whose lemma is filed here, the lookup has to return that lemma, and the misses list the endings still missing. A maintenance script beside `scripts/build-frequency.ts`, run against the local clone, with v → u and j → i as LASLA writes. It is what says the lookup works, so it lands in phase 1. Tokens LASLA files under another lemma for a form not built yet (comparatives under the positive, if that is how it files them) are filtered by LASLA's tags, not counted as misses.
 
@@ -129,9 +130,17 @@ Lemma suggestions cannot reach a form. For form suggestions, the candidates are 
 2. The rest of the verb (passive, imperatives, participles, gerund, gerundive, supine), deponents, compounds of irregulars, the missing irregulars and pronouns, enclitics, v/u, i/j and æ/œ, form suggestions.
 3. Comparison, adverb comparison, the line on the entry page, the generated paradigm on the admin desk.
 
+## i-stems
+
+`entries.stem_class`, for the reason `terminations` is a column: the filing does not say. Two values, `consonant` and `i-stem`, asked by `hasStemClass` of 3rd-declension nouns and adjectives. The gender does the rest: a neuter i-stem (_mare_, _animal_) also takes _-ī_ and _-ia_, a masculine or feminine one (_urbs_, _cīvis_) only _-ium_ and _-īs_. That is the split Wiktionary's tables make ("i-stem", "neuter, pure i-stem"), so no third value.
+
+- **The fill.** Wiktionary marks the exception. A noun's declension table says "(i-stem)" when it is one and nothing when it is not (_pater_: "Third-declension noun."). An adjective's headword says "(non-i-stem)" when it is not (_vetus_, _memor_). Anything else in the table's brackets is left for the editor, with a warning.
+- **Unfiled.** NULL generates both variants, as before the column. That covers the rows between the migration and the backfill; `check:inflection` and /admin/health name each one.
+- **The grammar pages.** The 3rd-declension noun paradigms say their class (`Paradigm.stemClass`). An entry is "like _urbs_" only when it is an i-stem too, and the 3rd-declension adjective models are all i-stems, so _vetus_ gets the class alone.
+
 ## Later
 
-- **An i-stem column** for 3rd-declension nouns and adjectives, for the reason `terminations` is a column: the filing does not say. Prefilled by the Wiktionary fill, required by `check:inflection`. Until it exists both variants are generated, so a non-word like _patrium_ is described as "gen. pl. of _pater_", and full tables on entry pages wait for it. [schema.md](./schema.md) keeps the adjective exceptions in `notes` "until something generates full paradigms"; this is that point.
+- **The rarer i-stem cells.** Acc. sg. _-im_ (_turris_, _sitis_, _puppis_) and the abl. sg. _-ī_ beside _-e_ (_ignis_, _cīvis_, _nāvis_) are not generated. Neither is filed yet, and _ignī_ is still found, as the dative. A closed list by lemma, like `ABUS`, when one is.
 - **Transitivity**, before a full table shows a passive.
 
 ## When it ships
