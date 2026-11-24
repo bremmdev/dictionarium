@@ -24,7 +24,7 @@ Searching _bonae_ should find _bonus_; _salūtāvit_ and _salūtāverō_ should 
 
 `src/utils/inflection/`: pure functions, shared by search, the grammar pages and the checks.
 
-- `stemsOf(entry)`: the stems the filing gives, per part of speech.
+- `inflectionOf(entry).stems`: the stems the filing gives, per part of speech.
 - `paradigm(entry)`: every form, with its macrons and its cell (case, number, gender; or person, number, tense, mood, voice; or which non-finite form it is). A genuine alternative is an extra cell marked as a variant.
 - **One ending inventory.** `ENDINGS` and `PERFECT_ENDINGS` (`Conjugations.utils.ts`) and `SINGULAR_ENDINGS` / `PLURAL_ENDINGS` (`Declensions.utils.ts`) move here, and the grammar pages import them back. A new set of endings lands on its grammar page and in search together.
 - **Fixed forms** for words that are not stem + ending: the tables in `IRREGULAR_VERBS`, `Pronouns.utils.ts` and `DECLENSIONS` in `NumberTheory.utils.ts`, keyed the way `fullTableFor` (`src/utils/entries/tables.ts`) is: by lemma, and for a verb by its infinitive too. By lemma, not by conjugation: _ferō_ is filed as 3rd conjugation, and the 3rd-conjugation rules would invent _ferit_.
