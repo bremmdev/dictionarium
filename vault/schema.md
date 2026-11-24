@@ -351,7 +351,7 @@ Inflected forms are not rows. When they arrive, they hang off a lemma — they d
 The same pattern governs meanings — `senses` did exactly this, and is [done](#senses). So are the two guard scripts, now in [the check chain](#the-check-chain). Next up, roughly in order:
 
 1. **Admin panel + auth** (leaning toward a single admin password/session — no user accounts), replacing Drizzle Studio as the editing tool.
-2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). _When_ migrations run was the open question here; the answer is by hand, before the code ([migrations.md](./migrations.md)). The guards add a second one: five of the eight read the database, so anything running `npm run check` has to migrate before it can open the gate.
+2. **Railway deploy**, SQLite file on a mounted volume (`DB_FILE_NAME` already supports this). _When_ migrations run was the open question here; the answer is by hand, before the code ([migrations.md](./migrations.md)). The guards add a second one: six of the nine read the database, so anything running `npm run check` has to migrate before it can open the gate.
 
 Parked: synonym cross-references between entries, spaced-repetition quiz mode as a separate private layer. Prepositions and the case they govern are [done](#governs-the-case-a-word-takes).
 
@@ -361,7 +361,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 
 ### The check chain
 
-`npm run check` is the gate. It runs the eight guards, then Biome:
+`npm run check` is the gate. It runs the nine guards, then Biome:
 
 | Guard                 | Alone                      | What it holds                                                                                                                    |
 | --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -373,6 +373,7 @@ The database is a SQLite file at `src/db/dictionarium.db` (override with `DB_FIL
 | `check-governs.ts`    | `npm run check:governs`    | a preposition says which case it takes, and its senses agree with it — [above](#governs-the-case-a-word-takes)                   |
 | `check-conjugations.ts` | `npm run check:conjugations` | every regular form on `/grammar/conjugations` is its stem plus the endings sheet — [conjugations.md](./conjugations.md#macron-verification) |
 | `check-pronouns.ts`   | `npm run check:pronouns`   | every patterned form on `/grammar/pronouns` is its stem plus the endings sheet — [pronouns.md](./pronouns.md)                    |
+| `check-forms.ts`      | `npm run check:forms`      | the forms generator reproduces the grammar pages cell for cell, and every filed entry's forms start with a key it is found by — [forms.md](./forms.md#checks) |
 
 Each names the rows it objects to, and exits non-zero:
 

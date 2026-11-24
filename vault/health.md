@@ -16,7 +16,7 @@ The five checks from [the check chain](./schema.md#the-check-chain), as pure fun
 | _Flexiō_           | `checkInflection` | NULL in the inflection columns means "not asked", nothing else |
 | _Cāsūs_            | `checkGoverns`    | a preposition says which case it takes, and its senses agree   |
 
-`scripts/check-*.ts` are thin wrappers that print what these return, so `npm run check` and the page can't drift apart. `check-macrons`, `check-conjugations` and `check-pronouns` are not on the page: they check source code, which is the same everywhere.
+`scripts/check-*.ts` are thin wrappers that print what these return, so `npm run check` and the page can't drift apart. `check-macrons`, `check-conjugations` and `check-pronouns` are not on the page: they check source code, which is the same everywhere. Nor is `check-forms`, which checks the forms generator, against the grammar pages and every filed entry.
 
 Expect this part to be empty. `parseEntryDraft` refuses a save that breaks these rules, so an error means a row written around the form (Drizzle Studio, the sqlite3 CLI, an old migration) or a rule tightened after the row was filed. Each row links to the word and to its edit form.
 
