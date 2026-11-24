@@ -96,7 +96,7 @@ case id when … end,  -- formIds in LASLA order; only when there are any
 length(lemma_plain), lemma_plain
 ```
 
-**Capped at `MAX_RESULTS`, and says so.** When the list comes back full, a second `count()` over the same `WHERE` gives `matchCount`, and `Results.tsx` shows and announces "10 of 23 results. Keep typing to narrow the list." A list that comes back short already is the count, so the second scan only runs when the cut actually happened. `recordSearch` stores `matchCount` too, so `search_events.result_count` is the real number of matches rather than the capped one.
+**Capped at `MAX_RESULTS`, and says so.** When the list comes back full, a second `count()` over the same `WHERE` gives `matchCount`, and `Results.tsx` shows and announces "10 of 23 results for am. Keep typing to narrow the list." A list that comes back short already is the count, so the second scan only runs when the cut actually happened. `recordSearch` stores `matchCount` too, so `search_events.result_count` is the real number of matches rather than the capped one.
 
 ### Why the full table scan is fine
 

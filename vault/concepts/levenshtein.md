@@ -360,11 +360,11 @@ How it works:
 6. **`rowMin`** tracks the smallest cell in this row, for the early exit from [section 6](#6-how-fast-is-it).
 7. **The return** is capped at `max + 1`, so callers only ever see "a distance within the limit" or "too far".
 
-Choosing what to suggest is `suggestLemmas(key, candidates)`:
+Choosing what to suggest is `scoreLemmas(key, candidates)`, then `nearestSuggestions(key, scored)`:
 
 1. `maxEditsFor(key)` gives the limit from [section 7](#7-choosing-a-threshold). 0 means don't suggest anything.
 2. Every candidate gets a distance. 0 is skipped (that word would have been found by the search). Anything over the limit is skipped.
-3. A smaller distance than any seen so far **starts the list over**. That's how "only the closest distance counts" is implemented in one pass.
+3. `nearestSuggestions` keeps only the **smallest distance found**, with form suggestions in the same list. That's how "only the closest distance counts" is implemented.
 4. The list is sorted by first letter, then alphabetically, homographs are collapsed into one lemma, and the first 5 are returned.
 
 The distances are always measured between **keys**, never display forms. `searchEntries` only calls this when a search found nothing: `findSuggestions` in `src/server/search.ts` reads every distinct `lemma` with its `lemma_plain` and passes them in.
@@ -393,8 +393,8 @@ At this dictionary's size, comparing every lemma ([section 6](#6-how-fast-is-it)
   - The table is (length + 1) × (length + 1). Without the ε row and column there's nowhere to start, and every distance comes out one too low or too high.
   - Fix: the first row is `0, 1, 2, …` and each row starts with its row number.
 - **Using the "too far" value as a real distance.**
-  - `editDistance` returns `max + 1` for "too far". `suggestLemmas` first started its "closest so far" at `max + 1` as well, so a word that was too far compared **equal** to it and was added to the list. Every word in the dictionary would have been suggested.
-  - Fix: skip `distance > max` explicitly, before comparing with the closest so far. The current code does.
+  - `editDistance` returns `max + 1` for "too far". The first version of the ranking started its "closest so far" at `max + 1` as well, so a word that was too far compared **equal** to it and was added to the list. Every word in the dictionary would have been suggested.
+  - Fix: skip `distance > max` explicitly, before comparing with the closest so far. `scoreLemmas` does.
 - **Stopping on the wrong number.**
   - The early exit has to check the **smallest** cell in the row. The last cell of a row can be large while another cell in the same row still leads to a small answer.
   - Fix: track `rowMin` over the whole row.
@@ -436,6 +436,6 @@ At this dictionary's size, comparing every lemma ([section 6](#6-how-fast-is-it)
 - [search.md](../search.md#did-you-mean-): where suggestions fit in the search flow, and why comparing every lemma is affordable
 
 **In the code**
-- `src/utils/search/suggestions.ts`: `editDistance`, `maxEditsFor`, `suggestLemmas`
+- `src/utils/search/suggestions.ts`: `editDistance`, `maxEditsFor`, `scoreLemmas`, `nearestSuggestions`
 - `src/server/search.ts`: `findSuggestions`, called by `searchEntries` when nothing matched
 - `src/components/search/Results.tsx`: the "Did you mean …?" line and its announcement
