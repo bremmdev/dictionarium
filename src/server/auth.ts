@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
-import { useAppSession } from "./session";
+import { getAppSession } from "./session";
 
 /** Constant-time compare, so a wrong password cannot be found one byte at a time. */
 function secretMatches(given: string, expected: string) {
@@ -24,14 +24,15 @@ export const login = createServerFn({ method: "POST" })
 		if (expected === "" || !secretMatches(given, expected)) {
 			throw new Error("Invalid password");
 		}
-		const session = await useAppSession();
-		await session.update({ isAdmin: true });
+		const session = await getAppSession();
+		session.isAdmin = true;
+		await session.save();
 		return { ok: true };
 	});
 
 export const logout = createServerFn({ method: "POST" }).handler(async () => {
-	const session = await useAppSession();
-	await session.clear();
+	const session = await getAppSession();
+	session.destroy();
 	return { ok: true };
 });
 
@@ -42,15 +43,15 @@ export const logout = createServerFn({ method: "POST" }).handler(async () => {
  */
 export const getIsAdmin = createServerFn({ method: "GET" }).handler(
 	async () => {
-		const session = await useAppSession();
-		return session.data.isAdmin === true;
+		const session = await getAppSession();
+		return session.isAdmin === true;
 	},
 );
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(
 	async ({ next }) => {
-		const session = await useAppSession();
-		if (!session.data.isAdmin) {
+		const session = await getAppSession();
+		if (!session.isAdmin) {
 			throw new Response("Unauthorized", { status: 401 });
 		}
 		return next();

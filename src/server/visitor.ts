@@ -1,6 +1,6 @@
 import { getRequestHeader } from "@tanstack/react-start/server";
 
-import { useAppSession } from "#/server/session";
+import { getAppSession } from "#/server/session";
 import { isBotAgent } from "#/utils/analytics/rules";
 
 /**
@@ -15,19 +15,14 @@ import { isBotAgent } from "#/utils/analytics/rules";
  */
 
 /**
- * Never throws. `useAppSession` does, when ADMIN_SESSION_SECRET is missing or
+ * Never throws. `getAppSession` does, when ADMIN_SESSION_SECRET is missing or
  * short, and there is no request context at all when a script imports this.
  * Neither is a reason to break the page being counted — and "not the admin" is
  * the answer that keeps counting rather than silently stopping.
  */
 async function isAdminCaller(): Promise<boolean> {
 	try {
-		// useAppSession is the session helper from @tanstack/react-start/server,
-		// not a React hook — it reads the request's cookie. Biome matches it on
-		// the "use" prefix alone, and the rule only fires because the call sits
-		// inside a try, which is exactly what this function is for.
-		// biome-ignore lint/correctness/useHookAtTopLevel: not a React hook, see above
-		return (await useAppSession()).data.isAdmin === true;
+		return (await getAppSession()).isAdmin === true;
 	} catch {
 		return false;
 	}

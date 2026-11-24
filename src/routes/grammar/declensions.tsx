@@ -6,7 +6,6 @@ import tablet from "#/assets/tablet-sketch.svg";
 import { Banner } from "#/components/Banner";
 import { Adjectives } from "#/components/declensions/Adjectives";
 import { Cases } from "#/components/declensions/Cases";
-import { Endings } from "#/components/declensions/Endings";
 import { Paradigms } from "#/components/declensions/Paradigms";
 import { Stems } from "#/components/declensions/Stems";
 import { Heading } from "#/components/Heading";
@@ -16,7 +15,6 @@ const SECTIONS: Section[] = [
 	{ id: "cases", label: "Cāsūs", gloss: "cases" },
 	{ id: "filing", label: "Filing a noun" },
 	{ id: "declensions", label: "The five declensions" },
-	{ id: "endings", label: "Terminātiōnēs", gloss: "endings" },
 	{ id: "adjectives", label: "Adiectīva", gloss: "adjectives" },
 ];
 
@@ -87,7 +85,6 @@ function RouteComponent() {
 				<Cases />
 				<Stems />
 				<Paradigms />
-				<Endings />
 				<Adjectives />
 			</div>
 		</>
