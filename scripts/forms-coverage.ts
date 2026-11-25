@@ -10,8 +10,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
-import { FLCAT, laslaKey, UPOS } from "#/utils/entries/frequency";
-import { formKey } from "#/utils/inflection/key";
+import { FLCAT, UPOS } from "#/utils/entries/frequency";
+import { fold } from "#/utils/search/key";
 import { FormIndex } from "#/utils/inflection/lookup";
 import { paradigm } from "#/utils/inflection/paradigm";
 import { db } from "../src/db";
@@ -29,7 +29,7 @@ const inflects = new Set(rows.filter((r) => paradigm(r).length > 0).map((r) => r
 
 const byLemma = new Map<string, typeof rows>();
 for (const row of rows) {
-	const key = laslaKey(row.lemma);
+	const key = fold(row.lemma);
 	byLemma.set(key, [...(byLemma.get(key) ?? []), row]);
 }
 
@@ -75,13 +75,13 @@ for (const file of files) {
 		if (line === "" || line.startsWith("#")) continue;
 		const cols = line.split("\t");
 		const [form, rawLemma, upos, feats, flcat] = [cols[1], cols[2], cols[3], cols[5], cols[10] ?? ""];
-		const lemma = laslaKey(rawLemma);
+		const lemma = fold(rawLemma);
 		const mine = owners(lemma, upos, flcat);
 		if (mine.length === 0) continue;
 
-		const key = formKey(form);
+		const key = fold(form);
 		// A form spelled like its lemma is found by the lemma tier, inflected or not.
-		const reason = mine.some((row) => formKey(row.lemma) === key)
+		const reason = mine.some((row) => fold(row.lemma) === key)
 			? null
 			: notYet(feats, mine.some((row) => inflects.has(row.id)));
 		if (reason) {
@@ -91,7 +91,7 @@ for (const file of files) {
 
 		tokens++;
 		const { lemmaIds, forms } = index.lookup(key);
-		if (mine.some((row) => lemmaIds.has(row.id) || forms.has(row.id) || formKey(row.lemma) === key)) {
+		if (mine.some((row) => lemmaIds.has(row.id) || forms.has(row.id) || fold(row.lemma) === key)) {
 			found++;
 		} else {
 			const id = `${mine[0].lemma}: ${key}`;

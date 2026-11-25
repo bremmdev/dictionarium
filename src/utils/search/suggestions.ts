@@ -3,7 +3,7 @@
  * keys (normalizeLemma output), so the server can rank lemmas without SQL.
  */
 
-import { formKey } from "#/utils/inflection/key";
+import { fold } from "#/utils/search/key";
 
 /** Below this a query is one edit from too many short words to be worth guessing. */
 export const MIN_SUGGESTION_LENGTH = 4;
@@ -103,7 +103,7 @@ export function nearestSuggestions(
 			.map((s) => (s.of === s.text ? { ...s, of: undefined } : s))
 			// rēgis and rēgīs are one link, since the search is the same.
 			.filter(({ text, of }) => {
-				const id = `${formKey(text)}|${of ?? ""}`;
+				const id = `${fold(text)}|${of ?? ""}`;
 				if (seen.has(id)) return false;
 				seen.add(id);
 				return true;

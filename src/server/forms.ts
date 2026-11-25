@@ -54,7 +54,7 @@ export function suggestForms(db: Db, key: string, max: number) {
 	return currentIndex(db).suggest(key, max);
 }
 
-/** `key` is already formKey'd. */
+/** `key` is already folded. */
 export function findForms(db: Db, key: string): FoundForms {
 	const current = currentIndex(db);
 	const { lemmaIds, forms, enclitic } = current.lookup(key);

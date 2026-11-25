@@ -8,7 +8,7 @@ import { entries, type ShownEntry } from "#/db/schema";
 import { findForms, suggestForms } from "#/server/forms";
 import { withFrequency } from "#/server/frequency";
 import type { FormLine } from "#/utils/inflection/describe";
-import { formKey } from "#/utils/inflection/key";
+import { fold } from "#/utils/search/key";
 import {
 	MAX_RESULTS,
 	MIN_QUERY_LENGTH,
@@ -58,7 +58,7 @@ export async function search(db: Db, q: string): Promise<Search> {
 	}
 
 	// Forms are looked up in memory and come back as ids, so the cap and the count still hold.
-	const found = findForms(db, formKey(typed));
+	const found = findForms(db, fold(typed));
 	const lemmaIds = [...found.lemmaIds];
 	const { formIds } = found;
 	const contains = like(entries.lemmaPlain, `%${key}%`);
@@ -132,7 +132,7 @@ function countMatches(db: Db, where: SQL) {
 
 /**
  * Read only on a miss; every lemma is compared in JS — see vault/search.md.
- * Forms are measured on formKey, so uideo and video are the same distance.
+ * Forms are measured on fold, so uideo and video are the same distance.
  */
 function findSuggestions(db: Db, key: string, resultCount: number) {
 	const max = maxEditsFor(key);
@@ -145,6 +145,6 @@ function findSuggestions(db: Db, key: string, resultCount: number) {
 		.all();
 	return nearestSuggestions(key, [
 		...scoreLemmas(key, candidates),
-		...suggestForms(db, formKey(key), max),
+		...suggestForms(db, fold(key), max),
 	]);
 }

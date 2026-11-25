@@ -6,11 +6,11 @@ import {
 	bandFor,
 	type LaslaRow,
 	type Lexeme,
-	laslaKey,
 	frequencyOf,
 	matchLexeme,
 	toLexeme,
 } from "#/utils/entries/frequency";
+import { fold } from "#/utils/search/key";
 
 /**
  * Looked up on every read rather than stored, so a new or edited entry is right
@@ -29,7 +29,7 @@ export const CORE_TOTAL = lexemes.filter(
 
 /** LASLA's words spelled like this lemma, for the matching to choose from. */
 export function laslaCandidates(lemma: string): ReadonlyArray<Lexeme> {
-	return byLemma.get(laslaKey(lemma)) ?? [];
+	return byLemma.get(fold(lemma)) ?? [];
 }
 
 export function withFrequency<T extends Omit<ShownEntry, "frequency">>(

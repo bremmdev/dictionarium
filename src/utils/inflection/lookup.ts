@@ -1,5 +1,5 @@
 import { editDistance, type Scored } from "#/utils/search/suggestions";
-import { formKey } from "./key";
+import { fold } from "#/utils/search/key";
 import { keysOf, paradigm } from "./paradigm";
 import type { Cell, Filing } from "./types";
 
@@ -16,7 +16,7 @@ export type FormMatches = {
 
 /**
  * Tried in this order, and only when the whole query matched nothing. Keyed as
- * formKey spells them (-ve is ue), shown as Latin spells them.
+ * fold spells them (-ve is ue), shown as Latin spells them.
  */
 const ENCLITICS = [
 	{ key: "que", spelled: "que" },
@@ -63,7 +63,7 @@ export class FormIndex {
 		}
 		const cells = paradigm(filing).map((cell) => ({
 			...cell,
-			key: formKey(cell.form),
+			key: fold(cell.form),
 		}));
 		this.memo.set(id, cells);
 		if (this.memo.size > MEMO_SIZE) {
@@ -74,7 +74,7 @@ export class FormIndex {
 	}
 
 	/**
-	 * `key` is already formKey'd. An enclitic is stripped only when nothing
+	 * `key` is already folded. An enclitic is stripped only when nothing
 	 * matched, so quoque, itaque and uterque never split.
 	 */
 	lookup(key: string): FormMatches {
@@ -157,7 +157,7 @@ export class FormIndex {
 		for (const id of candidates) {
 			const filing = this.filings.get(id);
 			if (!filing) continue;
-			if (!asForms && formKey(filing.lemma) === key) {
+			if (!asForms && fold(filing.lemma) === key) {
 				matches.lemmaIds.add(id);
 				continue;
 			}

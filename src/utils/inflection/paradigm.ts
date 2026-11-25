@@ -1,6 +1,6 @@
 import { adjectiveInflection } from "./adjectives";
 import { fixedInflection } from "./fixed";
-import { formKey } from "./key";
+import { fold } from "#/utils/search/key";
 import { nounInflection } from "./nouns";
 import { type Cell, type Filing, type Inflection, partsOf } from "./types";
 import { regularInflection } from "./verbs";
@@ -39,6 +39,6 @@ export function keysOf(filing: Filing, inflection = inflectionOf(filing)) {
 		filing.lemma,
 		...partsOf(filing.principalParts),
 		...(inflection?.stems ?? []),
-	].map(formKey);
+	].map(fold);
 	return [...new Set(keys)].filter((key) => key !== "");
 }

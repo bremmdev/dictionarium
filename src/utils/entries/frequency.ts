@@ -4,7 +4,6 @@
  * can be checked without the server. See vault/frequency.md.
  */
 import type { Entry } from "#/db/schema";
-import { normalizeLemma } from "#/utils/search/rules";
 
 /** One LASLA word as the JSON stores it: see its `columns`. */
 export type LaslaRow = [string, string, string, string, string, number, number];
@@ -64,11 +63,6 @@ export const FLCAT: Record<string, string> = {
 /** A second word this close to the first means we cannot tell which one the entry is. */
 export const AMBIGUOUS_SHARE = 0.02;
 export const AMBIGUOUS_MIN = 5;
-
-/** LASLA writes u for v and i for j: nouus, iacio. */
-export function laslaKey(lemma: string) {
-	return normalizeLemma(lemma).replaceAll("v", "u").replaceAll("j", "i");
-}
 
 export function toLexeme([
 	lemma,
