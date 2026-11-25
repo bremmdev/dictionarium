@@ -1,6 +1,6 @@
 import "@tanstack/react-start/server-only";
 
-import { db } from "#/db";
+import type { Db } from "#/db";
 import { entries } from "#/db/schema";
 import { laslaCandidates } from "#/server/frequency";
 import { matchLexeme } from "#/utils/entries/frequency";
@@ -8,20 +8,20 @@ import { describe, type FormLine } from "#/utils/inflection/describe";
 import { FormIndex } from "#/utils/inflection/lookup";
 
 /**
- * The forms index, built on the first search (vault/forms.md). Our own writes
- * drop it; PRAGMA data_version catches anyone else's, such as Studio.
+ * The forms index per database, built on its first search (vault/forms.md). Our
+ * own writes drop it; PRAGMA data_version catches anyone else's, such as Studio.
  */
-let index: FormIndex | null = null;
-let builtAt = -1;
+let built = new WeakMap<Db, { index: FormIndex; version: number }>();
 
 /** Called after createEntry and updateEntry. */
 export function invalidateForms() {
-	index = null;
+	built = new WeakMap();
 }
 
-function currentIndex() {
+function currentIndex(db: Db) {
 	const version = db.$client.pragma("data_version", { simple: true }) as number;
-	if (index && version === builtAt) return index;
+	const hit = built.get(db);
+	if (hit && hit.version === version) return hit.index;
 
 	const rows = db
 		.select({
@@ -37,8 +37,8 @@ function currentIndex() {
 		})
 		.from(entries)
 		.all();
-	index = new FormIndex(rows);
-	builtAt = version;
+	const index = new FormIndex(rows);
+	built.set(db, { index, version });
 	return index;
 }
 
@@ -50,13 +50,13 @@ export type FoundForms = {
 };
 
 /** Forms close to a query that found nothing, scored for nearestSuggestions. */
-export function suggestForms(key: string, max: number) {
-	return currentIndex().suggest(key, max);
+export function suggestForms(db: Db, key: string, max: number) {
+	return currentIndex(db).suggest(key, max);
 }
 
 /** `key` is already formKey'd. */
-export function findForms(key: string): FoundForms {
-	const current = currentIndex();
+export function findForms(db: Db, key: string): FoundForms {
+	const current = currentIndex(db);
 	const { lemmaIds, forms, enclitic } = current.lookup(key);
 
 	const rankOf = (id: number) => {

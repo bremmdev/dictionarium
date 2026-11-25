@@ -73,3 +73,6 @@ if (!g.__dictionariumShutdownHooked) {
 }
 
 export const db = drizzle(g.__dictionariumDb, { schema });
+
+/** The shape a module takes when it is handed a database, so a test can hand it another. */
+export type Db = typeof db;
