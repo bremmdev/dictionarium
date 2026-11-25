@@ -35,7 +35,7 @@ The choice [frequency.md](./frequency.md) made, for the same reasons: no forms t
 
 - In memory: stem → entries, and fixed form → entries. A handful of keys per entry.
 - **Every form starts with a key.** A generated form that no stem is a prefix of is indexed as a fixed form: in practice the lemma and its nominative/vocative (_rēx_ / _rēg-_, _vetus_ / _veter-_, _pater_ / _patr-_). Without it, _paterque_ and _uox_ find nothing, because tier 1 never sees them. A check holds this for every entry.
-- Built on the first search, rebuilt after `createEntry` and `updateEntry`, which also clear the memoised paradigms. `PRAGMA data_version`, checked on every search, catches writes from outside the app, such as Studio.
+- One index per database (a `WeakMap` in `src/server/forms.ts`, so a test database gets its own). Built on the first search, rebuilt after `createEntry` and `updateEntry`, which also clear the memoised paradigms. `PRAGMA data_version`, checked on every search, catches writes from outside the app, such as Studio.
 - Improving a rule fixes every entry at once, and shipping it is a deploy, not a backfill.
 - Rejected: a forms table (about 170 rows per verb, a backfill for every rule fix, and the drift `lemma_plain` needs a guard against), and every form in one `Map` (fine today, about 100 MB at 15k words).
 

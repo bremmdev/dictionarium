@@ -20,6 +20,8 @@ Every entry point is the same path. Typing and pressing Enter, landing on a shar
 
 `src/server/search.ts` holds the server functions. They are `method: "GET"` because they read: semantically correct, and cacheable at the HTTP layer.
 
+The search itself is `search(db, q)` in `src/server/searching.ts`, which is handed its database and never imports `#/db`. `searchEntries` is the adapter around it: it validates, calls `search`, then calls `recordSearch` with the `key` it returns (`null` when the query was too short to run). `searching.test.ts` runs it against an in-memory SQLite built from `drizzle/`, filing its rows through `parseEntryDraft`, so `npm test` needs no database file.
+
 What it no longer holds is the rules. How a query becomes a search key, how short is too short, how many rows come back — those moved one level down, to `src/utils/search/rules.ts`, because the request handler was never their only caller.
 
 ### `rules.ts`: one definition of a search key
@@ -50,7 +52,11 @@ Note what the check proves — that the stored key agrees with the current rule,
 ```ts
 export const searchEntries = createServerFn({ method: "GET" })
   .validator((input: unknown) => ({ q: /* trimmed string */, record: /* === true */ }))
-  .handler(async ({ data: { q, record } }) => { … });
+  .handler(async ({ data: { q, record } }) => {
+    const { key, outcome } = await search(db, q);
+    if (record && key !== null) await recordSearch(key, outcome.matchCount);
+    return outcome;
+  });
 ```
 
 `record` says whether this run is a search someone made. The home loader sets it to `!preload`, so hovering a link to `/?q=` never counts. See [analytics.md](./analytics.md#what-counts-as-a-visit).
@@ -88,6 +94,8 @@ Below `MIN_QUERY_LENGTH` (2) it returns no results and no suggestions without to
 The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
 
 **Ranks exact, then forms, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`, plus `id IN (…)` for the words the query is a form of: _bonae_ finds _bonus_ (see [forms.md](./forms.md)). The form lookup runs in memory and hands back ids, so the cap and `matchCount` still hold. The word itself, then a word the query is a form of (commonest first by LASLA rank), then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
+
+The tier is one SQL expression, used to order the rows and selected as a column, and `match` is read from it: 0 is `"lemma"`, 1 is `"form"`, and the prefix and contains tiers are both `"other"`.
 
 ```sql
 case when lemma_plain = 'am' or id in (lemmaIds) then 0 when id in (formIds) then 1

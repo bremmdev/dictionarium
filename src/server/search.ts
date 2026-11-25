@@ -1,51 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import {
-	and,
-	count,
-	eq,
-	inArray,
-	like,
-	ne,
-	or,
-	type SQL,
-	sql,
-} from "drizzle-orm";
+import { and, count, eq, ne, type SQL } from "drizzle-orm";
 
 import { db } from "#/db";
 import { homographCount } from "#/db/homographs";
 import { type Entry, entries, type ShownEntry } from "#/db/schema";
-import { findForms, suggestForms } from "#/server/forms";
 import { withFrequency } from "#/server/frequency";
 import { recordSearch } from "#/server/recording";
+import { type SearchOutcome, search } from "#/server/searching";
 import { type FullTable, fullTableFor } from "#/utils/entries/tables";
-import type { FormLine } from "#/utils/inflection/describe";
-import { formKey } from "#/utils/inflection/key";
-import {
-	MAX_RESULTS,
-	MIN_QUERY_LENGTH,
-	normalizeLemma,
-} from "#/utils/search/rules";
-import {
-	maxEditsFor,
-	nearestSuggestions,
-	type Suggestion,
-	scoreLemmas,
-} from "#/utils/search/suggestions";
 
-/** Why a result is listed: the query is its lemma, one of its forms, or inside its lemma. */
-export type SearchResult = ShownEntry & {
-	match: "lemma" | "form" | "other";
-	/** For a form match, what the query is in this entry: "rēgis: gen. sg.". */
-	forms: Array<FormLine>;
-};
-
-export type SearchOutcome = {
-	results: Array<SearchResult>;
-	/** Lemmas and forms close to the query. Only filled when results is empty. */
-	suggestions: Array<Suggestion>;
-	/** Every entry the query matches, of which results holds the first MAX_RESULTS. */
-	matchCount: number;
-};
+export type { SearchOutcome, SearchResult } from "#/server/searching";
 
 export const searchEntries = createServerFn({ method: "GET" })
 	.validator((input: unknown) => {
@@ -60,114 +24,16 @@ export const searchEntries = createServerFn({ method: "GET" })
 		};
 	})
 	.handler(async ({ data: { q, record } }): Promise<SearchOutcome> => {
-		// Shape first, size second. Measuring raw input tells you how much arrived, never what is in it.
-		const key = normalizeLemma(q);
-		if (key.length < MIN_QUERY_LENGTH) {
-			return { results: [], suggestions: [], matchCount: 0 };
+		const { key, outcome } = await search(db, q);
+
+		// Only searches that actually ran are counted, and by key rather than q:
+		// "Vīlla " and "villa" are one search. Awaited, since recording decrypts
+		// the session cookie and a floating promise could reject unhandled.
+		if (record && key !== null) {
+			await recordSearch(key, outcome.matchCount);
 		}
-
-		// Forms are looked up in memory and come back as ids, so the cap and the count still hold.
-		const found = findForms(formKey(q));
-		const lemmaIds = [...found.lemmaIds];
-		const { formIds } = found;
-		const contains = like(entries.lemmaPlain, `%${key}%`);
-		const listed = [...lemmaIds, ...formIds];
-		const matches =
-			listed.length > 0
-				? (or(contains, inArray(entries.id, listed)) as SQL)
-				: contains;
-		const isLemma =
-			lemmaIds.length > 0
-				? or(eq(entries.lemmaPlain, key), inArray(entries.id, lemmaIds))
-				: eq(entries.lemmaPlain, key);
-		const isForm =
-			formIds.length > 0 ? inArray(entries.id, formIds) : sql`false`;
-		// Commonest first among the form matches, in the order findForms ranked them.
-		// Left out when there are none: a bare ORDER BY 0 is a column number to SQLite.
-		const formOrder =
-			formIds.length > 0
-				? [
-						sql`case ${entries.id} ${sql.join(
-							formIds.map((id, i) => sql`when ${id} then ${i}`),
-							sql` `,
-						)} else ${formIds.length} end`,
-					]
-				: [];
-
-		const results = await db.query.entries.findMany({
-			where: matches,
-			// The word itself, then a word it is a form of, then words starting with the query, then the rest; shortest first in each, so am finds amō before ambulō.
-			orderBy: [
-				sql`case when ${isLemma} then 0 when ${isForm} then 1 when ${entries.lemmaPlain} like ${`${key}%`} then 2 else 3 end`,
-				...formOrder,
-				sql`length(${entries.lemmaPlain})`,
-				entries.lemmaPlain,
-				entries.lemma,
-				entries.homonym,
-			],
-			// rank is the dictionary order of an entry's senses, so it is the display order too.
-			with: { senses: { orderBy: (s, { asc }) => [asc(s.rank)] } },
-			extras: { homographs: homographCount(entries).as("homographs") },
-			limit: MAX_RESULTS,
-		});
-		const matchCount =
-			results.length < MAX_RESULTS ? results.length : countMatches(matches);
-
-		// Recorded below the length guard, so only searches that were actually run
-		// are counted — a single letter never reaches the database
-		// `key` rather than `q` for the same reason lemma_plain exists: "Vīlla "
-		// and "villa" are one search.
-		//
-		// Awaited rather than left floating: the only asynchronous part is
-		// decrypting the session cookie, the insert itself is synchronous, and a
-		// floating promise here would be an unhandled rejection waiting to happen.
-		if (record) {
-			await recordSearch(key, matchCount);
-		}
-
-		return {
-			results: results.map((entry): SearchResult => {
-				const forms = found.lines.get(entry.id);
-				return {
-					...withFrequency(entry),
-					match:
-						entry.lemmaPlain === key || found.lemmaIds.has(entry.id)
-							? "lemma"
-							: forms
-								? "form"
-								: "other",
-					forms: forms ?? [],
-				};
-			}),
-			suggestions: findSuggestions(key, results.length),
-			matchCount,
-		};
+		return outcome;
 	});
-
-/** Only run when the list came back full, since a short list already is the count. */
-function countMatches(where: SQL) {
-	const [row] = db.select({ n: count() }).from(entries).where(where).all();
-	return row?.n ?? 0;
-}
-
-/**
- * Read only on a miss; every lemma is compared in JS — see vault/search.md.
- * Forms are measured on formKey, so uideo and video are the same distance.
- */
-function findSuggestions(key: string, resultCount: number) {
-	const max = maxEditsFor(key);
-	if (resultCount > 0 || max === 0) {
-		return [];
-	}
-	const candidates = db
-		.selectDistinct({ lemma: entries.lemma, lemmaPlain: entries.lemmaPlain })
-		.from(entries)
-		.all();
-	return nearestSuggestions(key, [
-		...scoreLemmas(key, candidates),
-		...suggestForms(formKey(key), max),
-	]);
-}
 
 function findEntry(where: SQL | undefined) {
 	return db.query.entries
