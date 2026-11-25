@@ -5,7 +5,8 @@ import { LatinWord } from "#/components/LatinWord";
 import { TextLink } from "#/components/TextLink";
 import type { SearchResult } from "#/server/search";
 import type { Suggestion } from "#/utils/search/suggestions";
-import { MIN_QUERY_LENGTH, normalizeLemma } from "#/utils/search/rules";
+import { searchKey } from "#/utils/search/key";
+import { MIN_QUERY_LENGTH } from "#/utils/search/rules";
 import { EntryCard } from "./EntryCard";
 
 type ResultsProps = {
@@ -34,11 +35,8 @@ export function Results({
 	query,
 }: ResultsProps) {
 	const trimmed = query.trim();
-	// Measured the way searchEntries measures it — on the key, not the typing —
-	// so "a." or "ā!" is too short here exactly when the server skipped it,
-	// rather than reading as a search that ran and found nothing.
-	const isTooShort =
-		trimmed.length > 0 && normalizeLemma(trimmed).length < MIN_QUERY_LENGTH;
+	// The server's own test, so "a." is too short here exactly when it was skipped there.
+	const isTooShort = trimmed.length > 0 && searchKey(trimmed) === null;
 	const isCut = matchCount > results.length;
 	const formCount = results.filter((r) => r.match === "form").length;
 	// Contains-matches get their own heading only when something matched the word itself.

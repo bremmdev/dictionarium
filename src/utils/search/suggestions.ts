@@ -1,9 +1,9 @@
 /**
- * "Did you mean …?" for a search that found nothing. Pure functions over search
- * keys (normalizeLemma output), so the server can rank lemmas without SQL.
+ * "Did you mean …?" for a search that found nothing. Pure functions, measured
+ * on folded spellings throughout, so the server can rank lemmas without SQL.
  */
 
-import { fold } from "#/utils/search/key";
+import { fold, type SearchKey } from "#/utils/search/key";
 
 /** Below this a query is one edit from too many short words to be worth guessing. */
 export const MIN_SUGGESTION_LENGTH = 4;
@@ -13,12 +13,12 @@ export const TWO_EDIT_LENGTH = 8;
 
 export const MAX_SUGGESTIONS = 5;
 
-export type Candidate = { lemma: string; lemmaPlain: string };
+export type Candidate = { lemma: string };
 
 /** How far from the key a suggestion may be: 0 means do not suggest. */
-export function maxEditsFor(key: string) {
-	if (key.length < MIN_SUGGESTION_LENGTH) return 0;
-	if (key.length < TWO_EDIT_LENGTH) return 1;
+export function maxEditsFor(key: SearchKey) {
+	if (key.folded.length < MIN_SUGGESTION_LENGTH) return 0;
+	if (key.folded.length < TWO_EDIT_LENGTH) return 1;
 	return 2;
 }
 
@@ -65,14 +65,15 @@ export type Suggestion = { text: string; of?: string };
 export type Scored = Suggestion & { key: string; distance: number };
 
 /** Every lemma within the key's budget, scored. */
-export function scoreLemmas(key: string, candidates: Array<Candidate>) {
+export function scoreLemmas(key: SearchKey, candidates: Array<Candidate>) {
 	const max = maxEditsFor(key);
 	if (max === 0) return [];
 	return candidates.flatMap((c): Array<Scored> => {
-		const distance = editDistance(key, c.lemmaPlain, max);
+		const folded = fold(c.lemma);
+		const distance = editDistance(key.folded, folded, max);
 		return distance === 0 || distance > max
 			? []
-			: [{ text: c.lemma, key: c.lemmaPlain, distance }];
+			: [{ text: c.lemma, key: folded, distance }];
 	});
 }
 
@@ -83,11 +84,11 @@ export function scoreLemmas(key: string, candidates: Array<Candidate>) {
  * a search appears once per word.
  */
 export function nearestSuggestions(
-	key: string,
+	key: SearchKey,
 	scored: Array<Scored>,
 ): Array<Suggestion> {
 	const closest = Math.min(...scored.map((s) => s.distance));
-	const opensLikeKey = (s: Scored) => (s.key[0] === key[0] ? 0 : 1);
+	const opensLikeKey = (s: Scored) => (s.key[0] === key.folded[0] ? 0 : 1);
 	const nearest = scored
 		.filter((s) => s.distance === closest)
 		.sort(

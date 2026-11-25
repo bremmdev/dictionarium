@@ -21,7 +21,7 @@ import {
 } from "#/components/declensions/Declensions.utils";
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 import { PERSONAL, PRONOUNS } from "#/components/pronouns/Pronouns.utils";
-import { fold } from "#/utils/search/key";
+import { fold, searchKey } from "#/utils/search/key";
 import { maxEditsFor, nearestSuggestions } from "#/utils/search/suggestions";
 import { FormIndex, type Indexed } from "#/utils/inflection/lookup";
 import { inflectionOf, keysOf, paradigm } from "#/utils/inflection/paradigm";
@@ -355,7 +355,9 @@ for (const [typo, form, lemma] of [
 	["regsi", "rēgis", "rēx"],
 ] as const) {
 	checked++;
-	const offered = nearestSuggestions(typo, index.suggest(typo, maxEditsFor(typo)));
+	const key = searchKey(typo);
+	if (!key) continue;
+	const offered = nearestSuggestions(key, index.suggest(key.folded, maxEditsFor(key)));
 	if (!offered.some((s) => fold(s.text) === fold(form) && s.of === lemma)) {
 		problems.push(`suggestion for "${typo}": expected ${form} (${lemma}), got ${offered.map((s) => `${s.text} (${s.of})`).join(", ") || "nothing"}`);
 	}

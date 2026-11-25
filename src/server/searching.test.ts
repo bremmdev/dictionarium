@@ -185,7 +185,7 @@ test("too short to run is measured on the key, so a% is one letter", async () =>
 
 test("the key is what ran, for recording", async () => {
 	const db = dictionary();
-	assert.equal((await search(db, " Vīlla ")).key, "villa");
+	assert.equal((await search(db, " Vīlla ")).key?.plain, "villa");
 });
 
 test("wildcards never reach the pattern", async () => {
@@ -231,9 +231,36 @@ test("a word filed after the first search is found", async () => {
 	assert.deepEqual(lemmas(await find(db, "laudat")), ["laudō"]);
 });
 
-// The query is keyed three ways today, and these are where they disagree.
-test.todo("uen finds veniō, as texts print it: the contains tier keeps its v");
-test.todo(
-	"cælm suggests caelum: form suggestions are keyed after æ is deleted",
-);
-test.todo("vidre ranks videō's forms as opening like the query: u vs v keys");
+test("uen finds veniō as a word starting with it, as texts print uenio", async () => {
+	const db = dictionary();
+	file(db, verb("veniō, venīre, vēnī, ventum", "4"));
+
+	assert.deepEqual(lemmas(await find(db, "uen")), ["veniō"]);
+});
+
+test("cælm suggests caelum: æ is spelled out, not deleted", async () => {
+	const db = dictionary();
+	file(db, noun("caelum", "caelī", "n", "2"));
+
+	const { suggestions } = await find(db, "cælm");
+	assert.ok(
+		suggestions.some((s) => s.text === "caelum" && s.of === undefined),
+		JSON.stringify(suggestions),
+	);
+});
+
+test("lemmas and forms open like the query in one key space, so vidis offers videō first", async () => {
+	const db = dictionary();
+	file(db, verb("videō, vidēre, vīdī, vīsum", "2"));
+	file(db, {
+		lemma: "fīdus",
+		partOfSpeech: "adjective",
+		principalParts: "fīdus, fīda, fīdum",
+		declension: "1-2",
+	});
+
+	const { suggestions } = await find(db, "vidis");
+	const owners = suggestions.map((s) => s.of);
+	assert.equal(owners[0], "videō", JSON.stringify(suggestions));
+	assert.equal(owners.at(-1), "fīdus", JSON.stringify(suggestions));
+});
