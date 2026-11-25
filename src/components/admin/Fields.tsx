@@ -36,7 +36,8 @@ export function ChipGroup({
 	onChange,
 }: {
 	legend: string;
-	hint?: string;
+	/** A node, so Latin in it can carry lang="la". */
+	hint?: React.ReactNode;
 	name: string;
 	options: ReadonlyArray<string>;
 	value: string;

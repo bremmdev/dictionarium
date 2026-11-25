@@ -744,7 +744,14 @@ export function EntryForm({ entry }: { entry?: EntryWithSenses | null }) {
 					{hasStemClass(draft.partOfSpeech, draft.declension) && (
 						<ChipGroup
 							legend="Stem"
-							hint="An i-stem takes -ium in the genitive plural: urbs, urbium, but pater, patrum. Most 3rd-declension adjectives are i-stems; vetus is not."
+							hint={
+								<>
+									An i-stem takes <span lang="la">-ium</span> in the genitive
+									plural: <span lang="la">urbs, urbium</span>, but{" "}
+									<span lang="la">pater, patrum</span>. Most 3rd-declension
+									adjectives are i-stems; <span lang="la">vetus</span> is not.
+								</>
+							}
 							name={`${fieldId}-stem-class`}
 							options={STEM_CLASSES}
 							value={draft.stemClass}
