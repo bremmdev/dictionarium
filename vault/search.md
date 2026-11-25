@@ -20,15 +20,15 @@ Every entry point is the same path. Typing and pressing Enter, landing on a shar
 
 `src/server/search.ts` holds the server functions. They are `method: "GET"` because they read: semantically correct, and cacheable at the HTTP layer.
 
-The search itself is `search(db, q)` in `src/server/searching.ts`, which is handed its database and never imports `#/db`. `searchEntries` is the adapter around it: it validates, calls `search`, then calls `recordSearch` with the `key` it returns (`null` when the query was too short to run). `searching.test.ts` runs it against an in-memory SQLite built from `drizzle/`, filing its rows through `parseEntryDraft`, so `npm test` needs no database file.
+The search itself is `search(db, q)` in `src/server/searching.ts`, which is handed its database and never imports `#/db`. `searchEntries` is the adapter around it: it validates, calls `search`, then calls `recordSearch` with the plain spelling of the `key` it returns (`null` when the query was too short to run). `searching.test.ts` runs it against an in-memory SQLite built from `drizzle/`, filing its rows through `parseEntryDraft`, so `npm test` needs no database file.
 
-What it no longer holds is the rules. How a query becomes a search key, how short is too short, how many rows come back — those moved one level down, to `src/utils/search/rules.ts`, because the request handler was never their only caller.
+What it no longer holds is the rules. How a query becomes a search key, how short is too short, how many rows come back — those moved one level down, to `src/utils/search/rules.ts` and `src/utils/search/key.ts`, because the request handler was never their only caller.
 
 ### `rules.ts`: one definition of a search key
 
 | Caller                    | What it needs the rule for                                 |
 | ------------------------- | ---------------------------------------------------------- |
-| `searchEntries`           | turning the typed query into the key it matches on          |
+| `key.ts`                  | the stored spelling, before `searchKey` folds it            |
 | `parseEntryDraft`         | deriving `lemma_plain` from `lemma` at insert time          |
 | `scripts/check-lemmas.ts` | asserting every stored `lemma_plain` still equals the rule  |
 | `Results.tsx`             | telling the user how many letters are needed                |
@@ -45,6 +45,19 @@ and `scripts/check-lemmas.ts` — wired into `npm run check`, or run alone as `n
 
 Note what the check proves — that the stored key agrees with the current rule, not that the rule is right. Change `normalizeLemma` and it will report every row as stale, which is the correct answer. The fix then is to rewrite the column, not to soften the check.
 
+### `key.ts`: one search key, two spellings
+
+`searchKey(q)` parses the typed query once into a `SearchKey`, and every step of the search takes that value, never the string:
+
+| Spelling | What it is                                             | `Vīlla` | `uilla` | `cælum`  |
+| -------- | ------------------------------------------------------ | ------- | ------- | -------- |
+| `plain`  | `normalizeLemma` with æ → ae and œ → oe first          | `villa` | `uilla` | `caelum` |
+| `folded` | `plain` with v → u and j → i, as texts print _uideo_   | `uilla` | `uilla` | `caelum` |
+
+`folded` is what every step matches and measures on: the SQL tiers, the forms index, both kinds of suggestion. `plain` exists only for `recordSearch`, so _uilla_ and _villa_ stay two searches in analytics. `fold(s)` is the same rule for a word rather than a query: the forms index, LASLA's lemmas and the suggestion dedupe all key with it.
+
+Before this, the query was keyed three ways (`normalizeLemma`, `formKey`, `laslaKey`) and the search chose one per step by hand. The choices disagreed: _uen_ never reached _veniō_ in the prefix tier, _cælm_ got no suggestions because æ was already deleted (`clm`), and _vidis_ ranked _fīdīs_ above _vidēs_ because lemmas and forms were measured in different key spaces. Each is a test in `searching.test.ts`.
+
 `Entry` moved too, from the server module to `#/db/schema`, beside the table it is inferred from. A card that renders a row takes its type from the schema now instead of reaching through the module that queries it.
 
 ### `searchEntries({ q, record })`
@@ -54,7 +67,7 @@ export const searchEntries = createServerFn({ method: "GET" })
   .validator((input: unknown) => ({ q: /* trimmed string */, record: /* === true */ }))
   .handler(async ({ data: { q, record } }) => {
     const { key, outcome } = await search(db, q);
-    if (record && key !== null) await recordSearch(key, outcome.matchCount);
+    if (record && key !== null) await recordSearch(key.plain, outcome.matchCount);
     return outcome;
   });
 ```
@@ -63,7 +76,7 @@ export const searchEntries = createServerFn({ method: "GET" })
 
 Three things it does, in order — and the order is the change:
 
-**Normalises the query into a search key.** Users type `villa`; the display form is `vīlla`. `normalizeLemma` decomposes to NFD, drops every combining mark, recomposes, case-folds, and then keeps only what a lemma is allowed to contain:
+**Normalises the query into a search key.** Users type `villa`; the display form is `vīlla`. `searchKey` spells out æ and œ, then `normalizeLemma` decomposes to NFD, drops every combining mark, recomposes, case-folds, and then keeps only what a lemma is allowed to contain:
 
 ```ts
 value
@@ -74,7 +87,7 @@ value
   .replace(/[^a-z ]/g, "");
 ```
 
-That last filter is not tidiness. The key is interpolated straight into a `LIKE` pattern — `` `%${key}%` `` — where `%` and `_` are wildcards: `%` alone would match the whole table, and `a_o` would match `amo` and `ago` alike. Stripping them at the door means the pattern only ever holds literal characters, and no second place has to remember to escape. The space survives the class on purpose — _alma māter_ is one lemma.
+That last filter is not tidiness. The key is interpolated straight into a `LIKE` pattern — `` `%${key.folded}%` `` — where `%` and `_` are wildcards: `%` alone would match the whole table, and `a_o` would match `amo` and `ago` alike. Stripping them at the door means the pattern only ever holds literal characters, and no second place has to remember to escape. The space survives the class on purpose — _alma māter_ is one lemma.
 
 The order inside the function is load-bearing too, in the unobvious direction: `toLowerCase()` has to run **before** `[^a-z ]`, or the character class deletes capitals rather than folding them and `Roma` searches as `oma`.
 
@@ -83,23 +96,24 @@ This is the same function that wrote `lemma_plain` — see [above](#rulests-one-
 **Guards on length — on the key, not on the input.**
 
 ```ts
-const key = normalizeLemma(q);
-if (key.length < MIN_QUERY_LENGTH) {
-  return { results: [], suggestions: [], matchCount: 0 };
+const key = searchKey(q); // null below MIN_QUERY_LENGTH
+if (key === null) {
+  return { key: null, outcome: { results: [], suggestions: [], matchCount: 0 } };
 }
 ```
 
 Below `MIN_QUERY_LENGTH` (2) it returns no results and no suggestions without touching the database, because a single letter matches a large fraction of the dictionary. Measuring the raw query measures how much arrived, never what is in it: `a%` is two characters and one letter, and guarding it first let it through to run a full scan for `a`. Normalising first makes the guard measure the thing that actually reaches SQL.
 
-The guard stays _in the handler_ rather than in the caller, so no code path can route around it. `Results.tsx` imports `MIN_QUERY_LENGTH` as well, but only to say "at least 2 letters" — that is a message, not an enforcement.
+The guard lives in `searchKey`, so a query too short to run has no key, and no step can be handed one. `Results.tsx` calls `searchKey` too, so "at least 2 letters" shows exactly when the server skipped the search — that is a message, not an enforcement.
 
-**Ranks exact, then forms, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match, so `amo` also finds `clamo`, plus `id IN (…)` for the words the query is a form of: _bonae_ finds _bonus_ (see [forms.md](./forms.md)). The form lookup runs in memory and hands back ids, so the cap and `matchCount` still hold. The word itself, then a word the query is a form of (commonest first by LASLA rank), then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
+**Ranks exact, then forms, then prefix, then the rest.** The `WHERE` is a `%key%` contains-match on `lemma_plain` folded at query time (`replace(replace(lemma_plain, 'v', 'u'), 'j', 'i')`, so _uen_ finds _veniō_), so `amo` also finds `clamo`, plus `id IN (…)` for the words the query is a form of: _bonae_ finds _bonus_ (see [forms.md](./forms.md)). The form lookup runs in memory and hands back ids, so the cap and `matchCount` still hold. The word itself, then a word the query is a form of (commonest first by LASLA rank), then a word _starting_ with the query, is nearly always what the user meant. Inside each tier the shorter key comes first, because it is closer to what was typed: `am` lists _amō_ before _ambulō_, which plain alphabetical order got backwards.
 
 The tier is one SQL expression, used to order the rows and selected as a column, and `match` is read from it: 0 is `"lemma"`, 1 is `"form"`, and the prefix and contains tiers are both `"other"`.
 
 ```sql
-case when lemma_plain = 'am' or id in (lemmaIds) then 0 when id in (formIds) then 1
-     when lemma_plain like 'am%' then 2 else 3 end,
+-- folded = replace(replace(lemma_plain, 'v', 'u'), 'j', 'i')
+case when folded = 'am' or id in (lemmaIds) then 0 when id in (formIds) then 1
+     when folded like 'am%' then 2 else 3 end,
 case id when … end,  -- formIds in LASLA order; only when there are any
 length(lemma_plain), lemma_plain
 ```
@@ -309,15 +323,15 @@ The count sits inside the meaning's own `<p>`, so a screen reader reads it as pa
 
 ## "Did you mean …?"
 
-When a search finds nothing, `searchEntries` also returns `suggestions`: up to `MAX_SUGGESTIONS` macronned lemmas close to the key, in the same response. The rules are in `src/utils/search/suggestions.ts`:
+When a search finds nothing, `searchEntries` also returns `suggestions`: up to `MAX_SUGGESTIONS` macronned lemmas close to the key, in the same response. Everything is measured on `key.folded` against `fold(lemma)` and folded forms, so lemmas and forms share one key space. The rules are in `src/utils/search/suggestions.ts`:
 
 - **Distance is OSA** (Levenshtein plus a swap of two neighbouring letters as one edit), so _amcius_ is one edit from _amīcus_, not two. How it works: [concepts/levenshtein.md](./concepts/levenshtein.md).
 - **The limit scales with the key**: under 4 letters no suggestions (a short key is one edit from too many words), 4–7 letters one edit, 8 or more two.
 - **Two edits only when nothing is one edit away.** The closest distance found wins, so a long key never mixes one- and two-edit suggestions.
-- **Ranked** same first letter first, then alphabetically; homographs appear once.
+- **Ranked** same first letter first (in folded spelling, so _vidis_ opens like _uides_), then alphabetically; homographs appear once.
 - **Lemmas and forms in one list**, closest first (below).
 
-It compares every distinct lemma in JS rather than in SQL, and only on a miss. That is a few milliseconds at the dictionary's expected size.
+It folds and compares every distinct lemma in JS rather than in SQL, and only on a miss. Folding 15k lemmas takes about 15–20 ms.
 
 A suggestion links to `/?q=<lemma>`, so following it is an ordinary search. Its link unmounts once the new results land, so `Search` hands focus back to the input, as _dēlē_ does. The announcement adds the suggestions to the result count.
 
@@ -332,6 +346,7 @@ A form match's card says why it is there ("_rēgis_: gen. sg."), short labels on
 - **`lemma_plain` is not unique.** Nothing here depends on it being unique, but do not reach for it as a key. Detail URLs use `lemma`.
 - **There is one `normalizeLemma`, in `#/utils/search/rules.ts`.** Search, `parseEntryDraft`, the Wiktionary fill and `check:lemmas` all call it; a second inlined copy is how `lemma_plain` starts lying.
 - **In `normalizeLemma`, case-fold before filtering.** `[^a-z ]` deletes an uppercase letter rather than lowering it, so putting `.toLowerCase()` last turns `Roma` into `oma` — a query that silently finds nothing, and a `lemma_plain` that is silently wrong.
+- **Steps take a `SearchKey`, never a string.** Keying a query yourself is how the three spellings drifted apart; call `searchKey` once and pass the value.
 - **The query is filtered, never escaped.** `%` and `_` cannot reach the `LIKE` pattern because the character class removes them. Widen that class and you have handed every user a wildcard.
 - **Macron normalisation is load-bearing in two places** — `normalizeLemma` for search, `normalize("NFC")` for detail lookup — and failures are silent misses, not errors.
 - **The debounce, if added, must use `replace: true`.** Otherwise the back button becomes unusable.

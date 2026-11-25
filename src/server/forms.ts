@@ -6,6 +6,7 @@ import { laslaCandidates } from "#/server/frequency";
 import { matchLexeme } from "#/utils/entries/frequency";
 import { describe, type FormLine } from "#/utils/inflection/describe";
 import { FormIndex } from "#/utils/inflection/lookup";
+import type { SearchKey } from "#/utils/search/key";
 
 /**
  * The forms index per database, built on its first search (vault/forms.md). Our
@@ -50,14 +51,13 @@ export type FoundForms = {
 };
 
 /** Forms close to a query that found nothing, scored for nearestSuggestions. */
-export function suggestForms(db: Db, key: string, max: number) {
-	return currentIndex(db).suggest(key, max);
+export function suggestForms(db: Db, key: SearchKey, max: number) {
+	return currentIndex(db).suggest(key.folded, max);
 }
 
-/** `key` is already formKey'd. */
-export function findForms(db: Db, key: string): FoundForms {
+export function findForms(db: Db, key: SearchKey): FoundForms {
 	const current = currentIndex(db);
-	const { lemmaIds, forms, enclitic } = current.lookup(key);
+	const { lemmaIds, forms, enclitic } = current.lookup(key.folded);
 
 	const rankOf = (id: number) => {
 		const filing = current.filing(id);

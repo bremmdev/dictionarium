@@ -21,7 +21,7 @@ import {
 } from "#/components/declensions/Declensions.utils";
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
 import { PERSONAL, PRONOUNS } from "#/components/pronouns/Pronouns.utils";
-import { formKey } from "#/utils/inflection/key";
+import { fold, searchKey } from "#/utils/search/key";
 import { maxEditsFor, nearestSuggestions } from "#/utils/search/suggestions";
 import { FormIndex, type Indexed } from "#/utils/inflection/lookup";
 import { inflectionOf, keysOf, paradigm } from "#/utils/inflection/paradigm";
@@ -355,8 +355,10 @@ for (const [typo, form, lemma] of [
 	["regsi", "rēgis", "rēx"],
 ] as const) {
 	checked++;
-	const offered = nearestSuggestions(typo, index.suggest(typo, maxEditsFor(typo)));
-	if (!offered.some((s) => formKey(s.text) === formKey(form) && s.of === lemma)) {
+	const key = searchKey(typo);
+	if (!key) continue;
+	const offered = nearestSuggestions(key, index.suggest(key.folded, maxEditsFor(key)));
+	if (!offered.some((s) => fold(s.text) === fold(form) && s.of === lemma)) {
 		problems.push(`suggestion for "${typo}": expected ${form} (${lemma}), got ${offered.map((s) => `${s.text} (${s.of})`).join(", ") || "nothing"}`);
 	}
 }
@@ -381,7 +383,7 @@ const REFUSALS: Array<[string, string]> = [
 ];
 for (const [query, owner] of REFUSALS) {
 	checked++;
-	const { forms } = index.lookup(formKey(query));
+	const { forms } = index.lookup(fold(query));
 	for (const id of forms.keys()) {
 		const f = index.filing(id);
 		if (f && (f.lemma === owner || f.principalParts?.startsWith(`${owner},`) || (owner.includes(",") && f.principalParts?.startsWith(owner)))) {
@@ -391,13 +393,12 @@ for (const [query, owner] of REFUSALS) {
 }
 for (const [query, lemma] of PROMISES) {
 	checked++;
-	const { lemmaIds, forms } = index.lookup(formKey(query));
+	const { lemmaIds, forms } = index.lookup(fold(query));
 	const found = [...lemmaIds, ...forms.keys()].map((id) => index.filing(id)?.lemma);
 	if (!found.includes(lemma)) {
 		problems.push(`lookup "${query}": expected ${lemma}, found ${found.join(", ") || "nothing"}`);
 	}
 }
-if (formKey("cælum") !== "caelum") problems.push(`formKey("cælum") is "${formKey("cælum")}", not "caelum"`);
 
 // --- every filed entry -------------------------------------------------------------
 
@@ -412,7 +413,7 @@ for (const row of rows) {
 	const keys = keysOf(row, inflection);
 	for (const cell of inflection.cells()) {
 		checked++;
-		const key = formKey(cell.form);
+		const key = fold(cell.form);
 		if (!keys.some((k) => key.startsWith(k))) {
 			problems.push(`${row.lemma} (#${row.id}): "${cell.form}" starts with none of its keys (${keys.join(", ")})`);
 		}

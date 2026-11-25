@@ -9,10 +9,10 @@ import {
 	BANDS,
 	bandFor,
 	type LaslaRow,
-	laslaKey,
 	matchLexeme,
 	toLexeme,
 } from "../src/utils/entries/frequency";
+import { fold } from "../src/utils/search/key";
 
 const lexemes = (lasla.lexemes as Array<LaslaRow>).map(toLexeme);
 
@@ -22,7 +22,7 @@ const counts = new Map<string, number>();
 const missing: Array<string> = [];
 
 for (const entry of rows) {
-	const candidates = lexemes.filter((l) => l.lemma === laslaKey(entry.lemma));
+	const candidates = lexemes.filter((l) => l.lemma === fold(entry.lemma));
 	const match = matchLexeme(entry, candidates);
 	if (match) {
 		const band = bandFor(match.rank);

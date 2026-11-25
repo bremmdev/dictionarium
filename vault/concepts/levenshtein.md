@@ -15,7 +15,7 @@ When a search finds nothing, the dictionary offers "Did you mean …?". To do th
 | ε (empty string) | A word with no letters. The table starts from it |
 | Dynamic programming | Solving a big problem by first solving the small problems inside it and storing their answers in a table |
 | Threshold | The largest distance still worth suggesting |
-| Key | The search form of a word: lower-case, no macrons. What `normalizeLemma` produces |
+| Key | The search form of a word: lower-case, no macrons, v as u. What `fold` produces |
 
 ---
 
@@ -400,7 +400,7 @@ At this dictionary's size, comparing every lemma ([section 6](#6-how-fast-is-it)
   - Fix: track `rowMin` over the whole row.
 - **Comparing display forms.**
   - _amo_ and _amō_ are 1 apart, because _ō_ is a different character from _o_. Written as _o_ + a combining macron, it's even two characters.
-  - Fix: compare keys from `normalizeLemma`, never `lemma`.
+  - Fix: compare keys from `fold`, never `lemma`.
 - **Characters that are two code units.**
   - `a[i]` reads a UTF-16 code unit, not a character. An emoji or a rare symbol is two code units, so it would count as two letters.
   - Fix: nothing to do here, because keys only contain _a_–_z_ and spaces. Anywhere else, split with `Array.from(string)` first.

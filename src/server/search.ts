@@ -26,11 +26,11 @@ export const searchEntries = createServerFn({ method: "GET" })
 	.handler(async ({ data: { q, record } }): Promise<SearchOutcome> => {
 		const { key, outcome } = await search(db, q);
 
-		// Only searches that actually ran are counted, and by key rather than q:
-		// "Vīlla " and "villa" are one search. Awaited, since recording decrypts
+		// Only searches that actually ran are counted, and by the plain key rather
+		// than q: "Vīlla " and "villa" are one search, "uilla" another. Awaited, since recording decrypts
 		// the session cookie and a floating promise could reject unhandled.
 		if (record && key !== null) {
-			await recordSearch(key, outcome.matchCount);
+			await recordSearch(key.plain, outcome.matchCount);
 		}
 		return outcome;
 	});
