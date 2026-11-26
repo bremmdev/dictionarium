@@ -26,6 +26,7 @@ import {
 	GENDERS,
 	GOVERNED_CASES,
 	hasGoverns,
+	hasPrincipalParts,
 	hasStemClass,
 	hasTerminations,
 	INFLECTS,
@@ -700,6 +701,9 @@ function ordinalToDigit(word: string) {
 	return String(ORDINALS.indexOf(word) + 1);
 }
 
+/** īdem is "a pronoun with an indeclinable portion": its -dem, not the word. */
+const INDECLINABLE = /\bindeclinable\b(?! portion)/;
+
 function readDeclension(grammar: string) {
 	// Adjectives take two: "first/second-declension adjective". This dictionary
 	// spells that pair "1-2" (vault/schema.md).
@@ -712,7 +716,7 @@ function readDeclension(grammar: string) {
 	if (one) return ordinalToDigit(one[1]);
 
 	// Not an absence: a word that never changes shape has answered the question.
-	return /\bindeclinable\b/.test(grammar) ? "indeclinable" : undefined;
+	return INDECLINABLE.test(grammar) ? "indeclinable" : undefined;
 }
 
 /**
@@ -767,8 +771,7 @@ function readNotes(candidate: Candidate) {
 	const phrases =
 		/\b(semi-deponent|deponent|indeclinable|impersonal(?: in the passive)?|defective|suppletive|no passive|no supine|not comparable)\b/g;
 	for (const match of candidate.grammar.matchAll(phrases)) {
-		// īdem is "a pronoun with an indeclinable portion": its -dem, not the word.
-		if (candidate.partOfSpeech === "pronoun" && match[1] === "indeclinable") {
+		if (match[1] === "indeclinable" && !INDECLINABLE.test(candidate.grammar)) {
 			continue;
 		}
 		flags.add(match[1]);
@@ -848,10 +851,13 @@ function readPrincipalParts(candidate: Candidate) {
 
 /**
  * A pronoun is `irregular` unless Wiktionary calls it first/second-declension
- * (meus). Its "indeclinable" is about a part of the word: īdem's -dem.
+ * (meus) or indeclinable (nihil).
  */
 function readPronounDeclension(grammar: string) {
-	return readDeclension(grammar) === "1-2" ? "1-2" : "irregular";
+	const declension = readDeclension(grammar);
+	return declension === "1-2" || declension === "indeclinable"
+		? declension
+		: "irregular";
 }
 
 /**
@@ -1389,7 +1395,11 @@ export async function suggestFromWiktionary(
 	}
 
 	// ego's headword line prints its plural, not its genitive.
-	if (partOfSpeech === "pronoun" && draft.principalParts === "") {
+	if (
+		partOfSpeech === "pronoun" &&
+		hasPrincipalParts(partOfSpeech, draft.declension) &&
+		draft.principalParts === ""
+	) {
 		warnings.push(
 			"Wiktionary prints no other forms for this pronoun, so the filing is for you to give (ego, meī)",
 		);
