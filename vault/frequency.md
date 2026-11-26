@@ -46,7 +46,7 @@ If two words are still left and the smaller one is not noise (at least 5 tokens 
 
 ## Known gaps
 
-- **Words LASLA files under another part of speech.** _nihil_ is a pronoun there, so a _nihil_ filed as a noun gets no badge.
+- **Words LASLA files under another part of speech** get no badge. _nihil_ was one, until it was filed as a pronoun ([schema.md](./schema.md)).
 - **Post-classical words** aren't in LASLA at all. That's intended: this dictionary is about classical Latin.
 - **Words below 10 occurrences** have a rank, but it can't separate them from each other reliably. That's why the bottom band is simply "Rare".
 
