@@ -21,6 +21,7 @@ On the row:
 - **lemma** is the canonical headword (1st principal part of a verb; nominative of a noun; the word itself otherwise).
 - **principal_parts** holds the dictionary filing: all four parts for a verb, the genitive for a noun, one form per termination for an adjective. Null when the lemma is the whole filing — which for a noun or an adjective means only the indeclinable ones. _fās_ is filed "indecl. n." with no genitive, because it has none (A&G §103a; Lewis & Short).
 - The lemma repeats inside the string wherever a dictionary prints it there. A verb's first principal part is its lemma and always was; an adjective's masculine is the same, and _bonus, bona, bonum_ is the line a reader expects. A noun is the exception, because _puella, puellae_ is filed as a nominative and a genitive rather than as one run-on line.
+- A verb with no present files what it has, perfect first: _coepī, coepisse, coeptum_; _meminī, meminisse_; _ōdī, ōdisse, ōsūrus_. The infinitive in -isse is how the page knows to label the first part "perfect".
 - **gender** is its own column on nouns (`m` / `f` / `n`), not buried in the principal-parts string.
 - **governs** is its own column on prepositions, and on senses — see `[governs](#governs-the-case-a-word-takes)`.
 

@@ -3,6 +3,29 @@ import type { Entry } from "#/db/schema";
 /** The four verb parts in the order every dictionary files them. */
 const VERB_PART_LABELS = ["present", "infinitive", "perfect", "supine"];
 
+/** coepī, coepisse, coeptum: no present, so the perfect leads. */
+const PERFECT_ONLY_LABELS = ["perfect", "infinitive", "supine"];
+
+/** A verb's labels, or null for a shape we cannot name. */
+export function verbLabels(parts: Array<string>) {
+	// Only a perfect infinitive ends in -isse.
+	const perfectOnly = parts[1]?.endsWith("isse") ?? false;
+	const labels = perfectOnly
+		? PERFECT_ONLY_LABELS.slice(0, parts.length)
+		: parts.length === 4
+			? [...VERB_PART_LABELS]
+			: null;
+	if (!labels || labels.length !== parts.length) return null;
+
+	const last = parts.length - 1;
+	if (labels[last] !== "supine") return labels;
+	// ōsus sum is a perfect, not a supine.
+	if (parts[last].includes(" ")) return null;
+	// sum, esse, fuī, futūrus
+	if (parts[last].endsWith("ūrus")) labels[last] = "future participle";
+	return labels;
+}
+
 /**
  * The three genders, and the two ways an adjective files with fewer than three
  * forms. A two-termination adjective's first form is not its masculine — it is
@@ -21,9 +44,11 @@ const ADJECTIVE_PART_LABELS: Record<string, Array<string>> = {
  * the pieces are separate facts and worth labelling. Only the shapes we can
  * name are split; anything else is shown whole rather than mislabelled.
  */
-function partLabels(entry: Entry, count: number) {
-	if (entry.partOfSpeech === "verb" && count === 4) {
-		return VERB_PART_LABELS;
+function partLabels(entry: Entry, parts: Array<string>) {
+	const count = parts.length;
+
+	if (entry.partOfSpeech === "verb") {
+		return verbLabels(parts);
 	}
 
 	if (entry.partOfSpeech.endsWith("noun") && count === 1) {
@@ -80,7 +105,7 @@ export function PrincipalPartList({
 		.map((part) => part.trim())
 		.filter(Boolean);
 
-	const labels = partLabels(entry, split.length);
+	const labels = partLabels(entry, split);
 	const parts = labels ? split : [entry.principalParts];
 
 	return (

@@ -94,8 +94,8 @@ export const getEntry = createServerFn({ method: "GET" })
 			lemma: typeof raw.lemma === "string" ? raw.lemma.normalize("NFC") : "",
 			homonym:
 				typeof raw.homonym === "number" &&
-				Number.isInteger(raw.homonym) &&
-				raw.homonym > 0
+					Number.isInteger(raw.homonym) &&
+					raw.homonym > 0
 					? raw.homonym
 					: 0,
 		};

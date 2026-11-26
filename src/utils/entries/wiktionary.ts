@@ -798,12 +798,25 @@ function readPrincipalParts(candidate: Candidate) {
 	const { forms, headword, partOfSpeech } = candidate;
 
 	if (partOfSpeech === "verb") {
+		// Each form fills one slot: coepī's "perfect infinitive" is not also its perfect.
+		const unused = new Map(forms);
+		const take = (label: RegExp) => {
+			for (const [key, value] of unused) {
+				if (!label.test(key)) continue;
+				unused.delete(key);
+				return value;
+			}
+			return undefined;
+		};
+		// ōdī is the perfect already; its "perfect active ōsus sum" is no second one.
+		const perfectOnly = /\bno present stem\b/.test(candidate.grammar);
+
 		const parts = [
 			headword,
-			findForm(forms, /infinitive/),
-			findForm(forms, /perfect/),
+			take(/infinitive/),
+			perfectOnly ? undefined : take(/perfect/),
 			// sum has no supine; its fourth part is the future active participle.
-			findForm(forms, /supine/) ?? findForm(forms, /future active participle/),
+			take(/supine/) ?? take(/future active participle/),
 		];
 		return parts.filter(Boolean).join(", ");
 	}
@@ -1236,8 +1249,13 @@ export type Lookup = { row: WiktionaryRow; warnings: Array<string> };
  * every caller is expected to put them in front of one.
  */
 export async function lookupEntry(spec: LookupSpec): Promise<Lookup> {
+	return fileSection(await fetchLatinSection(spec.lemma), spec);
+}
+
+/** lookupEntry once the page is in hand: Wiktionary's Latin section, filed. */
+export function fileSection(sectionHtml: string, spec: LookupSpec): Lookup {
 	const warnings: Array<string> = [];
-	const candidates = parseCandidates(await fetchLatinSection(spec.lemma));
+	const candidates = parseCandidates(sectionHtml);
 	const candidate = chooseCandidate(candidates, spec, (message) =>
 		warnings.push(message),
 	);
