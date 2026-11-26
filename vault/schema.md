@@ -112,9 +112,9 @@ Not every value answers for every part of speech. `DECLENSIONS_BY_PART_OF_SPEECH
 | `noun`         | `1` … `5`, `indeclinable`            |
 | `adjective`    | `1-2`, `3`, `indeclinable`           |
 | `numeral`      | `1-2`, `3`, `indeclinable`           |
-| `pronoun`      | `irregular`, `1-2`                   |
+| `pronoun`      | `irregular`, `1-2`, `indeclinable`   |
 
-A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns are `irregular`, as the irregular verbs are: _hic_, _ego_, _quis_, _īdem_ and _nēmō_ each decline their own way, and their tables are on /grammar/pronouns. The possessives are the exception: _meus_ declines as _bonus_, so a possessive filed as a pronoun is `1-2`. A pronoun files its other forms in `principal_parts`, lemma first: _hic, haec, hoc_, or the genitive where there are no genders (_ego, meī_; _nēmō, nēminis_).
+A noun under `1-2` is a typo, and an adjective under a bare `2` or `4` is in a class no word list can find it in. Pronouns are `irregular`, as the irregular verbs are: _hic_, _ego_, _quis_, _īdem_ and _nēmō_ each decline their own way, and their tables are on /grammar/pronouns. The possessives are the exception: _meus_ declines as _bonus_, so a possessive filed as a pronoun is `1-2`. A pronoun files its other forms in `principal_parts`, lemma first: _hic, haec, hoc_, or the genitive where there are no genders (_ego, meī_; _nēmō, nēminis_). _nihil_ and _nīl_ (and _nōnnihil_) are `indeclinable`, with NULL `principal_parts`: nominative and accusative only, as Wiktionary and LASLA file them.
 
 The column's question was never "which numbered table?" — it is **how does this word inflect?**, and _indeclinable_ is a perfectly good answer to that, where NULL is not an answer at all. `conjugation` already worked this way: `irregular` is the same move, made earlier.
 
@@ -122,7 +122,9 @@ It is not a numeral problem, either. The grammar has a named class for it: "A fe
 
 Nor an adjective one. A&G §103a lists the native indeclinable nouns — _fās, nefās, īnstar, nihil, opus_ ("need"), _secus_ — "used only as nominative and accusative singular" ([A&G §103](https://dcc.dickinson.edu/node/26676)). Lewis & Short files them with a gender and no genitive ("fas, indecl. n."), and so does this dictionary: `indeclinable`, a gender, and NULL `principal_parts`. Borrowed names (_Abraham_, _alpha_) are the same class in larger numbers.
 
-**Follow the dictionary's label.** "indecl." means `indeclinable`. A _defective_ noun the dictionary still files with a genitive (_fors_, _vicis_; A&G §103b–h) keeps its numbered declension, and the missing cases go in `notes`. _nihil_ is indeclinable, with "gen. _nihilī_, abl. _nihilō_ (from _nihilum_)" in `notes`. _opus_ "need" is a sense of _opus, operis_ (_opus est_), not a second row.
+_nihil_ is the exception: it is filed as an indeclinable **pronoun**, beside _nēmō_. A&G and the OLD call it a noun, but Wiktionary, the source of the fill, and LASLA, the source of the frequency badge, call it a pronoun. Filed as a noun, it got the wrong fill and no badge. "gen. _nihilī_, abl. _nihilō_ (from _nihilum_)" goes in `notes`. Wiktionary's other indeclinable pronouns (_satis, parum, nimium, affatim, invicem_) are adverbs or adjectives in every dictionary, and are filed that way.
+
+**Follow the dictionary's label.** "indecl." means `indeclinable`. A _defective_ noun the dictionary still files with a genitive (_fors_, _vicis_; A&G §103b–h) keeps its numbered declension, and the missing cases go in `notes`. _opus_ "need" is a sense of _opus, operis_ (_opus est_), not a second row.
 
 ### `terminations`, and why counting the forms cannot replace it
 

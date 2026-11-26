@@ -88,12 +88,13 @@ export type DeclinedPartOfSpeech = {
  * Numerals are adjectives in the grammar's eyes (vault/schema.md): prīmus and
  * ūnus are `1-2`, trēs is `3`, septem is `indeclinable`. Pronouns are
  * `irregular` (hic, ego, quis), except the possessives: meus declines as bonus.
+ * nihil and nīl never change shape, so they are `indeclinable`.
  */
 export const DECLENSIONS_BY_PART_OF_SPEECH = {
 	noun: ["1", "2", "3", "4", "5", "indeclinable"],
 	adjective: ["1-2", "3", "indeclinable"],
 	numeral: ["1-2", "3", "indeclinable"],
-	pronoun: ["irregular", "1-2"],
+	pronoun: ["irregular", "1-2", "indeclinable"],
 } as const satisfies Record<DeclinedPartOfSpeech, ReadonlyArray<Declension>>;
 
 /**
@@ -153,16 +154,18 @@ export function isStemClass(value: string): value is StemClass {
  *
  * An indeclinable word is the exception inside the exception: fās and nēquam
  * never change shape, so there is no second form to print and the lemma is the
- * whole filing after all (A&G §§103a, 122). Which is why this takes the
- * declension too — for a verb or a pronoun the answer does not depend on it.
+ * whole filing after all (A&G §§103a, 122). nihil is the one pronoun. Which is
+ * why this takes the declension too — for a verb the answer does not depend on it.
  */
 export function hasPrincipalParts(
 	partOfSpeech: string,
 	declension?: string,
 ): partOfSpeech is "noun" | "verb" | "adjective" | "pronoun" {
-	if (partOfSpeech === "verb" || partOfSpeech === "pronoun") return true;
+	if (partOfSpeech === "verb") return true;
 	return (
-		(partOfSpeech === "noun" || partOfSpeech === "adjective") &&
+		(partOfSpeech === "noun" ||
+			partOfSpeech === "adjective" ||
+			partOfSpeech === "pronoun") &&
 		declension !== "indeclinable"
 	);
 }
@@ -605,7 +608,9 @@ export function parseEntryDraft(input: unknown): EntryDraft {
 				? "An indeclinable noun never changes shape, so it has no genitive to file."
 				: partOfSpeech === "adjective"
 					? "An indeclinable adjective never changes shape, so it has no other terminations to file."
-					: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
+					: partOfSpeech === "pronoun"
+						? "An indeclinable pronoun never changes shape, so it has no other forms to file."
+						: `The lemma is the whole filing for ${aWord(partOfSpeech)}, so leave this empty.`;
 	}
 
 	// --- governs -----------------------------------------------------------
