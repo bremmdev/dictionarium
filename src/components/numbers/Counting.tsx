@@ -80,12 +80,12 @@ export function Counting() {
 			</div>
 			<p>
 				The first three are the only cardinals below a hundred that carry
-				gender: <LatinWord>ūnus</LatinWord> and <LatinWord>duo</LatinWord> have
-				a separate masculine, feminine and neuter form, while{" "}
-				<LatinWord>trēs</LatinWord> has one form for masculine and feminine and
-				another for neuter. From <LatinWord>quattuor</LatinWord> up to a hundred
-				the words never change shape, no matter how the noun beside them is
-				used. Those first three also decline for case:
+				gender: <LatinWord>ūnus</LatinWord> has a separate masculine, feminine
+				and neuter form, <LatinWord>duo</LatinWord> shares one form between
+				masculine and neuter, and <LatinWord>trēs</LatinWord> shares one between
+				masculine and feminine. From <LatinWord>quattuor</LatinWord> up to a
+				hundred the words never change shape, no matter how the noun beside them
+				is used. Those first three also decline for case:
 			</p>
 			<Table
 				caption="How one, two and three decline. Below a hundred, every other number is fixed."
@@ -114,7 +114,8 @@ export function Counting() {
 
 			<p>
 				We can then combine these numbers to make{" "}
-				<LatinWord>vīgintī (et) ūnus</LatinWord> for 21,{" "}
+				<LatinWord>vīgintī ūnus</LatinWord> or{" "}
+				<LatinWord>ūnus et vīgintī</LatinWord> for 21,{" "}
 				<LatinWord>ducentī quadrāgintā septem</LatinWord> for 247, and so on.
 			</p>
 
