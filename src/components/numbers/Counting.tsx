@@ -6,6 +6,7 @@ import {
 	CARDINALS_1_10,
 	CARDINALS_11_20,
 	DECLENSION_COLUMNS,
+	DECLENSION_ID,
 	DECLENSIONS,
 	HUNDREDS,
 	ORDINAL_COLUMNS,
@@ -87,12 +88,14 @@ export function Counting() {
 				hundred the words never change shape, no matter how the noun beside them
 				is used. Those first three also decline for case:
 			</p>
-			<Table
-				caption="How one, two and three decline. Below a hundred, every other number is fixed."
-				columns={DECLENSION_COLUMNS}
-				rows={DECLENSION_ROWS}
-				className="mx-auto max-w-3xl"
-			/>
+			<div id={DECLENSION_ID} className="scroll-mt-8">
+				<Table
+					caption="How one, two and three decline. Below a hundred, every other number is fixed."
+					columns={DECLENSION_COLUMNS}
+					rows={DECLENSION_ROWS}
+					className="mx-auto max-w-3xl"
+				/>
+			</div>
 			<p>
 				Past twenty the counting goes by tens, and past a hundred by hundreds.
 				The tens are fixed words, but the hundreds are plural adjectives that

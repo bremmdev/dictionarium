@@ -12,7 +12,10 @@ import {
 import { CONJUGATION_GROUPS } from "#/components/conjugations/Conjugations.utils";
 import { DECLENSION_GROUPS } from "#/components/declensions/Declensions.utils";
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
-import { DECLENSIONS as NUMBER_DECLENSIONS } from "#/components/numbers/NumberTheory.utils";
+import {
+	DECLENSION_ID as NUMBER_DECLENSION_ID,
+	DECLENSIONS as NUMBER_DECLENSIONS,
+} from "#/components/numbers/NumberTheory.utils";
 import {
 	DECLINED_LIKE,
 	PERSONAL,
@@ -46,7 +49,7 @@ const firstForm = (filing: string) => filing.split(", ")[0];
 const patternOf = (group: { title: string; stem: string }) =>
 	`${group.title.toLowerCase()} (${group.stem})`;
 
-// ūnus, uter and the rest point at tōtus; a table of their own wins.
+// uter, nūllus and the rest point at tōtus; a table of their own wins.
 const LIKE_TOTUS = [
 	...PRONOMINAL_ADJECTIVES.map(({ lemma }) => lemma),
 	...PRONOMINAL_COMPOUNDS,
@@ -62,7 +65,7 @@ const LIKE_TOTUS = [
 		] as const,
 );
 
-// duo and trēs are declined on the numbers page; ūnus is in DECLINED already.
+// ūnus, duo and trēs are declined together on the numbers page.
 const [NOMINATIVE] = NUMBER_DECLENSIONS;
 const COUNTED = new Set(
 	[NOMINATIVE.one, NOMINATIVE.two, NOMINATIVE.three].map(firstForm),
@@ -243,8 +246,11 @@ export function fullTableFor(
 		);
 	}
 	if (entry.partOfSpeech === "noun") return declensionFor(entry);
-	if (entry.partOfSpeech === "numeral" && COUNTED.has(entry.lemma)) {
-		return DECLINED.get(entry.lemma) ?? { to: "/numbers" };
+	if (
+		(entry.partOfSpeech === "numeral" || entry.partOfSpeech === "adjective") &&
+		COUNTED.has(entry.lemma)
+	) {
+		return { to: "/numbers", hash: NUMBER_DECLENSION_ID };
 	}
 	if (entry.partOfSpeech === "adjective" || entry.partOfSpeech === "numeral") {
 		return DECLINED.get(entry.lemma) ?? adjectiveFor(entry);
