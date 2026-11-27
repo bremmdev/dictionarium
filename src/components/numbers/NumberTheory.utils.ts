@@ -90,6 +90,9 @@ export const DECLENSION_COLUMNS = [
 	{ key: "three", label: "Three" },
 ];
 
+/** Anchor for the ūnus, duo, trēs table; /verbum links land on it. */
+export const DECLENSION_ID = "declining-one-two-three";
+
 export const DECLENSIONS = [
 	{
 		grammaticalCase: "Nominative",
