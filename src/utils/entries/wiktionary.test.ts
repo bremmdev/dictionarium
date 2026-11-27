@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { fileSection } from "#/utils/entries/wiktionary";
+import { AlreadyFiled, fileSection } from "#/utils/entries/wiktionary";
 
 /** One <i>label</i> <b>form</b> pair, as Wiktionary marks it up. */
 const form = (label: string, word: string) =>
@@ -88,4 +88,52 @@ test("a perfect spelled like the present is still filed", () => {
 		"third conjugation, impersonal",
 	);
 	assert.equal(filed(html), "pluit, pluere, pluit");
+});
+
+/** ūnus as Wiktionary files it: an Adjective section, then a Numeral one. */
+function unus() {
+	const section = (heading: string, label: string, senses: Array<string>) =>
+		`<div class="mw-heading mw-heading3"><h3>${heading}</h3></div>
+<p><span class="headword-line"><strong class="Latn headword" lang="la">ūnus</strong> (${form("feminine", "ūna")}, ${form("neuter", "ūnum")})</span>; <i>first/second-declension ${label} (pronominal declension)</i></p>
+<ol>${senses.map((s) => `<li>${s}</li>`).join("")}</ol>`;
+	return (
+		section("Adjective", "adjective", ["one, single", "alone"]) +
+		section("Numeral", "numeral", ["one"])
+	);
+}
+
+test("ūnus is one numeral, with the adjective's senses after its own", () => {
+	const { row, warnings } = fileSection(unus(), { lemma: "ūnus" });
+	assert.equal(row.partOfSpeech, "numeral");
+	assert.equal(row.declension, "1-2");
+	assert.equal(row.principalParts, "ūnus, ūna, ūnum");
+	assert.deepEqual(
+		row.senses.map((s) => s.meaningEn),
+		["one", "one, single", "alone"],
+	);
+	assert.ok(warnings.some((w) => /also files this as an adjective/.test(w)));
+});
+
+test("ūnus on file as an adjective is not offered again as a numeral", () => {
+	const taken = [
+		{
+			lemma: "ūnus",
+			partOfSpeech: "adjective",
+			declension: "1-2",
+			conjugation: null,
+			gender: null,
+		},
+	];
+	assert.throws(
+		() => fileSection(unus(), { lemma: "ūnus", taken }),
+		AlreadyFiled,
+	);
+});
+
+test("asked for the adjective, ūnus still files as one", () => {
+	const { row } = fileSection(unus(), {
+		lemma: "ūnus",
+		partOfSpeech: "adjective",
+	});
+	assert.equal(row.partOfSpeech, "adjective");
 });

@@ -16,6 +16,7 @@ import {
 	CONJUGATIONS,
 	declensionsFor,
 	EntryValidationError,
+	type FiledPartOfSpeech,
 	formatCases,
 	GENDERS,
 	GOVERNED_CASES,
@@ -51,11 +52,11 @@ const TOGGLE =
 
 /**
  * What the principal-parts input is called and what goes in it, per part of
- * speech. Keyed by the four hasPrincipalParts admits — a fifth would be a type
+ * speech. Keyed by what hasPrincipalParts admits — another would be a type
  * error here rather than a field labelled "Genitive" holding something else.
  */
 const FILING: Record<
-	"noun" | "verb" | "adjective" | "pronoun",
+	FiledPartOfSpeech,
 	{ legend: string; hint: React.ReactNode; placeholder: string }
 > = {
 	verb: {
@@ -72,6 +73,11 @@ const FILING: Record<
 		legend: "Terminations",
 		hint: "The filing as a dictionary prints it, lemma first, separated by commas.",
 		placeholder: "bonus, bona, bonum",
+	},
+	numeral: {
+		legend: "Terminations",
+		hint: "The filing as a dictionary prints it, lemma first, separated by commas.",
+		placeholder: "ūnus, ūna, ūnum",
 	},
 	pronoun: {
 		legend: "Forms",

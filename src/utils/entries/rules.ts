@@ -147,10 +147,18 @@ export function isStemClass(value: string): value is StemClass {
 	return (STEM_CLASSES as ReadonlyArray<string>).includes(value);
 }
 
+/** The parts of speech that file more than their lemma. */
+export type FiledPartOfSpeech =
+	| "noun"
+	| "verb"
+	| "adjective"
+	| "numeral"
+	| "pronoun";
+
 /**
- * Nouns file their genitive there, verbs their principal parts, adjectives their
- * terminations, pronouns their other forms (hic, haec, hoc; ego, meī); see
- * vault/schema.md.
+ * Nouns file their genitive there, verbs their principal parts, adjectives and
+ * numerals their terminations (ūnus, ūna, ūnum), pronouns their other forms
+ * (hic, haec, hoc; ego, meī); see vault/schema.md.
  *
  * An indeclinable word is the exception inside the exception: fās and nēquam
  * never change shape, so there is no second form to print and the lemma is the
@@ -160,11 +168,12 @@ export function isStemClass(value: string): value is StemClass {
 export function hasPrincipalParts(
 	partOfSpeech: string,
 	declension?: string,
-): partOfSpeech is "noun" | "verb" | "adjective" | "pronoun" {
+): partOfSpeech is FiledPartOfSpeech {
 	if (partOfSpeech === "verb") return true;
 	return (
 		(partOfSpeech === "noun" ||
 			partOfSpeech === "adjective" ||
+			partOfSpeech === "numeral" ||
 			partOfSpeech === "pronoun") &&
 		declension !== "indeclinable"
 	);
@@ -417,15 +426,16 @@ export function suspectCharacter(value: string) {
  * What is missing when principal_parts is empty, said in the word's own terms.
  * Keyed by the parts of speech hasPrincipalParts admits, so the two cannot drift.
  */
-const EMPTY_FILING: Record<"noun" | "verb" | "adjective" | "pronoun", string> =
-	{
-		verb: "A verb is filed by its principal parts, separated by commas.",
-		noun: "A noun is filed with its genitive.",
-		adjective:
-			"An adjective is filed with its other terminations: acer, acris, acre — or vetus, veteris, where there is only a genitive to give.",
-		pronoun:
-			"A pronoun is filed with its other forms: hic, haec, hoc — or ego, meī, where there are no genders to give.",
-	};
+const EMPTY_FILING: Record<FiledPartOfSpeech, string> = {
+	verb: "A verb is filed by its principal parts, separated by commas.",
+	noun: "A noun is filed with its genitive.",
+	adjective:
+		"An adjective is filed with its other terminations: acer, acris, acre — or vetus, veteris, where there is only a genitive to give.",
+	numeral:
+		"A numeral that declines is filed with its other terminations: ūnus, ūna, ūnum — or trēs, tria.",
+	pronoun:
+		"A pronoun is filed with its other forms: hic, haec, hoc — or ego, meī, where there are no genders to give.",
+};
 
 /** "a noun", but "an adverb" — a part of speech is named inside a sentence. */
 function aWord(word: string) {

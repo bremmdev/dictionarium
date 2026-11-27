@@ -54,6 +54,14 @@ export function Counting() {
 				You do not learn a thousand numbers. Instead, you learn a few dozen, and
 				then you build up from there.
 			</p>
+			<p>
+				Those basic counting words are the <em>cardinal</em> numbers. The name
+				comes from Latin <LatinWord>cardō</LatinWord>, genitive{" "}
+				<LatinWord>cardinis</LatinWord>, “hinge”. Something{" "}
+				<LatinWord>cardinālis</LatinWord> is something everything else turns on,
+				so the cardinals are the principal numbers. The ordinals and the rest of
+				the number words hinge on them.
+			</p>
 			<p>First we start with the numbers 1 through 20:</p>
 			{/* Two tens side by side on a wide screen, stacked on a phone — each
 			    stays its own table so a screen reader still reads a row as one
@@ -65,7 +73,7 @@ export function Counting() {
 					rows={CARDINAL_ROWS_1_10}
 				/>
 				<Table
-					caption="The numbers 11 to 20 — ten glued onto the unit, until 18 and 19 count down from twenty."
+					caption="The numbers 11 to 20 — ten and the unit, 18 and 19 count down from twenty."
 					columns={CARDINAL_COLUMNS}
 					rows={CARDINAL_ROWS_11_20}
 				/>
