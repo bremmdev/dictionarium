@@ -11,6 +11,7 @@ import {
 	formatCases,
 	GOVERNED_CASES,
 	hasGoverns,
+	type FiledPartOfSpeech,
 	hasPrincipalParts,
 	hasStemClass,
 	hasTerminations,
@@ -139,10 +140,11 @@ export function checkSenses(rows: ReadonlyArray<EntryWithSenses>) {
 }
 
 /** What is missing, in the word's own terms. Keyed by what hasPrincipalParts admits. */
-const FILING: Record<"noun" | "verb" | "adjective" | "pronoun", string> = {
+const FILING: Record<FiledPartOfSpeech, string> = {
 	verb: "a verb is filed by its four principal parts",
 	noun: "a noun is filed with its genitive",
 	adjective: "an adjective is filed with its other terminations",
+	numeral: "a numeral that declines is filed with its other terminations",
 	pronoun: "a pronoun is filed with its other forms",
 };
 

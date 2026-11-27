@@ -828,7 +828,8 @@ function readPrincipalParts(candidate: Candidate) {
 		return findForm(forms, /genitive/);
 	}
 
-	if (partOfSpeech === "adjective") {
+	// ūnus, ūna, ūnum and trēs, tria are printed the way an adjective's are.
+	if (partOfSpeech === "adjective" || partOfSpeech === "numeral") {
 		// One line per termination the adjective actually has: bonus, bona, bonum
 		// and ācer, ācris, ācre give three; fortis, forte gives two.
 		const filed = [
@@ -1151,6 +1152,52 @@ function toRow(
 
 /* --------------------------------------------------------------- choosing */
 
+/**
+ * ūnus has an Adjective and a Numeral section on Wiktionary, but it is one word:
+ * filed as the numeral, with the adjective's senses after its own.
+ */
+function foldNumeral(
+	candidates: Array<Candidate>,
+	spec: LookupSpec,
+	warn: (message: string) => void,
+) {
+	if (spec.partOfSpeech === "adjective") return candidates;
+	const numeral = candidates.find(
+		(c) => c.partOfSpeech === "numeral" && !c.isInflectedForm,
+	);
+	const adjective = candidates.find(
+		(c) =>
+			c.partOfSpeech === "adjective" &&
+			!c.isInflectedForm &&
+			c.headword === numeral?.headword,
+	);
+	if (!numeral || !adjective) return candidates;
+
+	const seen = new Set(numeral.senses.map((s) => s.meaningEn.toLowerCase()));
+	const extra = adjective.senses.filter(
+		(s) => !seen.has(s.meaningEn.toLowerCase()),
+	);
+	const folded: Candidate = {
+		...numeral,
+		declensionLine: numeral.declensionLine ?? adjective.declensionLine,
+		senses: [...numeral.senses, ...extra].slice(0, MAX_SENSES),
+		senseCount: numeral.senseCount + extra.length,
+	};
+	warn(
+		"Wiktionary also files this as an adjective; filed here as the numeral, with those senses after its own",
+	);
+	return candidates
+		.filter((c) => c !== adjective)
+		.map((c) => (c === numeral ? folded : c));
+}
+
+/** A numeral and an adjective spelled alike are one word filed twice (ūnus). */
+function asAdjective(identity: Identity): Identity {
+	return identity.partOfSpeech === "numeral"
+		? { ...identity, partOfSpeech: "adjective" }
+		: identity;
+}
+
 function chooseCandidate(
 	candidates: Array<Candidate>,
 	spec: LookupSpec,
@@ -1160,14 +1207,15 @@ function chooseCandidate(
 		throw new Error("no part-of-speech section found in the Latin entry");
 	}
 
-	let pool = candidates;
+	let pool = foldNumeral(candidates, spec, warn);
 
 	// A word already on file is not suggested again, so Quaere on cum finds the
 	// conjunction once the preposition is in. An inflected form left over is not
 	// a word of its own, so it does not count as something still to file.
 	const taken = spec.taken ?? [];
 	const free = pool.filter(
-		(c) => !taken.some((t) => sameWord(identityOf(c), t)),
+		(c) =>
+			!taken.some((t) => sameWord(asAdjective(identityOf(c)), asAdjective(t))),
 	);
 	if (free.length < pool.length) {
 		if (!free.some((c) => !c.isInflectedForm)) {

@@ -177,6 +177,10 @@ Which is why one lesson's worth of numbers produces four different rows:
 | _ūnus_   | `numeral`        | `1-2` (with the pronominal genitive _ūnīus_, dative _ūnī_)                        |
 | _quot_   | `adjective`      | `indeclinable`                                                                    |
 
+A numeral that declines files its terminations in `principal_parts`, as an adjective does: _ūnus, ūna, ūnum_; _trēs, tria_; _ducentī, ducentae, ducenta_. An indeclinable one files NULL.
+
+Wiktionary gives _ūnus_ both an Adjective and a Numeral section. It is one word, so the fill files the numeral and adds the adjective's senses after its own ("alone", _ad ūnum_).
+
 ### `determiner` is not one of them
 
 Wiktionary files _alius_, _ūllus_, _nūllus_ and _tōtus_ as **determiners**. This dictionary files them as adjectives, and `determiner` is deliberately absent from `INFLECTS`.
@@ -186,7 +190,7 @@ The label is not wrong, it is from another inventory. Wiktionary applies one par
 Three things would break if it were added:
 
 1. **The declensions page already teaches them as adjectives.** `Adjectives.tsx` carries all nine as a footnote under _bonus, bona, bonum_: "Nine adjectives break the genitive and dative singular — _ūnus, sōlus, tōtus, nūllus, ūllus, alius, alter, uter_ and _neuter_". A `/verbum/alius` card reading "determiner" would make the dictionary disagree with its own worked example.
-2. **The filing rules are written in terms of `adjective`.** `hasPrincipalParts` admits `noun | verb | adjective | pronoun`, so a determiner's lemma would be its whole filing — and `check-inflection.ts` would report _alius, alia, aliud_ as principal parts that should be NULL. The repair is to widen `hasPrincipalParts` and `hasTerminations` to admit `determiner`, at which point it is `adjective` under a second name, which is the drift the guard exists to catch.
+2. **The filing rules are written in terms of `adjective`.** `hasPrincipalParts` admits `noun | verb | adjective | numeral | pronoun`, so a determiner's lemma would be its whole filing — and `check-inflection.ts` would report _alius, alia, aliud_ as principal parts that should be NULL. The repair is to widen `hasPrincipalParts` and `hasTerminations` to admit `determiner`, at which point it is `adjective` under a second name, which is the drift the guard exists to catch.
 3. **The set does not line up with anything.** What actually distinguishes these words is the **pronominal declension** — genitive singular _-īus_, dative singular _-ī_, in all three genders — and that cuts straight across the filing labels: _ūnus_ is a `numeral` here, _uter_ is a pronoun on Wiktionary, _tōtus_ an adjective. No part of speech selects the nine.
 
 So they file as `adjective`, `1-2`, with the irregularity in `notes` — the same shape as the _ūnus_ row above:

@@ -53,3 +53,22 @@ test("an irregular pronoun still has to file its forms", () => {
 	const fields = fieldsOf(pronoun({ lemma: "hic", declension: "irregular" }));
 	assert.ok(fields.principalParts);
 });
+
+test("a numeral that declines files its terminations; one that does not, none", () => {
+	const draft = parseEntryDraft({
+		lemma: "ūnus",
+		partOfSpeech: "numeral",
+		declension: "1-2",
+		principalParts: "ūnus, ūna, ūnum",
+		senses: [{ meaningEn: "one" }],
+	});
+	assert.equal(draft.principalParts, "ūnus, ūna, ūnum");
+	assert.equal(hasPrincipalParts("numeral", "indeclinable"), false);
+	const fields = fieldsOf({
+		lemma: "prīmus",
+		partOfSpeech: "numeral",
+		declension: "1-2",
+		senses: [{ meaningEn: "first" }],
+	});
+	assert.match(fields.principalParts ?? "", /numeral/);
+});

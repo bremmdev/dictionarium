@@ -12,6 +12,7 @@ import {
 import { CONJUGATION_GROUPS } from "#/components/conjugations/Conjugations.utils";
 import { DECLENSION_GROUPS } from "#/components/declensions/Declensions.utils";
 import { IRREGULAR_VERBS } from "#/components/irregular-verbs/IrregularVerbs.utils";
+import { DECLENSIONS as NUMBER_DECLENSIONS } from "#/components/numbers/NumberTheory.utils";
 import {
 	DECLINED_LIKE,
 	PERSONAL,
@@ -29,8 +30,9 @@ export type FullTable = {
 		| "/grammar/pronouns"
 		| "/grammar/irregular-verbs"
 		| "/grammar/conjugations"
-		| "/grammar/declensions";
-	hash: string;
+		| "/grammar/declensions"
+		| "/numbers";
+	hash?: string;
 	/** The word whose table it is, when it has none of its own: sum for absum. */
 	like?: string;
 	/** The pattern a regular word follows: "first conjugation (ā-stems)". */
@@ -58,6 +60,12 @@ const LIKE_TOTUS = [
 				like: firstForm(TOTUS.lemma),
 			},
 		] as const,
+);
+
+// duo and trēs are declined on the numbers page; ūnus is in DECLINED already.
+const [NOMINATIVE] = NUMBER_DECLENSIONS;
+const COUNTED = new Set(
+	[NOMINATIVE.one, NOMINATIVE.two, NOMINATIVE.three].map(firstForm),
 );
 
 const DECLINED = new Map<string, FullTable>([
@@ -235,7 +243,10 @@ export function fullTableFor(
 		);
 	}
 	if (entry.partOfSpeech === "noun") return declensionFor(entry);
-	if (entry.partOfSpeech === "adjective") {
+	if (entry.partOfSpeech === "numeral" && COUNTED.has(entry.lemma)) {
+		return DECLINED.get(entry.lemma) ?? { to: "/numbers" };
+	}
+	if (entry.partOfSpeech === "adjective" || entry.partOfSpeech === "numeral") {
 		return DECLINED.get(entry.lemma) ?? adjectiveFor(entry);
 	}
 	if (entry.partOfSpeech === "pronoun")
