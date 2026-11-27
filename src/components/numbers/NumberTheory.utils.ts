@@ -52,8 +52,8 @@ export const CARDINAL_COLUMNS = [
 	{ key: "word", label: "Latin" },
 ];
 
-// The first three are the only cardinals with gender, so they carry all three
-// nominative forms here; the rest are one fixed word.
+// Below a hundred only the first three have gender, so they list their
+// nominative forms; the rest are one fixed word.
 export const CARDINALS_1_10 = [
 	{ number: "1", numeral: "I", word: "ūnus, ūna, ūnum" },
 	{ number: "2", numeral: "II", word: "duo, duae, duo" },

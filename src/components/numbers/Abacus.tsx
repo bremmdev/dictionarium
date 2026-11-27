@@ -18,7 +18,7 @@ export function Abacus() {
 				The Roman hand <LatinWord>abacus</LatinWord> was one of the earliest
 				portable calculating devices, used in ancient Rome. It was a simple
 				device with grooves for pebbles ordered into columns with 2 grooves per
-				column. Each column reprented a factor of ten, and the pebbles were
+				column. Each column represented a power of ten, and the pebbles were
 				moved to represent the numbers. Each column had a lower groove holding
 				four pebbles worth one each, and a shorter upper groove holding a single
 				pebble worth five. Actual arithmetic happened on the device. Roman
@@ -37,8 +37,16 @@ export function Abacus() {
 				on the abacus.
 			</p>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<img src={abacus7} alt="Abacus, hand-drawn" className="flex-1" />
-				<img src={abacus79} alt="Abacus, hand-drawn" className="flex-1" />
+				<img
+					src={abacus7}
+					alt="Units column of a Roman abacus set to seven: the five-pebble pushed down to the bar and two one-pebbles pushed up to it."
+					className="flex-1"
+				/>
+				<img
+					src={abacus79}
+					alt="Tens and units columns of a Roman abacus set to seventy-nine: seventy in the tens column, nine in the units column."
+					className="flex-1"
+				/>
 			</div>
 		</section>
 	);

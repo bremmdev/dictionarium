@@ -88,7 +88,7 @@ function NumbersBanner() {
 						</Tooltip>
 					</div>
 					<p className="mx-auto mt-6 text-lg leading-relaxed md:mx-0 md:text-xl max-w-[80%]">
-						Learn about Roman numerals, counting and additions. Convert any
+						Learn about Roman numerals, counting and addition. Convert any
 						number to its Roman numeral and back, and read how the Romans said
 						it.
 					</p>
